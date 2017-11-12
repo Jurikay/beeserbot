@@ -47,6 +47,8 @@ def mainLoop():
         val["s"] += 1
         val["cs"] += 1
         time.sleep(1)
+        logging.debug("###EINE SEC")
+
         # Test: running for:
 
         # val["timeRunning"] = str(datetime.timedelta(seconds=int(val["s"])))
@@ -80,5 +82,5 @@ if __name__ == '__main__':
     bm.start()
 
     # start npyscreen ui
-    app = MainApp()
+
     app.run()

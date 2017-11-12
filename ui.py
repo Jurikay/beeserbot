@@ -26,12 +26,26 @@ tradeHistDict = dict()
 # use val to store different values like websocket conn_keys
 val = {"s": 0, "cs": 0, "socket1": 0,"socket2": 0, "socket3": 0, "symbol": symbol}
 
-class DateForm(npyscreen.FormBaseNew):
-    FIX_MINIMUM_SIZE_WHEN_CREATED = True
+class MainForm(npyscreen.FormBaseNew):
+
 
     gridBuy=True
     # set (update) values periodically when no user input is present
     # Form idle loop
+
+    @staticmethod
+    def updateOrderbook(self):
+        logging.debug("UPDATE ORDERBOOK!!!" + str(self))
+        # Update order book values
+        for i in range(self.obRange):
+            self.bids[i].value ="[" + str((i+1)).zfill(1)+ "]" + str(depthMsg["bids"][i][0]) + " | " + str(float(depthMsg["bids"][i][1])).ljust(6,"0")
+
+            self.asks[i].value ="[" + str((self.obRange-i)).zfill(1)+ "]" + str(depthMsg["asks"][self.obRange-i-1][0]) + " | " + str(float(depthMsg["asks"][self.obRange-i-1][1])).ljust(6,"0")
+
+
+    #################################################################
+    # WHILE WAITING LOOP
+    #################################################################
     def while_waiting(self):
 
         # Catch KeyError if websocket update hasn't occured yet
@@ -41,10 +55,11 @@ class DateForm(npyscreen.FormBaseNew):
             self.coinPair.value = str(tickerMsg["s"])
             # update values from websocket data, stored in "global" dictionary
             #npyscreen.notify_wait(str(temp["lastUpdateId"]))
-            self.date_widget.value = str(depthMsg["lastUpdateId"])
+
+            # self.date_widget.value = str(depthMsg["lastUpdateId"])
 
 
-            # self.runningSince.value = str(val["timeRunning"])
+            self.runningSince.value = str(datetime.timedelta(seconds=int(val["s"])))
 
             try:
                 self.tpm.value =  int(float(len(globalList))/(float(int(val["cs"])/60)))
@@ -52,10 +67,10 @@ class DateForm(npyscreen.FormBaseNew):
                 pass
 
             # Update order book values
-            for i in range(self.obRange):
-                self.bids[i].value ="[" + str((i+1)).zfill(1)+ "]" + str(depthMsg["bids"][i][0]) + " | " + str(float(depthMsg["bids"][i][1])).ljust(6,"0")
-
-                self.asks[i].value ="[" + str((self.obRange-i)).zfill(1)+ "]" + str(depthMsg["asks"][self.obRange-i-1][0]) + " | " + str(float(depthMsg["asks"][self.obRange-i-1][1])).ljust(6,"0")
+            # for i in range(self.obRange):
+            #     self.bids[i].value ="[" + str((i+1)).zfill(1)+ "]" + str(depthMsg["bids"][i][0]) + " | " + str(float(depthMsg["bids"][i][1])).ljust(6,"0")
+            #
+            #     self.asks[i].value ="[" + str((self.obRange-i)).zfill(1)+ "]" + str(depthMsg["asks"][self.obRange-i-1][0]) + " | " + str(float(depthMsg["asks"][self.obRange-i-1][1])).ljust(6,"0")
 
 
             self.clearOb()
@@ -90,6 +105,9 @@ class DateForm(npyscreen.FormBaseNew):
 
         # commit updates and refresh view
 
+    #################################################################
+    # CREATE FUNCTION
+    #################################################################
     def create(self):
         # EXIT APP on ESC
         self.how_exited_handers[npyscreen.wgwidget.EXITED_ESCAPE]  = self.exit_application
@@ -224,14 +242,25 @@ class coinInput(npyscreen.Textfield):
 class MainApp(npyscreen.NPSAppManaged):
 
     # update interval
-    keypress_timeout_default = 3
+    keypress_timeout_default = 10
 
     # initiate Forms on start
     def onStart(self):
-        self.addForm("MAIN", DateForm, name="BEESER BOT")
+        self.addForm("MAIN", MainForm, name="BEESER BOT")
 
 
+    def testZugriff(self):
+        logging.debug("testzugriff start")
+        self.getForm("MAIN").date_widget.value = str(depthMsg["lastUpdateId"])
 
+        self.getForm("MAIN").runningSince.value = str(datetime.timedelta(seconds=int(val["s"])))
+
+        for i in range(self.getForm("MAIN").obRange):
+            self.getForm("MAIN").bids[i].value ="[" + str((i+1)).zfill(1)+ "]" + str(depthMsg["bids"][i][0]) + " | " + str(float(depthMsg["bids"][i][1])).ljust(6,"0")
+
+            self.getForm("MAIN").asks[i].value ="[" + str((self.getForm("MAIN").obRange-i)).zfill(1)+ "]" + str(depthMsg["asks"][self.getForm("MAIN").obRange-i-1][0]) + " | " + str(float(depthMsg["asks"][self.getForm("MAIN").obRange-i-1][1])).ljust(6,"0")
+        self.getForm("MAIN").display()
+        logging.debug("testzugriff end")
 def restartSocket(symbol):
     globalList.clear()
     depthMsg.clear()
@@ -256,7 +285,7 @@ def restartSocket(symbol):
 
 # WebSocket Callback functions
 def depth_callback(msg):
-    logging.debug("receive update")
+    logging.debug("API UPDATE")
 
     # depthMsg.clear()
     # depthMsg=dict()
@@ -264,6 +293,9 @@ def depth_callback(msg):
     for key, value in msg.items():
         depthMsg[key] = value
     botCalc()
+    # MainForm.updateOrderbook()
+    app.testZugriff()
+
 def trade_callback(msg):
     # print ("\033[91mtrade update:")
     # print(msg)
@@ -284,4 +316,7 @@ def ticker_callback(msg):
         #     f.write(str(tickerMsg))
 
 def botCalc():
-    logging.debug("bot calculations " + str(depthMsg["bids"][0]))
+    # logging.debug("bot calculations " + str(depthMsg["bids"][0]))
+    pass
+
+app = MainApp()
