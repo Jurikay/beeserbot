@@ -6,25 +6,12 @@ import npyscreen
 import curses
 from colorSyntax import *
 from botFunctions import *
+from botLogic import *
 import logging
 
 logging.basicConfig(filename="test.log", level=logging.DEBUG, format='%(asctime)s %(message)s')
 
-coins=dict()
-coins = availablePairs()
 
-# DEBUG hardcode symbol
-symbol = 'ETHBTC'
-
-# initilize "global" dictionaries
-depthMsg = dict()
-tradesMsg = dict()
-tickerMsg = dict()
-globalList = list()
-tradeHistDict = dict()
-
-# use val to store different values like websocket conn_keys
-val = {"s": 0, "cs": 0, "socket1": 0,"socket2": 0, "socket3": 0, "symbol": symbol}
 
 class MainForm(npyscreen.FormBaseNew):
 
@@ -261,62 +248,5 @@ class MainApp(npyscreen.NPSAppManaged):
             self.getForm("MAIN").asks[i].value ="[" + str((self.getForm("MAIN").obRange-i)).zfill(1)+ "]" + str(depthMsg["asks"][self.getForm("MAIN").obRange-i-1][0]) + " | " + str(float(depthMsg["asks"][self.getForm("MAIN").obRange-i-1][1])).ljust(6,"0")
         self.getForm("MAIN").display()
         logging.debug("testzugriff end")
-def restartSocket(symbol):
-    globalList.clear()
-    depthMsg.clear()
-
-    # tickerMsg = fetchAsap(symbol)
-    client = Client(api_key, api_secret)
-    bm = BinanceSocketManager(client)
-    try:
-        bm.stop_socket(val["socket1"])
-        bm.stop_socket(val["socket2"])
-        bm.stop_socket(val["socket3"])
-        # time.sleep(1)
-
-    except:
-        pass
-    tradesMsg.clear()
-    val["socket1"] = bm.start_depth_socket(symbol, depth_callback, depth=20, update_time="0ms")
-    val["socket2"] = bm.start_trade_socket(symbol, trade_callback)
-    val["socket3"] = bm.start_ticker_socket(ticker_callback, update_time="0ms")
-
-
-
-# WebSocket Callback functions
-def depth_callback(msg):
-    logging.debug("API UPDATE")
-
-    # depthMsg.clear()
-    # depthMsg=dict()
-    # assign values from callback to global dictionary
-    for key, value in msg.items():
-        depthMsg[key] = value
-    botCalc()
-    # MainForm.updateOrderbook()
-    app.testZugriff()
-
-def trade_callback(msg):
-    # print ("\033[91mtrade update:")
-    # print(msg)
-    for key, value in msg.items():
-        tradesMsg[key] = value
-
-    # globalList.insert(0,{"price": str(tradesMsg["p"]), "quantity": str(tradesMsg["q"]), "order": str(tradesMsg["m"])})
-
-
-def ticker_callback(msg):
-    # print ("\033[92mticker update:")
-    # print(msg)
-    if msg[0]["s"] == val["symbol"]:
-
-        for key, value in msg[0].items():
-            tickerMsg[key] = value
-        # with open("myfile.txt", "w") as f:
-        #     f.write(str(tickerMsg))
-
-def botCalc():
-    # logging.debug("bot calculations " + str(depthMsg["bids"][0]))
-    pass
 
 app = MainApp()

@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+# by Jurek Baumann
+
 # IMPORTS
 import npyscreen
 import datetime
@@ -10,6 +15,8 @@ from config import *
 import curses
 # import sys
 # import os
+
+from botLogic import *
 
 from binance.client import Client
 from binance.websockets import BinanceSocketManager
@@ -80,6 +87,9 @@ def cleanExit():
     # cleanly exit
 
 def fetchAsap(symbol):
+    '''
+    Make a seperate API call to instantly get new orderbook values after changing the coin.
+    '''
     tickers = client.get_ticker(symbol=symbol)
     tempDict = dict()
     iterator = 0
@@ -93,10 +103,73 @@ def fetchAsap(symbol):
 
     return tempDict
 
+
 import atexit
 def exit_handler():
+    '''
+    Handle exit gracefully
+    '''
     cleanExit()
     print ('🚫  Bot wurde beendet.')
     # closeAllOrders()
 
 atexit.register(exit_handler)
+
+
+def restartSocket(symbol):
+    globalList.clear()
+    depthMsg.clear()
+
+    # tickerMsg = fetchAsap(symbol)
+    client = Client(api_key, api_secret)
+    bm = BinanceSocketManager(client)
+    try:
+        bm.stop_socket(val["socket1"])
+        bm.stop_socket(val["socket2"])
+        bm.stop_socket(val["socket3"])
+        # time.sleep(1)
+
+    except:
+        pass
+    tradesMsg.clear()
+    val["socket1"] = bm.start_depth_socket(symbol, depth_callback, depth=20, update_time="0ms")
+    val["socket2"] = bm.start_trade_socket(symbol, trade_callback)
+    val["socket3"] = bm.start_ticker_socket(ticker_callback, update_time="0ms")
+
+
+
+# WebSocket Callback functions
+def depth_callback(msg):
+    logging.debug("API UPDATE")
+
+    # depthMsg.clear()
+    # depthMsg=dict()
+    # assign values from callback to global dictionary
+    for key, value in msg.items():
+        depthMsg[key] = value
+    botCalc()
+    # MainForm.updateOrderbook()
+    ui.app.testZugriff()
+
+def trade_callback(msg):
+    # print ("\033[91mtrade update:")
+    # print(msg)
+    for key, value in msg.items():
+        tradesMsg[key] = value
+
+    # globalList.insert(0,{"price": str(tradesMsg["p"]), "quantity": str(tradesMsg["q"]), "order": str(tradesMsg["m"])})
+
+
+def ticker_callback(msg):
+    # print ("\033[92mticker update:")
+    # print(msg)
+    if msg[0]["s"] == val["symbol"]:
+
+        for key, value in msg[0].items():
+            tickerMsg[key] = value
+        # with open("myfile.txt", "w") as f:
+        #     f.write(str(tickerMsg))
+
+
+coins=dict()
+coins = availablePairs()
