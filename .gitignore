@@ -1,6 +1,7 @@
 # config file to not expose API keys
 config.py
 configMAIN.py
+configBOT.py
 test.log
 myfile.txt
 tests/

@@ -34,64 +34,64 @@ class MainForm(npyscreen.FormBaseNew):
     # WHILE WAITING LOOP
     #################################################################
     def while_waiting(self):
-
-        # Catch KeyError if websocket update hasn't occured yet
-        try:
-            logging.debug("drawe changes")
-
-            self.coinPair.value = str(tickerMsg["s"])
-            # update values from websocket data, stored in "global" dictionary
-            #npyscreen.notify_wait(str(temp["lastUpdateId"]))
-
-            # self.date_widget.value = str(depthMsg["lastUpdateId"])
-
-
-            self.runningSince.value = str(datetime.timedelta(seconds=int(val["s"])))
-
-            try:
-                self.tpm.value =  int(float(len(globalList))/(float(int(val["cs"])/60)))
-            except:
-                pass
-
-            # Update order book values
-            # for i in range(self.obRange):
-            #     self.bids[i].value ="[" + str((i+1)).zfill(1)+ "]" + str(depthMsg["bids"][i][0]) + " | " + str(float(depthMsg["bids"][i][1])).ljust(6,"0")
-            #
-            #     self.asks[i].value ="[" + str((self.obRange-i)).zfill(1)+ "]" + str(depthMsg["asks"][self.obRange-i-1][0]) + " | " + str(float(depthMsg["asks"][self.obRange-i-1][1])).ljust(6,"0")
-
-
-            self.clearOb()
-            # Update trade history values
-            try:
-                for i in range(self.obRange*2+3):
-                    # self.oHistory[i].value = str(globalList[i])
-                    # with open("myfile2.txt", "w") as f:
-                    #     f.write(str(globalList))
-
-                    if globalList[i]["order"] == "True":
-                        self.oHistory[i] = self.add(SyntaxHistSell, npyscreen.FixedText, value=str(globalList[i]["price"])+"  "+str(float(globalList[i]["quantity"])).ljust(5,"0"), editable=False, relx=50,rely=i+2)
-                    else:
-                        self.oHistory[i] = self.add(SyntaxHistBuy, npyscreen.FixedText, value=str(globalList[i]["price"])+"  "+str(float(globalList[i]["quantity"])).ljust(5,"0"), editable=False, relx=50,rely=i+2)
-                    self.oHistory[i].syntax_highlighting=True
-
-            except:
-                pass
-
-            # Update trades, spread
-            self.tradesSinceStart.value = str(len(globalList))
-            try:
-                self.spreadVal = ((float(depthMsg["asks"][0][0])-float(depthMsg["bids"][0][0]))/float(depthMsg["asks"][0][0]))*100
-                self.spread.value = "Spread: " + str(round(self.spreadVal,2))+"%"
-            except:
-                pass
-
-            self.display()
-        except KeyError:
-            #print ("error")
-            pass
+    #
+    #     # Catch KeyError if websocket update hasn't occured yet
+    #     try:
+    #         logging.debug("drawe changes")
+    #
+    #         self.coinPair.value = str(tickerMsg["s"])
+    #         # update values from websocket data, stored in "global" dictionary
+    #         #npyscreen.notify_wait(str(temp["lastUpdateId"]))
+    #
+    #         # self.date_widget.value = str(depthMsg["lastUpdateId"])
+    #
+    #
+    #         self.runningSince.value = str(datetime.timedelta(seconds=int(val["s"])))
+    #
+    #         try:
+    #             self.tpm.value =  int(float(len(globalList))/(float(int(val["cs"])/60)))
+    #         except:
+    #             pass
+    #
+    #         # Update order book values
+    #         # for i in range(self.obRange):
+    #         #     self.bids[i].value ="[" + str((i+1)).zfill(1)+ "]" + str(depthMsg["bids"][i][0]) + " | " + str(float(depthMsg["bids"][i][1])).ljust(6,"0")
+    #         #
+    #         #     self.asks[i].value ="[" + str((self.obRange-i)).zfill(1)+ "]" + str(depthMsg["asks"][self.obRange-i-1][0]) + " | " + str(float(depthMsg["asks"][self.obRange-i-1][1])).ljust(6,"0")
+    #
+    #
+    #         self.clearOb()
+    #         # Update trade history values
+    #         try:
+    #             for i in range(self.obRange*2+3):
+    #                 # self.oHistory[i].value = str(globalList[i])
+    #                 # with open("myfile2.txt", "w") as f:
+    #                 #     f.write(str(globalList))
+    #
+    #                 if globalList[i]["order"] == "True":
+    #                     self.oHistory[i] = self.add(SyntaxHistSell, npyscreen.FixedText, value=str(globalList[i]["price"])+"  "+str(float(globalList[i]["quantity"])).ljust(5,"0"), editable=False, relx=50,rely=i+2)
+    #                 else:
+    #                     self.oHistory[i] = self.add(SyntaxHistBuy, npyscreen.FixedText, value=str(globalList[i]["price"])+"  "+str(float(globalList[i]["quantity"])).ljust(5,"0"), editable=False, relx=50,rely=i+2)
+    #                 self.oHistory[i].syntax_highlighting=True
+    #
+    #         except:
+    #             pass
+    #
+    #         # Update trades, spread
+    #         self.tradesSinceStart.value = str(len(globalList))
+    #         try:
+    #             self.spreadVal = ((float(depthMsg["asks"][0][0])-float(depthMsg["bids"][0][0]))/float(depthMsg["asks"][0][0]))*100
+    #             self.spread.value = "Spread: " + str(round(self.spreadVal,2))+"%"
+    #         except:
+    #             pass
+    #
+    #         self.display()
+    #     except KeyError:
+    #         #print ("error")
+    #         pass
 
         # commit updates and refresh view
-
+        self.display()
     #################################################################
     # CREATE FUNCTION
     #################################################################
@@ -154,9 +154,10 @@ class MainForm(npyscreen.FormBaseNew):
         # self.Debug = self.add(npyscreen.FixedText, value="")
 
 
-        self.start_button = self.add(npyscreen.ButtonPress, name = 'Start', rely=-8, relx=1)
+        self.start_button = self.add(npyscreen.ButtonPress, name = 'Start', relx=1)
         self.start_button.whenPressed = self.start_button_pressed
-        self.statusBar = self.add(npyscreen.TitlePager, name="Statusbar", value="hier ist der status", editable=False, color="VERYGOOD", display_value="asdasddas")
+
+        self.statusBar = self.add(npyscreen.TitleText, name="status:", value="hier ist der status", editable=False, color="VERYGOOD", display_value="asdasddas", rely=-3, relx=3, begin_entry_at=11)
 
     def clearOb(self):
         for i in range(self.obRange*2+5):
@@ -229,7 +230,7 @@ class coinInput(npyscreen.Textfield):
 class MainApp(npyscreen.NPSAppManaged):
 
     # update interval
-    keypress_timeout_default = 10
+    keypress_timeout_default = 5
 
     # initiate Forms on start
     def onStart(self):
@@ -237,16 +238,19 @@ class MainApp(npyscreen.NPSAppManaged):
 
 
     def testZugriff(self):
-        logging.debug("testzugriff start")
-        self.getForm("MAIN").date_widget.value = str(depthMsg["lastUpdateId"])
+        with lock:
+            logging.debug("testzugriff start")
+            self.getForm("MAIN").date_widget.value = str(depthMsg["lastUpdateId"])
 
-        self.getForm("MAIN").runningSince.value = str(datetime.timedelta(seconds=int(val["s"])))
+            self.getForm("MAIN").runningSince.value = str(datetime.timedelta(seconds=int(val["s"])))
 
-        for i in range(self.getForm("MAIN").obRange):
-            self.getForm("MAIN").bids[i].value ="[" + str((i+1)).zfill(1)+ "]" + str(depthMsg["bids"][i][0]) + " | " + str(float(depthMsg["bids"][i][1])).ljust(6,"0")
+            for i in range(self.getForm("MAIN").obRange):
 
-            self.getForm("MAIN").asks[i].value ="[" + str((self.getForm("MAIN").obRange-i)).zfill(1)+ "]" + str(depthMsg["asks"][self.getForm("MAIN").obRange-i-1][0]) + " | " + str(float(depthMsg["asks"][self.getForm("MAIN").obRange-i-1][1])).ljust(6,"0")
-        self.getForm("MAIN").display()
+                self.getForm("MAIN").bids[i].value ="[" + str((i+1)).zfill(1)+ "]" + str(depthMsg["bids"][i][0]) + " | " + str(float(depthMsg["bids"][i][1])).ljust(6,"0")
+
+                self.getForm("MAIN").asks[i].value ="[" + str((self.getForm("MAIN").obRange-i)).zfill(1)+ "]" + str(depthMsg["asks"][self.getForm("MAIN").obRange-i-1][0]) + " | " + str(float(depthMsg["asks"][self.getForm("MAIN").obRange-i-1][1])).ljust(6,"0")
+        # self.getForm("MAIN").display()
+
         logging.debug("testzugriff end")
 
 app = MainApp()

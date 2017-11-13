@@ -140,15 +140,17 @@ def restartSocket(symbol):
 
 # WebSocket Callback functions
 def depth_callback(msg):
-    logging.debug("API UPDATE")
-
+    logging.debug("callback: " + str(msg["bids"][0][0]))
     # depthMsg.clear()
     # depthMsg=dict()
     # assign values from callback to global dictionary
+
     for key, value in msg.items():
-        depthMsg[key] = value
-    botCalc()
+        with lock:
+            depthMsg[key] = value
+    # botCalc()
     # MainForm.updateOrderbook()
+
     ui.app.testZugriff()
 
 def trade_callback(msg):

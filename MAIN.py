@@ -5,6 +5,9 @@
 
 # API IMPLEMENTATION FROM https://github.com/sammchardy/python-binance
 # DOCS: http://python-binance.readthedocs.io/en/latest/index.html
+'''
+MAIN entrypoint of the bot
+'''
 
 print("starting engines 🛥")
 
@@ -36,10 +39,9 @@ from binance.enums import *
 
 exitThread = False
 
-
-
 # main loop function
-# BOT LOGIC GOES HERE
+
+#  BOT LOGIC GOES HERE
 def mainLoop():
 
     while exitThread == False:
