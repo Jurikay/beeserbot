@@ -9,13 +9,14 @@ import datetime
 import time
 import threading
 from math import fabs,ceil,floor
-from config import *
 
+import logging
 # currently not needed
 import curses
 # import sys
 # import os
 
+from config import *
 from botLogic import *
 
 from binance.client import Client
@@ -78,12 +79,14 @@ def cleanExit():
     # trigger while loop to exitThread
     exitThread = True
 
+    with lock:
+        try:
+            bm.close()
+            logging.debug("CLOSING MANAGER")
+        except:
+            pass
 
-    # close websocket manager
-    try:
-        bm.close()
-    except:
-        pass
+
     # cleanly exit
 
 def fetchAsap(symbol):
@@ -104,6 +107,17 @@ def fetchAsap(symbol):
     return tempDict
 
 
+def fetchDepth(symbol):
+    '''
+    Make a seperate API call to instantly get new orderbook values after changing the coin.
+    '''
+    logging.debug("FETCHE DEPTH!!")
+    depth = client.get_order_book(symbol=symbol)
+    for key,value in depth.items():
+        depthMsg[key] = value
+    depthMsg["lastUpdateId"] = "WAITING"
+
+
 import atexit
 def exit_handler():
     '''
@@ -117,41 +131,52 @@ atexit.register(exit_handler)
 
 
 def restartSocket(symbol):
+    logging.debug("RESTART SOCKET")
     globalList.clear()
     depthMsg.clear()
 
     # tickerMsg = fetchAsap(symbol)
     client = Client(api_key, api_secret)
     bm = BinanceSocketManager(client)
-    try:
-        bm.stop_socket(val["socket1"])
-        bm.stop_socket(val["socket2"])
-        bm.stop_socket(val["socket3"])
-        # time.sleep(1)
+    with lock:
+        if val["socket1"] != 0:
+            bm.stop_socket(val["socket1"])
+            bm.stop_socket(val["socket2"])
+            bm.stop_socket(val["socket3"])
+            logging.debug("SOCKETS CLOSED")
+            # time.sleep(1)
 
-    except:
-        pass
-    tradesMsg.clear()
-    val["socket1"] = bm.start_depth_socket(symbol, depth_callback, depth=20, update_time="0ms")
-    val["socket2"] = bm.start_trade_socket(symbol, trade_callback)
-    val["socket3"] = bm.start_ticker_socket(ticker_callback, update_time="0ms")
+        else:
+            logging.debug("KONNTE SOCKETS NICHT BEENDEN!!!")
+            pass
 
+        # FIXME would be nice to remove
+        time.sleep(.1)
+
+        # tradesMsg.clear()
+        val["socket1"] = bm.start_depth_socket(symbol, depth_callback, depth=10, update_time="0ms")
+        val["socket2"] = bm.start_trade_socket(symbol, trade_callback)
+        val["socket3"] = bm.start_ticker_socket(ticker_callback, update_time="0ms")
+        logging.debug("SOCKETS OPENED")
 
 
 # WebSocket Callback functions
 def depth_callback(msg):
-    logging.debug("callback: " + str(msg["bids"][0][0]))
+    logging.debug("BID: " + str(msg["bids"][0][0]))
+    logging.debug("ASK: " + str(msg["asks"][0][0]))
+
     # depthMsg.clear()
     # depthMsg=dict()
     # assign values from callback to global dictionary
-
-    for key, value in msg.items():
-        with lock:
+    with lock:
+        for key, value in msg.items():
             depthMsg[key] = value
-    # botCalc()
+    botCalc()
     # MainForm.updateOrderbook()
 
-    ui.app.testZugriff()
+
+    # draw orderbook changes right as they are received
+    ui.app.updateDepth()
 
 def trade_callback(msg):
     # print ("\033[91mtrade update:")
@@ -171,6 +196,9 @@ def ticker_callback(msg):
             tickerMsg[key] = value
         # with open("myfile.txt", "w") as f:
         #     f.write(str(tickerMsg))
+
+
+
 
 
 coins=dict()

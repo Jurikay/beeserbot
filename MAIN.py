@@ -18,12 +18,13 @@ import npyscreen
 import datetime
 import time
 import threading
+import logging
 from math import fabs,ceil,floor
 
 # my stuff
 from config import *
 from colorSyntax import *
-from ui import *
+import ui
 from botFunctions import *
 
 # currently not needed
@@ -43,13 +44,33 @@ exitThread = False
 
 #  BOT LOGIC GOES HERE
 def mainLoop():
-
+    iterator = 0
     while exitThread == False:
 
         val["s"] += 1
         val["cs"] += 1
-        time.sleep(1)
+
         logging.debug("###EINE SEC")
+        try:
+            ui.app.periodicUpdate()
+
+
+        except:
+            pass
+        time.sleep(1)
+        # Hard refresh Display every 5 seconds TODO: find a better way to fix display errors
+
+        if iterator >= 5:
+            try:
+                ui.app.hardRefresh()
+                logging.debug("DISPLAY hardrefresh              ")
+                iterator = 0
+            except:
+                pass
+        else:
+            iterator += 1
+
+
 
         # Test: running for:
 
@@ -59,12 +80,22 @@ def mainLoop():
         #     print("exit thread")
 
 
+# def calcLoop():
+#     loadingList = ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█", "▇", "▆", "▅", "▄", "▃"]
+#     iterator = 0
+#
+#     while iterator <= len(loadingList):
+#         try:
+#             ui.app.setStatus("neuer statusLOL",loadingList[int(iterator)])
+#             iterator +=1
+#         except:
+#             pass
+#
+#     time.sleep(0.2)
+#
+#     iterator = 0
 
-def calcLoop():
-    # while True:
-    #     logging.debug("calc bot action")
-    #     time.sleep(.1)
-    pass
+
 
 
 # Start npyscreen. Everything after this will be triggered on exit (ESC)
@@ -74,15 +105,17 @@ if __name__ == '__main__':
 
     mainThread.start()
 
-    calcThread = threading.Thread(target=calcLoop,args=(), daemon=True)
+    # calcThread = threading.Thread(target=calcLoop,args=(), daemon=True)
 
-    calcThread.start()
+    # calcThread.start()
 
     # (re)start webSocket connections
     restartSocket(symbol)
+    logging.debug("ONCE")
+
     # start the websocket manager
     bm.start()
 
     # start npyscreen ui
 
-    app.run()
+    ui.app.run()

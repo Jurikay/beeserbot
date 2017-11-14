@@ -4,9 +4,8 @@
 # by Jurek Baumann
 
 from botFunctions import *
-import npyscreen
-import logging
 
+import  threading
 
 import ui
 
@@ -25,7 +24,7 @@ lock = threading.RLock()
 
 
 # use val to store different values like websocket conn_keys
-val = {"s": 0, "cs": 0, "socket1": 0,"socket2": 0, "socket3": 0, "symbol": symbol}
+val = {"s": 0, "cs": 0, "socket1": 0,"socket2": 0, "socket3": 0, "symbol": symbol, "iter1": 0}
 
 
 
@@ -34,5 +33,7 @@ def botCalc():
     Fire this every time the orderbook is updated
     '''
     # logging.debug("bot calculations " + str(depthMsg["bids"][0]))
+
+
     pass
 # app = ui.MainApp()
