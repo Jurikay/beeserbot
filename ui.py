@@ -12,23 +12,55 @@ import logging
 logging.basicConfig(filename="test.log", level=logging.DEBUG, format='%(asctime)s %(message)s')
 
 
+'''
+COLORS:
+
+    'DEFAULT'     : 'WHITE_BLACK',
+    'FORMDEFAULT' : 'WHITE_BLACK',
+    'NO_EDIT'     : 'BLUE_BLACK',
+    'STANDOUT'    : 'CYAN_BLACK',
+    'CURSOR'      : 'WHITE_BLACK',
+    'CURSOR_INVERSE': 'BLACK_WHITE',
+    'LABEL'       : 'GREEN_BLACK',
+    'LABELBOLD'   : 'WHITE_BLACK',
+    'CONTROL'     : 'YELLOW_BLACK',
+    'IMPORTANT'   : 'GREEN_BLACK',
+    'SAFE'        : 'GREEN_BLACK',
+    'WARNING'     : 'YELLOW_BLACK',
+    'DANGER'      : 'RED_BLACK',
+    'CRITICAL'    : 'BLACK_RED',
+    'GOOD'        : 'GREEN_BLACK',
+    'GOODHL'      : 'GREEN_BLACK',
+    'VERYGOOD'    : 'BLACK_GREEN',
+    'CAUTION'     : 'YELLOW_BLACK',
+    'CAUTIONHL'   : 'BLACK_YELLOW',
+
+'''
+
+
+
+
 
 class MainForm(npyscreen.FormBaseNew):
 
+    def hotkeyFix(self):
+        self.coinPair.value="BUTTON PRESSED"
+        logging.debug("BUTTON PRESSED")
 
-    def clearOrderBook(self):
-        logging.debug("CLEAR ORDERBOOK PROCC")
-        # for i in range(self.obRange):
-        #     logging.debug(str(self.bids[i].value))
-        #     try:
-        #         self.bids[i].value = "-----------------------------------"
-        #
-        #         self.asks[i].value ="-----------------------------------"
-        #     except:
-        #         pass
-        self.date_widget.value = str("WAITING")
-
-        self.parentApp.hardRefresh()
+    #
+    # def clearOrderBook(self):
+    #     logging.debug("CLEAR ORDERBOOK PROCC")
+    #     # for i in range(self.obRange):
+    #     #     logging.debug(str(self.bids[i].value))
+    #     #     try:
+    #     #         self.bids[i].value = "-----------------------------------"
+    #     #
+    #     #         self.asks[i].value ="-----------------------------------"
+    #     #     except:
+    #     #         pass
+    #     self.date_widget.value = str("WAITING")
+    #
+    #     self.parentApp.hardRefresh()
 
 
     def switchCoin(self):
@@ -53,7 +85,9 @@ class MainForm(npyscreen.FormBaseNew):
     #################################################################
     # WHILE WAITING LOOP
     #################################################################
-    # def while_waiting(self):
+    def while_waiting(self):
+        self.display()
+        # pass
     #
     #     # Catch KeyError if websocket update hasn't occured yet
     #     try:
@@ -119,6 +153,9 @@ class MainForm(npyscreen.FormBaseNew):
         # EXIT APP on ESC
         self.how_exited_handers[npyscreen.wgwidget.EXITED_ESCAPE]  = self.exit_application
 
+        self.add_handlers({"KEY_F(1)": self.hotkeyFix})
+
+
         self.coinPair = self.add(npyscreen.FixedText, value=val["symbol"], editable=False, color="WARNING")
         # initialize values. Later to be replaced by WebSocket data
         self.timeHeadline = self.add(npyscreen.FixedText, value="Orders:", editable=False)
@@ -181,14 +218,14 @@ class MainForm(npyscreen.FormBaseNew):
         self.testHead = self.add(npyscreen.FixedText, value="Headline:", editable=False, relx=2,rely=20,color="VERYGOOD")
         self.testValue = self.add(npyscreen.Textfield, value="Value", editable=True, relx=12,rely=20)
 
-        self.testSub = self.add(npyscreen.FixedText, value="Subbar:", editable=False, relx=2,rely=-3,color="VERYGOOD")
+        self.statusIndicator = self.add(npyscreen.FixedText, value="STATUS:", editable=False, relx=2,rely=-3,color="DANGER")
 
         # self.statusBar = self.add(npyscreen.TitleText, name="  status:", value="hier ist der status", editable=False, color="VERYGOOD", display_value="asdasddas", rely=-3, relx=2, begin_entry_at=13)
 
-    def clearOb(self):
-        for i in range(self.obRange*2+5):
-            self.oHistory[i] = self.add(npyscreen.FixedText, value="                    ", editable=False, relx=50,rely=i+2)
-        #self.editW = self.add(npyscreen.
+    # def clearOb(self):
+    #     for i in range(self.obRange*2+5):
+    #         self.oHistory[i] = self.add(npyscreen.FixedText, value="                    ", editable=False, relx=50,rely=i+2)
+    #     #self.editW = self.add(npyscreen.
 
 
 
@@ -204,7 +241,10 @@ class MainForm(npyscreen.FormBaseNew):
 
     def exit_application(self):
         # curses.beep()
+        npyscreen.notify_wait("Shutting down")
+
         cleanExit()
+        time.sleep(1)
         self.editing = False
         self.parentApp.switchForm(None)
 
@@ -233,14 +273,20 @@ class coinInput(npyscreen.Textfield):
         if str(self.value).upper() + str("BTC") in coins and self.value + str("BTC") != val["symbol"]:
             val["symbol"] = str(self.value).upper() + str("BTC")
             self.color="DEFAULT"
+
             # logging.debug("triggere clearDepth")
             # clearDepth()
+            npyscreen.notify_wait("Switching to " + str(self.value) + " please wait...")
             restartSocket(str(val["symbol"]))
-            # npyscreen.notify_wait("Switche coin... This may take a couple of seconds..")
+            #
             # self.parent.clearOrderBook()
             fetchDepth(str(val["symbol"]))
+            logging.debug("LÖSCHE GLOBALLIST!!!")
+            del globalList[0:len(globalList)]
+            fillList()
             app.updateDepth()
             self.parent.coinPair.value=str(val["symbol"])
+
             # self.parent.DISPLAY()
 
             #
@@ -250,22 +296,26 @@ class coinInput(npyscreen.Textfield):
             # self.parent.switchCoin()
             val["cs"]=0
 
-        else:
+        elif self.value + str("BTC") != val["symbol"]:
             npyscreen.notify_wait("Was soll " + str(self.value) + " bitte für eine Coin sein?")
         # bm.stop_socket(conn_key)
-
+        else:
+            pass
 
     def when_value_edited(self):
         if str(self.value).upper() + str("BTC") in coins:
             self.color="LABEL"
-        else:
+            self.value= str(self.value).upper()
+        elif len(str(self.value)) < 6:
             self.color="WARNING"
 
+        else:
+            self.color="DANGER"
 # npyscreen App Class
 class MainApp(npyscreen.NPSAppManaged):
 
     # update interval too low causes bugs?
-    keypress_timeout_default = 30
+    keypress_timeout_default = 5
 
     # initiate Forms on start
     def onStart(self):
@@ -273,25 +323,73 @@ class MainApp(npyscreen.NPSAppManaged):
 
 
     def updateDepth(self):
+        # self.getForm("MAIN").statusIndicator.color="VERYGOOD"
         with lock:
             # logging.debug("testzugriff start")
 
             self.getForm("MAIN").date_widget.value=str(depthMsg["lastUpdateId"])
             if str(depthMsg["lastUpdateId"]) == "WAITING":
                 self.getForm("MAIN").date_widget.color="DANGER"
+                self.getForm("MAIN").statusIndicator.color="CRITICAL"
             else:
                 self.getForm("MAIN").date_widget.color="DEFAULT"
+                self.getForm("MAIN").statusIndicator.color="VERYGOOD"
 
 
             self.getForm("MAIN").runningSince.value = str(datetime.timedelta(seconds=int(val["s"])))
 
+            # update Orderbook
             for i in range(self.getForm("MAIN").obRange):
 
                 self.getForm("MAIN").bids[i].value ="[" + str((i+1)).zfill(1)+ "]" + str(depthMsg["bids"][i][0]) + " | " + str(float(depthMsg["bids"][i][1])).ljust(6,"0")
 
                 self.getForm("MAIN").asks[i].value ="[" + str((self.getForm("MAIN").obRange-i)).zfill(1)+ "]" + str(depthMsg["asks"][self.getForm("MAIN").obRange-i-1][0]) + " | " + str(float(depthMsg["asks"][self.getForm("MAIN").obRange-i-1][1])).ljust(6,"0")
-        # self.getForm("MAIN").display()
+
+            # update spread
+            try:
+                self.spreadVal = ((float(depthMsg["asks"][0][0])-float(depthMsg["bids"][0][0]))/float(depthMsg["asks"][0][0]))*100
+                self.getForm("MAIN").spread.value = "Spread: " + str(round(self.spreadVal,2))+"%"
+            except:
+                pass
+
+            # Update trade history values
+            try:
+                logging.debug("DRAWE ORDER HISTORY CHANGES:")
+
+                for i in range(15):
+                    if globalList[i]["order"] == "True":
+                        logging.debug("order True")
+
+                        self.getForm("MAIN").oHistory[i].value=str(globalList[i]["price"])
+                        self.getForm("MAIN").oHistory[i].color="DANGER"
+                    elif globalList[i]["order"] == "False":
+                        logging.debug("order False")
+                        self.getForm("MAIN").oHistory[i].value=str(globalList[i]["price"])
+                        self.getForm("MAIN").oHistory[i].color="GOOD"
+                    else:
+                        # overwriting empty values
+                        self.getForm("MAIN").oHistory[i].value="          "
+
+            except Exception as err:
+                logging.debug("KONNTE HISTORY NICHT UPDATEN " + str(err))
             self.getForm("MAIN").display()
+            # self.getForm("MAIN").clearOb()
+            # try:
+            #     for i in range(self.getForm("MAIN").obRange*2+3):
+            #
+            #
+            #         if globalList[i]["order"] == "True":
+            #             self.getForm("MAIN").oHistory[i] =     self.getForm("MAIN").add(SyntaxHistSell, npyscreen.FixedText, value=str(globalList[i]["price"])+"  "+str(float(globalList[i]["quantity"])).ljust(5,"0"), editable=False, relx=50,rely=i+2)
+            #         elif globalList[i]["order"] == "False":
+            #             self.getForm("MAIN").oHistory[i] =     self.getForm("MAIN").add(SyntaxHistBuy, npyscreen.FixedText, value=str(globalList[i]["price"])+"  "+str(float(globalList[i]["quantity"])).ljust(5,"0"), editable=False, relx=50,rely=i+2)
+            #         else:
+            #             self.getForm("MAIN").oHistory[i].value="+++++++++++++++++++++++++++++"
+            #         self.getForm("MAIN").oHistory[i].syntax_highlighting=True
+            #
+            # except:
+            #     pass
+        # self.getForm("MAIN").display()
+
         # logging.debug("testzugriff end")
 
 

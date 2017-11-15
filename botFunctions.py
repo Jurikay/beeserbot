@@ -10,6 +10,8 @@ import time
 import threading
 from math import fabs,ceil,floor
 
+import os
+
 import logging
 # currently not needed
 import curses
@@ -81,12 +83,13 @@ def cleanExit():
 
     with lock:
         try:
-            bm.close()
+            val["bm"].close()
             logging.debug("CLOSING MANAGER")
         except:
             pass
 
-
+    time.sleep(0.1)
+    os._exit(0)
     # cleanly exit
 
 def fetchAsap(symbol):
@@ -132,17 +135,16 @@ atexit.register(exit_handler)
 
 def restartSocket(symbol):
     logging.debug("RESTART SOCKET")
-    globalList.clear()
-    depthMsg.clear()
+
 
     # tickerMsg = fetchAsap(symbol)
     client = Client(api_key, api_secret)
-    bm = BinanceSocketManager(client)
+    # bm = BinanceSocketManager(client)
     with lock:
         if val["socket1"] != 0:
-            bm.stop_socket(val["socket1"])
-            bm.stop_socket(val["socket2"])
-            bm.stop_socket(val["socket3"])
+            val["bm"].stop_socket(val["socket1"])
+            val["bm"].stop_socket(val["socket2"])
+            val["bm"].stop_socket(val["socket3"])
             logging.debug("SOCKETS CLOSED")
             # time.sleep(1)
 
@@ -151,19 +153,19 @@ def restartSocket(symbol):
             pass
 
         # FIXME would be nice to remove
-        time.sleep(.1)
+        # time.sleep(.1)
 
         # tradesMsg.clear()
-        val["socket1"] = bm.start_depth_socket(symbol, depth_callback, depth=10, update_time="0ms")
-        val["socket2"] = bm.start_trade_socket(symbol, trade_callback)
-        val["socket3"] = bm.start_ticker_socket(ticker_callback, update_time="0ms")
+        val["socket1"] = val["bm"].start_depth_socket(symbol, depth_callback, depth=10, update_time="0ms")
+        val["socket2"] = val["bm"].start_trade_socket(symbol, trade_callback)
+        val["socket3"] = val["bm"].start_ticker_socket(ticker_callback, update_time="0ms")
         logging.debug("SOCKETS OPENED")
 
 
 # WebSocket Callback functions
 def depth_callback(msg):
-    logging.debug("BID: " + str(msg["bids"][0][0]))
-    logging.debug("ASK: " + str(msg["asks"][0][0]))
+    # logging.debug("BID: " + str(msg["bids"][0][0]))
+    # logging.debug("ASK: " + str(msg["asks"][0][0]))
 
     # depthMsg.clear()
     # depthMsg=dict()
@@ -177,6 +179,10 @@ def depth_callback(msg):
 
     # draw orderbook changes right as they are received
     ui.app.updateDepth()
+def fillList():
+    logging.debug("FILL LIST CALLED")
+    for i in range(15):
+        globalList.insert(0,{"price": str(0000000000), "quantity": str(0000), "order": str("NONE")})
 
 def trade_callback(msg):
     # print ("\033[91mtrade update:")
@@ -184,7 +190,19 @@ def trade_callback(msg):
     for key, value in msg.items():
         tradesMsg[key] = value
 
-    # globalList.insert(0,{"price": str(tradesMsg["p"]), "quantity": str(tradesMsg["q"]), "order": str(tradesMsg["m"])})
+    # add last trade to the front of globalList
+    globalList.insert(0,{"price": str(tradesMsg["p"]), "quantity": str(tradesMsg["q"]), "order": str(tradesMsg["m"])})
+
+    # if globalList has more than 15 elements, remove all above
+    if len(globalList) >= 15:
+        logging.debug("REDUCE LIST!!")
+        del globalList[15:len(globalList)]
+    # try:
+    #     globalList = globalList[-5:]
+    #     logging.debug("REDUCE LIST")
+    # except:
+    #     logging.debug("KONNTE GLOBAL LIST NICHT SCHRUMPFEN")
+    logging.debug("Global list: " + str(globalList))
 
 
 def ticker_callback(msg):

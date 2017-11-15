@@ -93,10 +93,10 @@ class SyntaxHistBuy(npyscreen.FixedText):
 class SyntaxObBids(npyscreen.FixedText):
     def update_highlighting(self, start, end):
         colorWhite=0
-        colorCyan=1024
+        colorGreen=1280
 
         self._highlightingdata = [ colorWhite,colorWhite,colorWhite,
-        colorCyan,colorCyan,colorCyan,colorCyan,colorCyan,colorCyan,colorCyan,colorCyan,colorCyan,colorCyan,
+        colorGreen,colorGreen,colorGreen,colorGreen,colorGreen,colorGreen,colorGreen,colorGreen,colorGreen,colorGreen,
         ]
 
 class SyntaxObAsks(npyscreen.FixedText):

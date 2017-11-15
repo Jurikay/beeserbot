@@ -37,6 +37,7 @@ from binance.client import Client
 from binance.websockets import BinanceSocketManager
 from binance.enums import *
 
+val["bm"] = BinanceSocketManager(client)
 
 exitThread = False
 
@@ -58,9 +59,9 @@ def mainLoop():
         except:
             pass
         time.sleep(1)
-        # Hard refresh Display every 5 seconds TODO: find a better way to fix display errors
+        # Hard refresh Display every 15 seconds TODO: find a better way to fix display errors
 
-        if iterator >= 5:
+        if iterator >= 15:
             try:
                 ui.app.hardRefresh()
                 logging.debug("DISPLAY hardrefresh              ")
@@ -114,7 +115,7 @@ if __name__ == '__main__':
     logging.debug("ONCE")
 
     # start the websocket manager
-    bm.start()
+    val["bm"].start()
 
     # start npyscreen ui
 
