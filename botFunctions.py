@@ -25,13 +25,24 @@ from binance.client import Client
 from binance.websockets import BinanceSocketManager
 from binance.enums import *
 
+import atexit
+def exit_handler():
+    '''
+    Handle exit gracefully
+    '''
+    cleanExit()
+    print ('🚫  Bot wurde beendet.')
+    # closeAllOrders()
 
-# API related variables
+atexit.register(exit_handler)
+
 client = Client(api_key, api_secret)
-bm = BinanceSocketManager(client)
-
 
 def availablePairs():
+
+    # API related variables
+
+
 
     ''' Create a dictonary containing all BTC tradepairs excluding USDT.
         Keys are:
@@ -94,7 +105,7 @@ def cleanExit():
 
 def fetchAsap(symbol):
     '''
-    Make a seperate API call to instantly get new orderbook values after changing the coin.
+    Make a seperate API call to instantly get new ticker values after changing the coin.
     '''
     tickers = client.get_ticker(symbol=symbol)
     tempDict = dict()
@@ -120,17 +131,21 @@ def fetchDepth(symbol):
         depthMsg[key] = value
     depthMsg["lastUpdateId"] = "WAITING"
 
-
-import atexit
-def exit_handler():
+def fillList(symbol):
     '''
-    Handle exit gracefully
+    Make a seperate API call to instantly get the trade history after changing the coin.
     '''
-    cleanExit()
-    print ('🚫  Bot wurde beendet.')
-    # closeAllOrders()
+    logging.debug("FILL LIST CALLED")
 
-atexit.register(exit_handler)
+    # API Call
+    trades = client.get_aggregate_trades(symbol=symbol, limit=15)
+
+    for i in range(15):
+        globalList.insert(0,{"price": str(trades[i]["p"]), "quantity": str(trades[i]["q"]), "order": str(trades[i]["m"]),
+        "timestamp": str(trades[i]["T"])
+        })
+
+
 
 
 def restartSocket(symbol):
@@ -161,8 +176,9 @@ def restartSocket(symbol):
         val["socket3"] = val["bm"].start_ticker_socket(ticker_callback, update_time="0ms")
         logging.debug("SOCKETS OPENED")
 
-
+######################################################
 # WebSocket Callback functions
+######################################################
 def depth_callback(msg):
     # logging.debug("BID: " + str(msg["bids"][0][0]))
     # logging.debug("ASK: " + str(msg["asks"][0][0]))
@@ -176,13 +192,11 @@ def depth_callback(msg):
     botCalc()
     # MainForm.updateOrderbook()
 
-
     # draw orderbook changes right as they are received
     ui.app.updateDepth()
-def fillList():
-    logging.debug("FILL LIST CALLED")
-    for i in range(15):
-        globalList.insert(0,{"price": str(0000000000), "quantity": str(0000), "order": str("NONE")})
+
+
+
 
 def trade_callback(msg):
     # print ("\033[91mtrade update:")
@@ -216,7 +230,96 @@ def ticker_callback(msg):
         #     f.write(str(tickerMsg))
 
 
+###################################################
+# VALIDATION
+##################################################
 
+def isfloat(value):
+    '''
+    Check if a value is convertable to float. Be aware of NaN, -inf, infinity, True etc.
+    https://stackoverflow.com/questions/736043/checking-if-a-string-can-be-converted-to-float-in-python
+    '''
+    try:
+        float(value)
+        return True
+
+    except ValueError:
+        return False
+
+
+def validateOrderPrice(priceTarget, currentBid, currentAsk, order):
+    '''
+    Check if entered buy price is reasonable. Returns "PERFECT", "GOOD", "OK" or "BAD" depending on evaluation
+    '''
+
+    if isfloat(priceTarget):
+        if order == "BUY":
+            if float(priceTarget) < float(currentBid) and float(priceTarget) > float(currentAsk):
+                return "PERFECT"
+            elif float(priceTarget) < float(currentBid) and float(priceTarget) > float(currentAsk) * 0.95:
+                return "GOOD"
+            elif float(priceTarget) < float(currentBid) * 1.05 and float(priceTarget) > float(currentAsk) * 0.8:
+                return "OK"
+            else:
+                return "BAD"
+
+
+        elif order == "SELL":
+            if float(priceTarget) < float(currentAsk) and float(priceTarget) > float(currentBid):
+                return "PERFECT"
+            else:
+                return "OK"
+
+
+        else:
+            return "BAD"
+
+    else:
+        return "BAD"
+
+
+
+
+
+
+
+
+
+############
+    # if order == "BUY":
+    #     if isfloat(priceTarget):
+    #         if float(priceTarget) < float(currentAsk):
+    #             if float(priceTarget) > float(currentAsk) * 0.9:
+    #                 return "GOOD"
+    #             elif float(priceTarget) > float(currentAsk) * 0.8:
+    #                 return "OK"
+    #             else:
+    #                 return "BAD"
+    #         elif float(priceTarget) < float(currentAsk) * 1.05:
+    #             return "OK"
+    #         else:
+    #             return "BAD"
+    #     else:
+    #         return "BAD"
+    #
+    # elif order == "SELL":
+    #     if isfloat(priceTarget):
+    #         if float(priceTarget) > float(currentAsk):
+    #             if float(priceTarget) < float(currentAsk) * 0.9:
+    #                 return "GOOD"
+    #             elif float(priceTarget) < float(currentAsk) * 0.8:
+    #                 return "OK"
+    #             else:
+    #                 return "BAD"
+    #         elif float(priceTarget) > float(currentAsk) * 1.05:
+    #             return "OK"
+    #         else:
+    #             return "BAD"
+    #     else:
+    #         return "BAD"
+    #
+    # else:
+    #     return "BAD"
 
 
 coins=dict()

@@ -1,13 +1,46 @@
 implement buy/sell Fixed
-  color input field dependant on evaluation
+  color input field dependent on evaluation
 
+add arguments
+coin
+buy/sell price
+disable sanity check
 
+sanity check function
 
+implement indicators for current position and recent trades in history
 
 finish order history
+separate api call
+store value
+
+while tradeid = WAITING:
+every x sec make new call and compare
+if values differ:
+  restart self
+
+  https://blog.petrzemek.net/2014/03/23/restarting-a-python-script-within-itself/
 
 clean up messy code
 
 kline analyzer für ratschläge/ dynamic buy/sell limits
 
 write setup.py
+
+second form: overview
+grid with btc pairs
+spread
+volume
+diff to high low
+
+
+
+condition check function
+returns true if all conditions are met
+
+choose from different behaviors:
+1 static price limit
+
+2 spreadbot
+
+3

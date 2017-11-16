@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 # by Jurek Baumann
 
@@ -14,8 +13,8 @@ print("starting engines 🛥")
 # IMPORTS
 
 # various stuff
-import npyscreen
-import datetime
+# import npyscreen
+# import datetime
 import time
 import threading
 import logging
@@ -28,7 +27,7 @@ import ui
 from botFunctions import *
 
 # currently not needed
-import curses
+# import curses
 # import sys
 # import os
 
@@ -37,6 +36,7 @@ from binance.client import Client
 from binance.websockets import BinanceSocketManager
 from binance.enums import *
 
+# API related variables
 val["bm"] = BinanceSocketManager(client)
 
 exitThread = False
@@ -118,5 +118,5 @@ if __name__ == '__main__':
     val["bm"].start()
 
     # start npyscreen ui
-
+    fillList(val["symbol"])
     ui.app.run()

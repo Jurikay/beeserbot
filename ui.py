@@ -43,6 +43,8 @@ COLORS:
 
 class MainForm(npyscreen.FormBaseNew):
 
+
+
     def hotkeyFix(self):
         self.coinPair.value="BUTTON PRESSED"
         logging.debug("BUTTON PRESSED")
@@ -153,15 +155,16 @@ class MainForm(npyscreen.FormBaseNew):
         # EXIT APP on ESC
         self.how_exited_handers[npyscreen.wgwidget.EXITED_ESCAPE]  = self.exit_application
 
+        # Add F1 handler to fix display FIXME make it work
         self.add_handlers({"KEY_F(1)": self.hotkeyFix})
 
-
+        # Add various values TODO add values; implement headlines
         self.coinPair = self.add(npyscreen.FixedText, value=val["symbol"], editable=False, color="WARNING")
-        # initialize values. Later to be replaced by WebSocket data
         self.timeHeadline = self.add(npyscreen.FixedText, value="Orders:", editable=False)
         self.date_widget = self.add(npyscreen.FixedText, value="LOADING", editable=False)
 
         self.spacer = self.add(npyscreen.FixedText, value="", editable=False)
+
 
         self.timeHeadline = self.add(npyscreen.FixedText, value="Running for:", editable=False)
 
@@ -174,58 +177,72 @@ class MainForm(npyscreen.FormBaseNew):
         self.tpmHeadline = self.add(npyscreen.FixedText, value="Trades per minute:", editable=False)
         self.tpm = self.add(npyscreen.FixedText, value="0", editable=False)
 
-
+        # initalize variables for various calculations
         self.bids = {}
         self.asks = {}
         self.oHistory = {}
         self.obRange = 5
 
+
+        # Create asks template
         for i in range(self.obRange):
             self.asks[i] = self.add(SyntaxObAsks,npyscreen.FixedText, value="01 0.00001337 ", editable=False, relx=25,rely=i+2)
             self.asks[i].syntax_highlighting=True
 
-
+        # Add Spread between asks and bids
         self.spacer = self.add(npyscreen.FixedText, value="", editable=False)
         self.spread = self.add(npyscreen.FixedText, value="Spread", editable=False, relx=25, rely=self.obRange+3)
 
-
+        # Create bids template
         for i in range(self.obRange):
             self.bids[i] = self.add(SyntaxObBids,npyscreen.FixedText, value="01 0.00001337 ", editable=False, relx=25,rely=i+self.obRange+5)
             self.bids[i].syntax_highlighting=True
 
 
-
+        # Create order history template TODO: add quantity and timestamp
         for i in range(self.obRange*2+3):
             self.oHistory[i] = self.add(npyscreen.FixedText, value="+*", editable=False, relx=50,rely=i+2)
             # self.OBasks+str(i) = self.add(npyscreen.FixedText, value="asks "+str(i  ), editable=False)
 
-        self.editT = self.add(coinInput, value=symbol.strip("BTC"), editable=True, name="Coin",begin_entry_at=7, two_lines=None)
+        # Create Coin input field
+        self.coinHeadline = self.add(npyscreen.FixedText, value="Coin:", editable=False, color="WARNING", relx=2, rely=self.obRange*2+5)
+        self.editT = self.add(coinInput, value=symbol.strip("BTC"), editable=True, relx=8, rely=self.obRange*2+5)
 
         # self.spacer = self.add(npyscreen.FixedText, value="", editable=False)
 
-        self.selectBS= self.add(npyscreen.MultiSelect, max_height=2, value = [], name="Pick Several", values = ["Buy","Sell",], scroll_exit=True)
+
+        # BUY / SELL selector; shows price input field
+        self.selectBS= self.add(buySellSelector, max_height=2, value = [], name="Pick Several", values = ["Buy","Sell",], scroll_exit=True)
 
         self.spacer = self.add(npyscreen.FixedText, value="", editable=False)
 
 
-        # self.Debug = self.add(npyscreen.FixedText, value="")
+        # Buy/Sell price inputs (hidden by default)
+        self.BuyInputHead = self.add(npyscreen.FixedText, value="Buy up to:", color="GOOD", relx=2, rely=19, editable=False, hidden=True)
+        self.BuyInput = self.add(buyInput, value="0.00000000", relx=13, rely=19, color="DEFAULT", hidden=True)
+
+        self.BuyQuantHead = self.add(npyscreen.FixedText, value="Quantity:", color="DEFAULT", relx=2, rely=20, editable=False, hidden=True)
+        self.BuyQuant = self.add(buyInput, value="50", relx=13, rely=20, color="DEFAULT", hidden=True)
 
 
-        self.start_button = self.add(npyscreen.ButtonPress, name = 'Start', relx=1)
+        self.SellInputHead = self.add(npyscreen.FixedText, value="Sell from:", color="DANGER", relx=2, rely=21, editable=False, hidden=True)
+        self.SellInput = self.add(sellInput, value="0.00000000", relx=13, rely=21, color="CRITICAL", hidden=True)
+
+        self.SellQuantHead = self.add(npyscreen.FixedText, value="Quantity:", color="DEFAULT", relx=2, rely=21, editable=False, hidden=True)
+        self.SellQuant = self.add(buyInput, value="50", relx=13, rely=21, color="DEFAULT", hidden=True)
+
+        self.spacer = self.add(npyscreen.FixedText, value="", editable=False)
+
+        # Start Button
+        self.start_button = self.add(npyscreen.ButtonPress, name = 'Start', relx=4, hidden=True)
         self.start_button.whenPressed = self.start_button_pressed
 
+        self.debug = self.add(npyscreen.FixedText, value="Debug")
 
-        self.testHead = self.add(npyscreen.FixedText, value="Headline:", editable=False, relx=2,rely=20,color="VERYGOOD")
-        self.testValue = self.add(npyscreen.Textfield, value="Value", editable=True, relx=12,rely=20)
-
+        # Status indicator
         self.statusIndicator = self.add(npyscreen.FixedText, value="STATUS:", editable=False, relx=2,rely=-3,color="DANGER")
 
-        # self.statusBar = self.add(npyscreen.TitleText, name="  status:", value="hier ist der status", editable=False, color="VERYGOOD", display_value="asdasddas", rely=-3, relx=2, begin_entry_at=13)
 
-    # def clearOb(self):
-    #     for i in range(self.obRange*2+5):
-    #         self.oHistory[i] = self.add(npyscreen.FixedText, value="                    ", editable=False, relx=50,rely=i+2)
-    #     #self.editW = self.add(npyscreen.
 
 
 
@@ -248,8 +265,67 @@ class MainForm(npyscreen.FormBaseNew):
         self.editing = False
         self.parentApp.switchForm(None)
 
+# buy/sell order unput field VALIDATE input
+class buyInput(npyscreen.Textfield):
+    def when_value_edited(self):
+        buyValidation = validateOrderPrice(self.value, depthMsg["bids"][0][0], depthMsg["asks"][0][0],"BUY")
+        if buyValidation == "PERFECT":
+            self.color="STANDOUT"
+        elif buyValidation == "GOOD":
+            self.color="GOOD"
+        elif buyValidation == "OK":
+            self.color="WARNING"
+        else:
+            self.color="DANGER"
 
+class sellInput(npyscreen.Textfield):
+    def when_value_edited(self):
+        buyValidation = validateOrderPrice(self.value, depthMsg["bids"][0][0], depthMsg["asks"][0][0], "SELL")
+        if buyValidation == "PERFECT":
+            self.color="STANDOUT"
+        elif buyValidation == "GOOD":
+            self.color="GOOD"
+        elif buyValidation == "OK":
+            self.color="WARNING"
+        else:
+            self.color="DANGER"
 
+# Buy/Sell Selector Class
+class buySellSelector(npyscreen.MultiSelect):
+    def when_value_edited(self):
+
+        # Hide/Show Buy/Sell input based on selector switches
+        if 0 in self.value:
+            self.parent.BuyInputHead.hidden=False
+            self.parent.BuyInput.hidden=False
+
+            self.parent.BuyQuantHead.hidden=False
+            self.parent.BuyQuant.hidden=False
+
+            try:
+                self.parent.BuyInput.value=depthMsg["bids"][0][0]
+            except:
+                pass
+        else:
+            self.parent.BuyInputHead.hidden=True
+            self.parent.BuyInput.hidden=True
+
+        if 1 in self.value:
+            self.parent.SellInputHead.hidden=False
+            self.parent.SellInput.hidden=False
+        else:
+            self.parent.SellInputHead.hidden=True
+            self.parent.SellInput.hidden=True
+
+        # Show/ Hide start button
+        if self.value != []:
+            self.parent.start_button.hidden=False
+        else:
+            self.parent.start_button.hidden=True
+
+        self.parent.display()
+
+# Coin Input class
 class coinInput(npyscreen.Textfield):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -269,31 +345,24 @@ class coinInput(npyscreen.Textfield):
 
     # CHANGE COIN
     def do_something(self, input):
-
         if str(self.value).upper() + str("BTC") in coins and self.value + str("BTC") != val["symbol"]:
             val["symbol"] = str(self.value).upper() + str("BTC")
             self.color="DEFAULT"
 
             # logging.debug("triggere clearDepth")
             # clearDepth()
-            npyscreen.notify_wait("Switching to " + str(self.value) + " please wait...")
             restartSocket(str(val["symbol"]))
+            npyscreen.notify_wait("Switching to " + str(self.value) + " please wait...")
+
             #
             # self.parent.clearOrderBook()
             fetchDepth(str(val["symbol"]))
             logging.debug("LÖSCHE GLOBALLIST!!!")
             del globalList[0:len(globalList)]
-            fillList()
+            fillList(str(val["symbol"]))
             app.updateDepth()
             self.parent.coinPair.value=str(val["symbol"])
 
-            # self.parent.DISPLAY()
-
-            #
-            #
-            # # npyscreen.notify_wait("Switche coin... ")
-            #
-            # self.parent.switchCoin()
             val["cs"]=0
 
         elif self.value + str("BTC") != val["symbol"]:
@@ -319,7 +388,7 @@ class MainApp(npyscreen.NPSAppManaged):
 
     # initiate Forms on start
     def onStart(self):
-        self.addForm("MAIN", MainForm, name="BEESER BOT")
+        self.addForm("MAIN", MainForm, name="Juris beeesr Binance Bot", color="STANDOUT")
 
 
     def updateDepth(self):
@@ -354,16 +423,16 @@ class MainApp(npyscreen.NPSAppManaged):
 
             # Update trade history values
             try:
-                logging.debug("DRAWE ORDER HISTORY CHANGES:")
+                # logging.debug("DRAWE ORDER HISTORY")
 
-                for i in range(15):
+                for i in range(13):
                     if globalList[i]["order"] == "True":
-                        logging.debug("order True")
+                        # logging.debug("order True")
 
                         self.getForm("MAIN").oHistory[i].value=str(globalList[i]["price"])
                         self.getForm("MAIN").oHistory[i].color="DANGER"
                     elif globalList[i]["order"] == "False":
-                        logging.debug("order False")
+                        # logging.debug("order False")
                         self.getForm("MAIN").oHistory[i].value=str(globalList[i]["price"])
                         self.getForm("MAIN").oHistory[i].color="GOOD"
                     else:
