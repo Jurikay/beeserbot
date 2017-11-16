@@ -62,7 +62,7 @@ def mainLoop():
         time.sleep(1)
         # Hard refresh Display every 15 seconds TODO: find a better way to fix display errors
 
-        if iterator >= 15:
+        if iterator >= 10:
             try:
                 ui.app.hardRefresh()
                 logging.debug("DISPLAY hardrefresh              ")

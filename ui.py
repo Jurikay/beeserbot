@@ -91,6 +91,32 @@ class MainForm(npyscreen.FormBaseNew):
     # WHILE WAITING LOOP
     #################################################################
     def while_waiting(self):
+
+        # update buy input coloring
+        try:
+            buyValidation = validateOrderPrice(    self.BuyInput.value, depthMsg["bids"][0][0], depthMsg["asks"][0][0],"BUY")
+            if buyValidation == "PERFECT":
+                self.BuyInput.color="STANDOUT"
+            elif buyValidation == "GOOD":
+                self.BuyInput.color="GOOD"
+            elif buyValidation == "OK":
+                self.BuyInput.color="WARNING"
+            else:
+                self.BuyInput.color="DANGER"
+
+            sellValidation = validateOrderPrice(    self.SellInput.value, depthMsg["bids"][0][0], depthMsg["asks"][0][0],"SELL")
+            if buyValidation == "PERFECT":
+                self.SellInput.color="STANDOUT"
+            elif buyValidation == "GOOD":
+                self.SellInput.color="GOOD"
+            elif buyValidation == "OK":
+                self.SellInput.color="WARNING"
+            else:
+                self.SellInput.color="DANGER"
+
+        except:
+            pass
+
         self.display()
         # pass
     #
@@ -231,8 +257,8 @@ class MainForm(npyscreen.FormBaseNew):
         self.SellInputHead = self.add(npyscreen.FixedText, value="Sell from:", color="DANGER", relx=2, rely=21, editable=False, hidden=True)
         self.SellInput = self.add(sellInput, value="0.00000000", relx=13, rely=21, color="CRITICAL", hidden=True)
 
-        self.SellQuantHead = self.add(npyscreen.FixedText, value="Quantity:", color="DEFAULT", relx=2, rely=21, editable=False, hidden=True)
-        self.SellQuant = self.add(buyInput, value="50", relx=13, rely=21, color="DEFAULT", hidden=True)
+        self.SellQuantHead = self.add(npyscreen.FixedText, value="Quantity:", color="DEFAULT", relx=2, rely=22, editable=False, hidden=True)
+        self.SellQuant = self.add(buyInput, value="50", relx=13, rely=22, color="DEFAULT", hidden=True)
 
         self.spacer = self.add(npyscreen.FixedText, value="", editable=False)
 
@@ -251,7 +277,11 @@ class MainForm(npyscreen.FormBaseNew):
 
     def start_button_pressed(self):
         npyscreen.notify_wait("HI")
-        self.start_button.name="lul"
+        # self.start_button.name="lul"
+        if self.start_button.name == "Start":
+            self.start_button.name="Stop"
+        else:
+            self.start_button.name="Start"
 
 
     def on_ok(self):
@@ -280,6 +310,8 @@ class buyInput(npyscreen.Textfield):
             self.color="WARNING"
         else:
             self.color="DANGER"
+
+
 
 class sellInput(npyscreen.Textfield):
     def when_value_edited(self):
@@ -313,12 +345,26 @@ class buySellSelector(npyscreen.MultiSelect):
             self.parent.BuyInputHead.hidden=True
             self.parent.BuyInput.hidden=True
 
+            self.parent.BuyQuantHead.hidden=True
+            self.parent.BuyQuant.hidden=True
+
         if 1 in self.value:
             self.parent.SellInputHead.hidden=False
             self.parent.SellInput.hidden=False
+
+            self.parent.SellQuantHead.hidden=False
+            self.parent.SellQuant.hidden=False
+
+            try:
+                self.parent.SellInput.value=depthMsg["asks"][0][0]
+            except:
+                pass
         else:
             self.parent.SellInputHead.hidden=True
             self.parent.SellInput.hidden=True
+
+            self.parent.SellQuantHead.hidden=True
+            self.parent.SellQuant.hidden=True
 
         # Show/ Hide start button
         if self.value != []:

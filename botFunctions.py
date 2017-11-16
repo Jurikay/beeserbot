@@ -253,18 +253,18 @@ def validateOrderPrice(priceTarget, currentBid, currentAsk, order):
 
     if isfloat(priceTarget):
         if order == "BUY":
-            if float(priceTarget) < float(currentBid) and float(priceTarget) > float(currentAsk):
+            if float(priceTarget) > float(currentBid) and float(priceTarget) < float(currentAsk):
                 return "PERFECT"
-            elif float(priceTarget) < float(currentBid) and float(priceTarget) > float(currentAsk) * 0.95:
-                return "GOOD"
-            elif float(priceTarget) < float(currentBid) * 1.05 and float(priceTarget) > float(currentAsk) * 0.8:
-                return "OK"
+            elif float(priceTarget) > float(currentBid) * 0.9 and float(priceTarget) < float(currentAsk):
+                    return "GOOD"
+            elif float(priceTarget) > float(currentBid) * 0.75 and float(priceTarget) < float(currentAsk) * 1.05:
+                    return "OK"
             else:
                 return "BAD"
 
 
         elif order == "SELL":
-            if float(priceTarget) < float(currentAsk) and float(priceTarget) > float(currentBid):
+            if float(priceTarget) > float(currentBid) and float(priceTarget) < float(currentAsk):
                 return "PERFECT"
             else:
                 return "OK"

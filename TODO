@@ -1,14 +1,41 @@
 implement buy/sell Fixed
   color input field dependent on evaluation
 
-add arguments
+add arguments/parameter
 coin
 buy/sell price
 disable sanity check
 
 sanity check function
+periodically recheck
+
+cap input lenght:
+if len(input) > 10
+  input[:1]
+
+validate order size:
+buy: GOOD if > minsize and < maxsize (enough btcHoldings)
+      OK if > minsize
+else BAD
+
+sell: GOOD if >= minsize and <= maxsize
+        OK if > minsize
+else   BAD
+
+fix trades/ trades per minute
 
 implement indicators for current position and recent trades in history
+
+get last (meaningful) buy/sell
+
+info panel: smallest possible order size 1$ = wv coins; 1 coin = wv dollars
+
+compare time of last x orders; time between last buy/sell
+
+different spreads:
+order book spread
+trade histoy spread
+current buy/sell price last buy/sell
 
 finish order history
 separate api call
@@ -33,6 +60,7 @@ spread
 volume
 diff to high low
 
+tab completion on coin input
 
 
 condition check function
