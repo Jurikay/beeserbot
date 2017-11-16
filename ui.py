@@ -5,9 +5,12 @@
 import npyscreen
 import curses
 from colorSyntax import *
+import datetime
+
 from botFunctions import *
 from botLogic import *
 import logging
+
 
 logging.basicConfig(filename="test.log", level=logging.DEBUG, format='%(asctime)s %(message)s')
 

@@ -20,6 +20,7 @@ import threading
 import logging
 from math import fabs,ceil,floor
 
+
 # my stuff
 from config import *
 from colorSyntax import *
