@@ -4,17 +4,15 @@
 # by Jurek Baumann
 
 # IMPORTS
-import npyscreen
-import datetime
+
 import time
-import threading
 from math import fabs,ceil,floor
 
 import os
 
 import logging
 # currently not needed
-import curses
+
 # import sys
 # import os
 
@@ -71,6 +69,7 @@ def availablePairs():
     return coins
 
 
+# unused; TODO refactor
 def amountNumbers(bidAsk):
     '''
     Calculate the amount of numbers needed to properly display the order size
