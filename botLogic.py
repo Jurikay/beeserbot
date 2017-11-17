@@ -20,6 +20,7 @@ tickerMsg = dict()
 userMsg = dict()
 globalList = list()
 tradeHistDict = dict()
+accHoldings = dict()
 
 lock = threading.RLock()
 

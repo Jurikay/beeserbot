@@ -82,3 +82,5 @@ display values:
 * daily high / low
 
 loading indicator: advance one stop on every callback
+
+split apart application further: apiFunctions.py, initialize.py

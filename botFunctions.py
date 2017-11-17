@@ -156,7 +156,36 @@ def fillList(symbol):
         })
 
 
+def getHoldings():
+    '''
+    Make an inital API call to get BTC and coin holdings.
+    '''
+    # API Call:
+    order = client.get_account()
 
+
+    for i in range(len(order["balances"])):
+        accHoldings[order["balances"][i]["asset"]] = {"free": order["balances"][i]["free"], "locked": order["balances"][i]["locked"]}
+
+
+    return accHoldings
+
+def getCurrentPrices():
+    '''
+    Fetch bid and ask price and quantitiy of every coin. Access data this way: priceList["BNBBTC"]["askPrice"]
+    Available values:
+    'bidPrice', 'bidQty', 'askPrice', 'askQty'
+    '''
+    priceList = dict()
+
+    # API Call:
+    currentPrices = client.get_orderbook_tickers()
+
+    for i in range(len(currentPrices)):
+        if "BTC" in currentPrices[i]["symbol"] and not "USDT" in currentPrices[i]["symbol"]:
+            priceList[currentPrices[i]["symbol"]] = currentPrices[i]
+
+    return priceList
 
 def restartSocket(symbol):
     '''
@@ -250,7 +279,6 @@ def ticker_callback(msg):
             f.write(str(tickerMsg))
 
 def user_callback(msg):
-    accHoldings = dict()
     # iterate through callback
     for key, value in msg.items():
         userMsg[key] = value
@@ -313,39 +341,57 @@ def validateOrderPrice(priceTarget, currentBid, currentAsk, order):
         return "BAD"
 
 
-def validateOrderSize(symbol, order):
+def calculateMinOrderSize(symbol, priceList):
     '''
-    Check if entered order size is within possible limits
+    calculate the lowest possible buy order size
     '''
     # Define variables for better overview
-    minTradeAmount = 0.001
+    MIN_AMOUNT = 0.001
 
-    currentBid = float(depthMsg["bids"][0][0])
-    currentAsk = float(depthMsg["asks"][0][0])
-
+    currentBid = priceList[symbol]["bidPrice"]
+    currentAsk = priceList[symbol]["askPrice"]
 
     minTrade = float(val["coins"][symbol]["minTrade"])
-
     roundTo = len(str(minTrade))-2
 
     ticksize = str(val["coins"][symbol]["tickSize"])
 
-    smallestUnit = float(val["coins"]["ETHBTC"]["minQty"])
+    # smallestUnit = float(val["coins"]["ETHBTC"]["minQty"])
 
-
-    # Calculate limits
     if minTrade == 1:
 
-        minBuyOrderSize = ceil(minTradeAmount / (float(currentBid)))
+        minSellOrderSize = ceil(MIN_AMOUNT / (float(currentBid) + float(ticksize)))
+        # print("current bid: " + str(currentBid) + " ticksize: " + str(ticksize) + "minTrade: " + str(minTrade))
+        return minSellOrderSize
+    else:
+        minSellOrderSize = round(MIN_AMOUNT / (float(currentBid) + float(ticksize)),roundTo)
+        return round(minSellOrderSize,roundTo)
+
+def calculateMaxOrderSize(symbol, priceList, btcBalance):
+    '''
+    Calculate the maximum possible order size (dependant on btc balance)
+
+    discard (not round decimal places):
+    https://stackoverflow.com/questions/17264733/remove-decimal-places-to-certain-digits-without-rounding
+
+    maximum coin sell size = coin balance
+    '''
+    minTrade = float(val["coins"][symbol]["minTrade"])
+    roundTo = len(str(minTrade))-2
+
+    currentBid = priceList[symbol]["bidPrice"]
+    ticksize = str(val["coins"][symbol]["tickSize"])
+    roundToBtc = len(str(ticksize))-2
+
+    maxSize = float(btcBalance) / (float(currentBid) + float(ticksize))
+
+    if minTrade == 1:
+        maxSizeRounded = int(maxSize)
 
     else:
-        minBuyOrderSize = round(minTradeAmount / (float(currentBid)),roundTo)
-        if minBuyOrderSize * float(currentBid) < 0.001:
-            minBuyOrderSize += minTrade
-            return minBuyOrderSize
-        else:
-            return minBuyOrderSize
+        maxSizeRounded = int(maxSize * 10**roundTo) / 10.0**roundTo
 
+    return maxSizeRounded
 ############
     # if order == "BUY":
     #     if isfloat(priceTarget):
