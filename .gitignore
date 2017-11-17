@@ -4,6 +4,10 @@ configMAIN.py
 configBOT.py
 test.log
 myfile.txt
+coins.txt
+depthCallback.txt
+tickerCallback.txt
+tradeCallback.txt
 tests/
 
 .DS_Store
