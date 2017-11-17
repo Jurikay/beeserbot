@@ -17,6 +17,7 @@ symbol = 'ETHBTC'
 depthMsg = dict()
 tradesMsg = dict()
 tickerMsg = dict()
+userMsg = dict()
 globalList = list()
 tradeHistDict = dict()
 

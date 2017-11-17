@@ -1,6 +1,6 @@
 from MAIN import *
 
-symbol= "BNBBTC"
+symbol= "BCCBTC"
 
 for coin in val["coins"]:
     print(coin + " " + val["coins"][coin]["minTrade"] + "ticksize: " + val["coins"][coin]["tickSize"])
@@ -10,11 +10,19 @@ restartSocket(symbol)
 
 val["bm"].start()
 
-
+time.sleep(4)
 
 # print(depthMsg)
 
-print (validateOrderSize(symbol, "0.0417", "0.04187", "BUY"))
+while True:
+    # print (validateOrderSize(symbol, "BUY"))
+    #
+    # print(float(validateOrderSize(symbol, "BUY")) * float(depthMsg["bids"][0][0]))
+    # print(userMsg)
+    time.sleep(.5)
+
+
+
 
 
 
