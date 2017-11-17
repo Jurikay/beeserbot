@@ -80,3 +80,5 @@ display values:
 
 * volume
 * daily high / low
+
+loading indicator: advance one stop on every callback
