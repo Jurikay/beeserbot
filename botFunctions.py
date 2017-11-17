@@ -36,11 +36,12 @@ atexit.register(exit_handler)
 
 client = Client(api_key, api_secret)
 
+
+
+
 def availablePairs():
 
     # API related variables
-
-
 
     ''' Create a dictonary containing all BTC tradepairs excluding USDT.
         Keys are:
@@ -66,6 +67,11 @@ def availablePairs():
             # Add every temp dictionary to the coin dictionary
             coins[tempdict["symbol"]]=tempdict
     # return the newly created coin dictionary
+
+    with open("coins.txt", "w") as f:
+            f.write(str(coins))
+
+
     return coins
 
 
@@ -194,8 +200,8 @@ def depth_callback(msg):
     # draw orderbook changes right as they are received
     ui.app.updateDepth()
 
-
-
+    with open("depthCallback.txt", "w") as f:
+        f.write(str(depthMsg))
 
 def trade_callback(msg):
     # print ("\033[91mtrade update:")
@@ -216,7 +222,8 @@ def trade_callback(msg):
     # except:
     #     logging.debug("KONNTE GLOBAL LIST NICHT SCHRUMPFEN")
     logging.debug("Global list: " + str(globalList))
-
+    with open("tradeCallback.txt", "w") as f:
+        f.write(str(tradesMsg))
 
 def ticker_callback(msg):
     # print ("\033[92mticker update:")
@@ -225,8 +232,8 @@ def ticker_callback(msg):
 
         for key, value in msg[0].items():
             tickerMsg[key] = value
-        # with open("myfile.txt", "w") as f:
-        #     f.write(str(tickerMsg))
+        with open("tickerCallback.txt", "w") as f:
+            f.write(str(tickerMsg))
 
 
 ###################################################
@@ -262,13 +269,11 @@ def validateOrderPrice(priceTarget, currentBid, currentAsk, order):
             else:
                 return "BAD"
 
-
         elif order == "SELL":
             if float(priceTarget) > float(currentBid) and float(priceTarget) < float(currentAsk):
                 return "PERFECT"
             else:
                 return "OK"
-
 
         else:
             return "BAD"
@@ -277,12 +282,25 @@ def validateOrderPrice(priceTarget, currentBid, currentAsk, order):
         return "BAD"
 
 
+def validateOrderSize(symbol, currentBid, currentAsk, order):
+    '''
+    Check if entered order size is within possible limits
+    '''
+    # Define variables for better overview
+    minTradeAmount = 0.001
 
+    minTrade = float(val["coins"][symbol]["minTrade"])
+    print("minTrade: " + str(minTrade))
+    roundTo = len(str(minTrade))+1
+    print("roundTo: " + str(roundTo))
+    ticksize = str(val["coins"][symbol]["tickSize"])
+    print("ticksize: " + str(val["coins"][symbol]["tickSize"]))
+    smallestUnit = float(val["coins"]["ETHBTC"]["minQty"])
+    print("smallestUnit: " + str(smallestUnit))
 
-
-
-
-
+    # Calculate limits
+    minBuyOrderSize = round(minTradeAmount / (float(currentBid)),roundTo)
+    return minBuyOrderSize
 
 ############
     # if order == "BUY":
@@ -320,6 +338,5 @@ def validateOrderPrice(priceTarget, currentBid, currentAsk, order):
     # else:
     #     return "BAD"
 
-
-coins=dict()
-coins = availablePairs()
+val["coins"]=dict()
+val["coins"] = availablePairs()

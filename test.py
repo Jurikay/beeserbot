@@ -1,16 +1,23 @@
 from MAIN import *
 
+symbol= "BNBBTC"
 
+for coin in val["coins"]:
+    print(coin + " " + val["coins"][coin]["minTrade"] + "ticksize: " + val["coins"][coin]["tickSize"])
 
-print(fetchAsap("LTCBTC"))
-
+print(val["coins"][symbol])
 restartSocket(symbol)
 
-bm.start()
+val["bm"].start()
 
-time.sleep(3)
 
-print(depthMsg)
+
+# print(depthMsg)
+
+print (validateOrderSize(symbol, "0.0417", "0.04187", "BUY"))
+
+
+
 
 # while lookingToBuy == True:
 #     priceInRange = checkPrices()

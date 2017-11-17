@@ -117,6 +117,14 @@ class MainForm(npyscreen.FormBaseNew):
         except:
             pass
 
+
+        try:
+            # logging.debug(val["coins"])
+            logging.debug(val["coins"]["ETHBTC"])
+            self.debug.value=str(len(val["coins"]["ETHBTC"]["tickSize"])) + "  " + str(1 - float(val["coins"]["ETHBTC"]["minQty"])) + "  " + str(val["coins"]["ETHBTC"]["minTrade"])
+        except:
+            pass
+
         self.display()
         # pass
     #
@@ -388,13 +396,13 @@ class coinInput(npyscreen.Textfield):
         )
         # npyscreen.notify_wait("EDITED")
 
-        # TODO Compare with accepted pairs/coins
+        # TODO Compare with accepted pairs/val["coins"]
         # self.value="VAL"
 
 
     # CHANGE COIN
     def do_something(self, input):
-        if str(self.value).upper() + str("BTC") in coins and self.value + str("BTC") != val["symbol"]:
+        if str(self.value).upper() + str("BTC") in val["coins"] and self.value + str("BTC") != val["symbol"]:
             val["symbol"] = str(self.value).upper() + str("BTC")
             self.color="DEFAULT"
 
@@ -421,7 +429,7 @@ class coinInput(npyscreen.Textfield):
             pass
 
     def when_value_edited(self):
-        if str(self.value).upper() + str("BTC") in coins:
+        if str(self.value).upper() + str("BTC") in val["coins"]:
             self.color="LABEL"
             self.value= str(self.value).upper()
         elif len(str(self.value)) < 6:
@@ -444,25 +452,26 @@ class MainApp(npyscreen.NPSAppManaged):
         # self.getForm("MAIN").statusIndicator.color="VERYGOOD"
         with lock:
             # logging.debug("testzugriff start")
+            try:
+                self.getForm("MAIN").date_widget.value=str(depthMsg["lastUpdateId"])
+                if str(depthMsg["lastUpdateId"]) == "WAITING":
+                    self.getForm("MAIN").date_widget.color="DANGER"
+                    self.getForm("MAIN").statusIndicator.color="CRITICAL"
+                else:
+                    self.getForm("MAIN").date_widget.color="DEFAULT"
+                    self.getForm("MAIN").statusIndicator.color="VERYGOOD"
 
-            self.getForm("MAIN").date_widget.value=str(depthMsg["lastUpdateId"])
-            if str(depthMsg["lastUpdateId"]) == "WAITING":
-                self.getForm("MAIN").date_widget.color="DANGER"
-                self.getForm("MAIN").statusIndicator.color="CRITICAL"
-            else:
-                self.getForm("MAIN").date_widget.color="DEFAULT"
-                self.getForm("MAIN").statusIndicator.color="VERYGOOD"
 
+                    self.getForm("MAIN").runningSince.value = str(datetime.timedelta(seconds=int(val["s"])))
 
-            self.getForm("MAIN").runningSince.value = str(datetime.timedelta(seconds=int(val["s"])))
+                # update Orderbook
+                for i in range(self.getForm("MAIN").obRange):
 
-            # update Orderbook
-            for i in range(self.getForm("MAIN").obRange):
+                    self.getForm("MAIN").bids[i].value ="[" + str((i+1)).zfill(1)+ "]" + str(depthMsg["bids"][i][0]) + " | " + str(float(depthMsg["bids"][i][1])).ljust(6,"0")
 
-                self.getForm("MAIN").bids[i].value ="[" + str((i+1)).zfill(1)+ "]" + str(depthMsg["bids"][i][0]) + " | " + str(float(depthMsg["bids"][i][1])).ljust(6,"0")
-
-                self.getForm("MAIN").asks[i].value ="[" + str((self.getForm("MAIN").obRange-i)).zfill(1)+ "]" + str(depthMsg["asks"][self.getForm("MAIN").obRange-i-1][0]) + " | " + str(float(depthMsg["asks"][self.getForm("MAIN").obRange-i-1][1])).ljust(6,"0")
-
+                    self.getForm("MAIN").asks[i].value ="[" + str((self.getForm("MAIN").obRange-i)).zfill(1)+ "]" + str(depthMsg["asks"][self.getForm("MAIN").obRange-i-1][0]) + " | " + str(float(depthMsg["asks"][self.getForm("MAIN").obRange-i-1][1])).ljust(6,"0")
+            except:
+                pass
             # update spread
             try:
                 self.spreadVal = ((float(depthMsg["asks"][0][0])-float(depthMsg["bids"][0][0]))/float(depthMsg["asks"][0][0]))*100
@@ -489,8 +498,12 @@ class MainApp(npyscreen.NPSAppManaged):
                         self.getForm("MAIN").oHistory[i].value="          "
 
             except Exception as err:
-                logging.debug("KONNTE HISTORY NICHT UPDATEN " + str(err))
-            self.getForm("MAIN").display()
+                logging.debug("UPDATE_ERROR: " + str(err))
+
+            try:
+                self.getForm("MAIN").display()
+            except:
+                pass
             # self.getForm("MAIN").clearOb()
             # try:
             #     for i in range(self.getForm("MAIN").obRange*2+3):
