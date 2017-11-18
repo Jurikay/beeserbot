@@ -7,12 +7,25 @@
 '''
 MAIN entrypoint of the bot
 '''
+# IMPORTS
 
-version ="1.01"
+import time
+import threading
+import logging
+
+from colorSyntax import *
+import ui
+from botFunctions import *
+
+# binance API
+from binance.client import Client
+from binance.websockets import BinanceSocketManager
+from binance.enums import *
+version = "1.01"
 
 
 
-print('''
+print("""
                      \033[94m__         _       __\033[93m
                  \033[94m__ / /_ ______(_)__   / /_ ___ ___ ___ ___ ___ ____\033[93m
 /$$$$$$$  /$$   \033[94m/ // / // / __/ (_-<  / _  / -_) -_) -_|_-</ -_) __/\033[93m   /$$$$$$$              /$$
@@ -22,36 +35,11 @@ print('''
 | $$__  $$| $$| $$  \ $$  /$$$$$$$| $$  \ $$| $$      | $$$$$$$$      | $$__  $$| $$  \ $$  | $$
 | $$  \ $$| $$| $$  | $$ /$$__  $$| $$  | $$| $$      | $$_____/      | $$  \ $$| $$  | $$  | $$ /$$
 | $$$$$$$/| $$| $$  | $$|  $$$$$$$| $$  | $$|  $$$$$$$|  $$$$$$$      | $$$$$$$/|  $$$$$$/  |  $$$$/
-|_______/ |__/|__/  |__/ \_______/|__/  |__/ \_______/ \_______/      |_______/  \______/    \___/
-''')
-print("Version\033[0m " + str(version) +"\033[93m – https://github.com/Jurikay/beeserbot\033[0m")
+|_______/ |__/|__/  |__/ \_______/|__/  |__/ \_______/ \_______/      |_______/  \______/    \___/""")
+
+print("Version\033[0m " + str(version) + "\033[93m – https://github.com/Jurikay/beeserbot\033[0m")
 print("")
 print("starting engines... Please stand by..")
-# IMPORTS
-
-# various stuff
-# import npyscreen
-# import datetime
-import time
-import threading
-import logging
-
-
-# my stuff
-from colorSyntax import *
-import ui
-from botFunctions import *
-
-# currently not needed
-# import curses
-# import sys
-# import os
-
-# binance API
-from binance.client import Client
-from binance.websockets import BinanceSocketManager
-from binance.enums import *
-
 
 # API related variables
 val["bm"] = BinanceSocketManager(client)
@@ -63,7 +51,7 @@ val["exitThread"] = False
 #  BOT LOGIC GOES HERE
 def mainLoop():
     iterator = 0
-    while val["exitThread"] == False:
+    while val["exitThread"] is False:
 
         val["s"] += 1
         val["cs"] += 1
@@ -91,8 +79,6 @@ def mainLoop():
 
         # if val["exitThread"] == True:
         #     print("exit thread")
-
-
 # def calcLoop():
 #     loadingList = ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█", "▇", "▆", "▅", "▄", "▃"]
 #     iterator = 0
@@ -109,12 +95,10 @@ def mainLoop():
 #     iterator = 0
 
 
-
-
 # Start npyscreen. Everything after this will be triggered on exit (ESC)
 if __name__ == '__main__':
     # Starting main loop in separate Thread as a deamon
-    mainThread = threading.Thread(target=mainLoop,args=(), daemon=True)
+    mainThread = threading.Thread(target=mainLoop, args=(), daemon=True)
 
     mainThread.start()
 
