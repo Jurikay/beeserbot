@@ -30,7 +30,8 @@ get last (meaningful) buy/sell
 
 info panel: smallest possible order size 1$ = wv coins; 1 coin = wv dollars
 
-compare time of last x orders; time between last buy/sell
+compare time of last x orders; time between last buy/sell:
+get last trade, check if quantity is meaningful, iterate through list find first opposite trade, compare timestamps
 
 different spreads:
 order book spread
@@ -84,3 +85,7 @@ display values:
 loading indicator: advance one stop on every callback
 
 split apart application further: apiFunctions.py, initialize.py
+
+limit number of decimal places on order input (price and size)
+
+hotkeys: capture hotkeys S and R while on buy/sell selector or numeric input forms
