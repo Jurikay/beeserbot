@@ -49,13 +49,13 @@ def cleanExit():
 
 
 def exit_handler():
-    """Handle exit gracefully"""
+    """Handle exit gracefully."""
     try:
         ui.app.switchForm(None)
     except AttributeError:
         pass
     print("\033c")
-    print('🚫  Bot wurde beendet.')
+    print('🚫  Bot has shut down.')
     # closeAllOrders()
 
 
@@ -115,9 +115,7 @@ def amountNumbers(bidAsk):
 
 
 def fetchAsap(symbol):
-    """
-    Make a seperate API call to instantly get new ticker values after changing the coin.
-    """
+    """Make a seperate API call to instantly get new ticker values after changing the coin."""
     tickers = client.get_ticker(symbol=symbol)
     tempDict = dict()
     iterator = 0
@@ -168,6 +166,7 @@ def getCurrentPrices():
 
     Available values:
     'bidPrice', 'bidQty', 'askPrice', 'askQty'
+
     """
     priceList = dict()
 
@@ -310,6 +309,7 @@ def validateOrderPrice(priceTarget, currentBid, currentAsk, order):
     """Check if entered buy price is reasonable.
 
     Returns "PERFECT", "GOOD", "OK" or "BAD" depending on evaluation
+
     """
     if isfloat(priceTarget):
         if order == "BUY":
@@ -384,6 +384,7 @@ def calculateMaxOrderSize(symbol, priceList, btcBalance):
         maxSizeRounded = int(maxSize * 10**roundTo) / 10.0**roundTo
 
     return maxSizeRounded
+
 
 def validateOrderSize(size, symbol, priceList, btcBalance):
     minSize = calculateMinOrderSize(symbol, priceList)

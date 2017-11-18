@@ -2,6 +2,12 @@
 # -*- coding: utf-8 -*-
 
 # by Jurek Baumann
+
+"""console UI based on npyscreen.
+
+Docs: npyscreen.readthedocs.io/form-objects.html
+"""
+
 import npyscreen
 import curses
 from colorSyntax import *
@@ -17,7 +23,9 @@ logging.basicConfig(filename="test.log", level=logging.DEBUG, format='%(asctime)
 
 class MainForm(npyscreen.FormBaseNew):
 
-    '''
+    """
+    Main Form Class of npyscreen.
+
     COLORS:
         'DEFAULT'     : 'WHITE_BLACK',
         'FORMDEFAULT' : 'WHITE_BLACK',
@@ -38,7 +46,7 @@ class MainForm(npyscreen.FormBaseNew):
         'VERYGOOD'    : 'BLACK_GREEN',
         'CAUTION'     : 'YELLOW_BLACK',
         'CAUTIONHL'   : 'BLACK_YELLOW',
-    '''
+    """
 
     def hotkeyFix(self):
         self.coinPair.value = "BUTTON PRESSED"
@@ -206,10 +214,13 @@ class MainForm(npyscreen.FormBaseNew):
         self.editing = False
         self.parentApp.switchForm(None)
 
+
 class orderSizeInput(npyscreen.Textfield):
 
     """Input field class for defining the order size.
-    Input is evaluated and colorized"""
+
+    Input is evaluated and colorized
+    """
 
     def when_value_edited(self):
         """Fire when value is edited."""
@@ -224,16 +235,21 @@ class orderSizeInput(npyscreen.Textfield):
             self.color = "DANGER"
 
         minTrade = float(val["coins"][symbol]["minTrade"])
-        roundTo = len(str(minTrade))-2
+        roundTo = len(str(minTrade))
 
+        # Doesn't work like this
+        # Must be something like so:
+        # get self.value until ., count from . limit length to length before point + point + roundto - 2
         if len(self.value) > roundTo:
-            self.value[:-1]
+            self.value = self.value[:-(len(self.value)-roundTo)]
 
 
 class buyInput(npyscreen.Textfield):
 
     """Input field class for defining the order price.
-    Input is evaluated and colorized"""
+
+    Input is evaluated and colorized
+    """
 
     def when_value_edited(self):
         """Fire when value is edited."""
@@ -250,7 +266,9 @@ class buyInput(npyscreen.Textfield):
 
 
 class sellInput(npyscreen.Textfield):
+
     """Input field intended for sell order price."""
+
     def when_value_edited(self):
         """Fire when value is edited."""
         buyValidation = validateOrderPrice(self.value, depthMsg["bids"][0][0], depthMsg["asks"][0][0], "SELL")
@@ -266,7 +284,9 @@ class sellInput(npyscreen.Textfield):
 
 # Buy/Sell Selector Class
 class buySellSelector(npyscreen.MultiSelect):
-    """Create a buy / sell selector that triggers several input fields"""
+
+    """Create a buy / sell selector that triggers several input fields."""
+
     def when_value_edited(self):
 
         # Hide/Show Buy/Sell input based on selector switches
@@ -296,8 +316,9 @@ class buySellSelector(npyscreen.MultiSelect):
             self.parent.SellQuantHead.hidden = False
             self.parent.SellQuant.hidden = False
 
+            # TODO: Fix
             try:
-                self.parent.SellInput.value = str(float(depthMsg["asks"][0][0])) # float(val["coins"][val["symbol"]]["ticksize"]))
+                self.parent.SellInput.value = str(float(depthMsg["asks"][0][0]))  # float(val["coins"][val["symbol"]]["ticksize"]))
             except KeyError:
                 pass
         else:
@@ -322,6 +343,7 @@ class coinInput(npyscreen.Textfield):
     """Input field to change the selected coin."""
 
     def __init__(self, *args, **kwargs):
+        """Overwrite init function to add key handlers."""
         super().__init__(*args, **kwargs)
         self.add_handlers(
             {
@@ -390,6 +412,7 @@ class MainApp(npyscreen.NPSAppManaged):
         self.addForm("MAIN", MainForm, name="Juris beeesr Binance Bot", color="STANDOUT")
 
 
+    # TODO: seperate concerns
     def updateDepth(self):
         # self.getForm("MAIN").statusIndicator.color="VERYGOOD"
         with lock:
@@ -397,13 +420,11 @@ class MainApp(npyscreen.NPSAppManaged):
             try:
                 self.getForm("MAIN").date_widget.value = str(depthMsg["lastUpdateId"])
                 if str(depthMsg["lastUpdateId"]) == "WAITING":
-                    self.getForm("MAIN").date_widget.color = "DANGER"
+                    # self.getForm("MAIN").date_widget.color = "DANGER"
                     self.getForm("MAIN").statusIndicator.color = "CRITICAL"
                 else:
-                    self.getForm("MAIN").date_widget.color = "DEFAULT"
+                    # self.getForm("MAIN").date_widget.color = "DEFAULT"
                     self.getForm("MAIN").statusIndicator.color = "VERYGOOD"
-
-
                     self.getForm("MAIN").runningSince.value = str(datetime.timedelta(seconds=int(val["s"])))
 
                 # update Orderbook

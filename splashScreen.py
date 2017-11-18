@@ -2,7 +2,11 @@
 # -*- coding: utf-8 -*-
 
 # by Jurek Baumann
+
+"""Print a fancy ASCII logo."""
+
 version = 0.01
+
 print("""
                     \033[94m__         _       __\033[93m
                 \033[94m__ / /_ ______(_)__   / /_ ___ ___ ___ ___ ___ ____\033[93m

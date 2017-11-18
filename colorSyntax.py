@@ -3,6 +3,8 @@
 
 # by Jurek Baumann
 
+"""npyscreen color syntax classes."""
+
 import npyscreen
 
 # class SyntaxHistSell(npyscreen.FixedText):
@@ -20,22 +22,27 @@ import npyscreen
 
 
 class SyntaxObBids(npyscreen.FixedText):
-    def update_highlighting(self, start, end):
-        colorWhite=0
-        colorGreen=1280
 
-        self._highlightingdata = [ colorWhite,colorWhite,colorWhite,
-        colorGreen,colorGreen,colorGreen,colorGreen,colorGreen,colorGreen,colorGreen,colorGreen,colorGreen,colorGreen,
-        ]
+    """color orderbook bids green."""
+
+    def update_highlighting(self, start, end):
+        colorWhite = 0
+        colorGreen = 1280
+
+        self._highlightingdata = [colorWhite, colorWhite, colorWhite,
+                                  colorGreen, colorGreen, colorGreen, colorGreen, colorGreen, colorGreen, colorGreen, colorGreen, colorGreen, colorGreen, ]
+
 
 class SyntaxObAsks(npyscreen.FixedText):
-    def update_highlighting(self, start, end):
-        colorWhite=0
-        colorRed=1792
 
-        self._highlightingdata = [ colorWhite,colorWhite,colorWhite,
-        colorRed,colorRed,colorRed,colorRed,colorRed,colorRed,colorRed,colorRed,colorRed,colorRed,
-        ]
+    """color orderbook asks red."""
+
+    def update_highlighting(self, start, end):
+        colorWhite = 0
+        colorRed = 1792
+
+        self._highlightingdata = [colorWhite, colorWhite, colorWhite,
+                                  colorRed, colorRed, colorRed, colorRed, colorRed, colorRed, colorRed, colorRed, colorRed, colorRed, ]
 
 # class SyntaxBids(npyscreen.FixedText):
 #
