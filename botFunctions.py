@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""API/ calculation functions."""
 # -*- coding: utf-8 -*-
 
 # by Jurek Baumann
+"""API/ calculation functions."""
 
 # IMPORTS
 
@@ -12,6 +12,7 @@ import time
 # import os
 import atexit
 import logging
+from math import ceil
 # currently not needed
 
 # import sys
@@ -173,8 +174,8 @@ def getCurrentPrices():
     # API Call:
     currentPrices = client.get_orderbook_tickers()
     for index in enumerate(currentPrices):
-        if "BTC" in currentPrices[index]["symbol"] and "USDT" not in currentPrices[index]["symbol"]:
-            priceList[currentPrices[index]["symbol"]] = currentPrices[index]
+        if "BTC" in currentPrices[index[0]]["symbol"] and "USDT" not in currentPrices[index[0]]["symbol"]:
+            priceList[currentPrices[index[0]]["symbol"]] = currentPrices[index[0]]
 
 
     return priceList
@@ -383,6 +384,19 @@ def calculateMaxOrderSize(symbol, priceList, btcBalance):
         maxSizeRounded = int(maxSize * 10**roundTo) / 10.0**roundTo
 
     return maxSizeRounded
+
+def validateOrderSize(size, symbol, priceList, btcBalance):
+    minSize = calculateMinOrderSize(symbol, priceList)
+    maxSize = calculateMaxOrderSize(symbol, priceList, btcBalance)
+    if isfloat(size):
+        if float(size) >= minSize and float(size) <= maxSize:
+            return "GOOD"
+        elif float(size) >= minSize:
+            return "OK"
+        else:
+            return "BAD"
+    else:
+        return "BAD"
 ############
     # if order == "BUY":
     #     if isfloat(priceTarget):

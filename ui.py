@@ -82,9 +82,6 @@ class MainForm(npyscreen.FormBaseNew):
         except KeyError:
             pass
 
-
-
-
         self.display()
 
     #################################################################
@@ -122,6 +119,7 @@ class MainForm(npyscreen.FormBaseNew):
         self.oHistory = {}
         self.obRange = 5
 
+        # ORDERBOOK
 
         # Create asks template
         for i in range(self.obRange):
@@ -158,17 +156,17 @@ class MainForm(npyscreen.FormBaseNew):
 
         # Buy/Sell price inputs (hidden by default)
         self.BuyInputHead = self.add(npyscreen.FixedText, value="Buy up to:", color="GOOD", relx=2, rely=19, editable=False, hidden=True)
-        self.BuyInput = self.add(buyInput, value="0.00000000", relx=13, rely=19, color="DEFAULT", hidden=True)
+        self.BuyInput = self.add(buyInput, value="0.00000000", relx=13, rely=19, color="GOOD", hidden=True)
 
         self.BuyQuantHead = self.add(npyscreen.FixedText, value="Quantity:", color="DEFAULT", relx=2, rely=20, editable=False, hidden=True)
-        self.BuyQuant = self.add(buyInput, value="50", relx=13, rely=20, color="DEFAULT", hidden=True)
+        self.BuyQuant = self.add(orderSizeInput, value="50", relx=13, rely=20, color="GOOD", hidden=True)
 
 
         self.SellInputHead = self.add(npyscreen.FixedText, value="Sell from:", color="DANGER", relx=2, rely=21, editable=False, hidden=True)
-        self.SellInput = self.add(sellInput, value="0.00000000", relx=13, rely=21, color="CRITICAL", hidden=True)
+        self.SellInput = self.add(sellInput, value="0.00000000", relx=13, rely=21, color="GOOD", hidden=True)
 
         self.SellQuantHead = self.add(npyscreen.FixedText, value="Quantity:", color="DEFAULT", relx=2, rely=22, editable=False, hidden=True)
-        self.SellQuant = self.add(buyInput, value="50", relx=13, rely=22, color="DEFAULT", hidden=True)
+        self.SellQuant = self.add(orderSizeInput, value="50", relx=13, rely=22, color="GOOD", hidden=True)
 
         self.spacer = self.add(npyscreen.FixedText, value="", editable=False)
 
@@ -176,10 +174,14 @@ class MainForm(npyscreen.FormBaseNew):
         self.start_button = self.add(npyscreen.ButtonPress, name='Start', relx=4, hidden=True)
         self.start_button.whenPressed = self.start_button_pressed
 
-        self.debug = self.add(npyscreen.FixedText, value="Debug")
+        self.debug = self.add(npyscreen.FixedText, value="Debug", editable=False)
 
         # Status indicator
         self.statusIndicator = self.add(npyscreen.FixedText, value="STATUS:", editable=False, relx=2, rely=-3, color="DANGER")
+
+        self.status = self.add(npyscreen.FixedText, value="hier steht status text", editable=False, relx=10, rely=-3)
+
+        self.indicator = self.add(npyscreen.FixedText, value="#", editable=False, relx=-5, rely=-3)
 
 
     def start_button_pressed(self):
@@ -204,11 +206,34 @@ class MainForm(npyscreen.FormBaseNew):
         self.editing = False
         self.parentApp.switchForm(None)
 
+class orderSizeInput(npyscreen.Textfield):
 
-# buy/sell order unput field VALIDATE input
+    """Input field class for defining the order size.
+    Input is evaluated and colorized"""
+
+    def when_value_edited(self):
+        """Fire when value is edited."""
+        sizeValidation = validateOrderSize(self.value, val["symbol"], val["priceList"], "0.021")
+        if sizeValidation == "PERFECT":
+            self.color = "STANDOUT"
+        elif sizeValidation == "GOOD":
+            self.color = "GOOD"
+        elif sizeValidation == "OK":
+            self.color = "WARNING"
+        else:
+            self.color = "DANGER"
+
+        minTrade = float(val["coins"][symbol]["minTrade"])
+        roundTo = len(str(minTrade))-2
+
+        if len(self.value) > roundTo:
+            self.value[:-1]
+
+
 class buyInput(npyscreen.Textfield):
 
-    """Input field class for defining the order size."""
+    """Input field class for defining the order price.
+    Input is evaluated and colorized"""
 
     def when_value_edited(self):
         """Fire when value is edited."""
@@ -253,7 +278,8 @@ class buySellSelector(npyscreen.MultiSelect):
             self.parent.BuyQuant.hidden = False
 
             try:
-                self.parent.BuyInput.value = depthMsg["bids"][0][0]
+                self.parent.BuyInput.value = str(float(depthMsg["bids"][0][0]))
+                self.parent.BuyQuant.value = str(calculateMinOrderSize(val["symbol"], val["priceList"]))
             except KeyError:
                 pass
         else:
@@ -271,7 +297,7 @@ class buySellSelector(npyscreen.MultiSelect):
             self.parent.SellQuant.hidden = False
 
             try:
-                self.parent.SellInput.value = depthMsg["asks"][0][0]
+                self.parent.SellInput.value = str(float(depthMsg["asks"][0][0])) # float(val["coins"][val["symbol"]]["ticksize"]))
             except KeyError:
                 pass
         else:
