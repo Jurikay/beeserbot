@@ -6,7 +6,7 @@
 # IMPORTS
 
 import time
-from math import fabs,ceil,floor
+# from math import fabs,ceil,floor
 
 # import os
 
@@ -36,7 +36,7 @@ def cleanExit():
     '''
 
     # Shutting down nicely
-    print("Shutting down...                  ")
+    print("     Shutting down...                  ")
 
     # trigger while loop to val["exitThread"]
     val["exitThread"] = True
@@ -136,7 +136,7 @@ def fetchAsap(symbol):
     symbolList = ["p","P","w","x","c","Q","b","B","a","A","o","h","l","v","q","O","C","F","L","n"]
 
     tempDict["s"] = symbol
-    for key,value in tickers.items():
+    for value in tickers.items():
         # print(str(key) + "  " + str(value))
         tempDict[symbolList[iterator]] = value
         iterator += 1
@@ -210,7 +210,7 @@ def restartSocket(symbol):
 
 
     # tickerMsg = fetchAsap(symbol)
-    client = Client(api_key, api_secret)
+
     # bm = BinanceSocketManager(client)
     with lock:
         if val["socket1"] != 0:
@@ -224,7 +224,6 @@ def restartSocket(symbol):
 
         else:
             logging.debug("KONNTE SOCKETS NICHT BEENDEN!!!")
-            pass
 
         # FIXME would be nice to remove
         time.sleep(0.1)

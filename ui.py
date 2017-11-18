@@ -14,33 +14,31 @@ import logging
 logging.basicConfig(filename="test.log", level=logging.DEBUG, format='%(asctime)s %(message)s')
 
 
-'''
-COLORS:
-
-    'DEFAULT'     : 'WHITE_BLACK',
-    'FORMDEFAULT' : 'WHITE_BLACK',
-    'NO_EDIT'     : 'BLUE_BLACK',
-    'STANDOUT'    : 'CYAN_BLACK',
-    'CURSOR'      : 'WHITE_BLACK',
-    'CURSOR_INVERSE': 'BLACK_WHITE',
-    'LABEL'       : 'GREEN_BLACK',
-    'LABELBOLD'   : 'WHITE_BLACK',
-    'CONTROL'     : 'YELLOW_BLACK',
-    'IMPORTANT'   : 'GREEN_BLACK',
-    'SAFE'        : 'GREEN_BLACK',
-    'WARNING'     : 'YELLOW_BLACK',
-    'DANGER'      : 'RED_BLACK',
-    'CRITICAL'    : 'BLACK_RED',
-    'GOOD'        : 'GREEN_BLACK',
-    'GOODHL'      : 'GREEN_BLACK',
-    'VERYGOOD'    : 'BLACK_GREEN',
-    'CAUTION'     : 'YELLOW_BLACK',
-    'CAUTIONHL'   : 'BLACK_YELLOW',
-
-'''
-
 
 class MainForm(npyscreen.FormBaseNew):
+
+    '''
+    COLORS:
+        'DEFAULT'     : 'WHITE_BLACK',
+        'FORMDEFAULT' : 'WHITE_BLACK',
+        'NO_EDIT'     : 'BLUE_BLACK',
+        'STANDOUT'    : 'CYAN_BLACK',
+        'CURSOR'      : 'WHITE_BLACK',
+        'CURSOR_INVERSE': 'BLACK_WHITE',
+        'LABEL'       : 'GREEN_BLACK',
+        'LABELBOLD'   : 'WHITE_BLACK',
+        'CONTROL'     : 'YELLOW_BLACK',
+        'IMPORTANT'   : 'GREEN_BLACK',
+        'SAFE'        : 'GREEN_BLACK',
+        'WARNING'     : 'YELLOW_BLACK',
+        'DANGER'      : 'RED_BLACK',
+        'CRITICAL'    : 'BLACK_RED',
+        'GOOD'        : 'GREEN_BLACK',
+        'GOODHL'      : 'GREEN_BLACK',
+        'VERYGOOD'    : 'BLACK_GREEN',
+        'CAUTION'     : 'YELLOW_BLACK',
+        'CAUTIONHL'   : 'BLACK_YELLOW',
+    '''
 
     def hotkeyFix(self):
         self.coinPair.value="BUTTON PRESSED"
@@ -329,9 +327,10 @@ class coinInput(npyscreen.Textfield):
             pass
 
     def when_value_edited(self):
+        self.value = self.value
         if str(self.value).upper() + str("BTC") in val["coins"]:
             self.color="LABEL"
-            self.value= str(self.value).upper()
+            self.value = str(self.value).upper()
         elif len(str(self.value)) < 6:
             self.color="WARNING"
 

@@ -35,11 +35,9 @@ print("starting engines... Please stand by..")
 import time
 import threading
 import logging
-from math import floor
 
 
 # my stuff
-from config import api_secret
 from colorSyntax import *
 import ui
 from botFunctions import *
