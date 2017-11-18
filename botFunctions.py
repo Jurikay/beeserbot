@@ -45,7 +45,7 @@ def cleanExit():
     try:
         val["bm"].close()
         logging.debug("CLOSING MANAGER")
-    except (ReactorNotRunning) as e:
+    except ReactorNotRunning as e:
         logging.debug("Error while closing socket manager: " + str(e))
 
 
@@ -56,7 +56,7 @@ def exit_handler():
     '''
     try:
         ui.app.switchForm(None)
-    except:
+    except AttributeError:
         pass
     print ("\033c")
     print ('🚫  Bot wurde beendet.')

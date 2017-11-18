@@ -73,7 +73,7 @@ def mainLoop():
             ui.app.periodicUpdate()
 
 
-        except:
+        except KeyError:
             pass
         time.sleep(1)
         # Hard refresh Display every 15 seconds TODO: find a better way to fix display errors

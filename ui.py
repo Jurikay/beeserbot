@@ -245,7 +245,7 @@ class buySellSelector(npyscreen.MultiSelect):
 
             try:
                 self.parent.BuyInput.value=depthMsg["bids"][0][0]
-            except:
+            except KeyError:
                 pass
         else:
             self.parent.BuyInputHead.hidden=True
@@ -263,7 +263,7 @@ class buySellSelector(npyscreen.MultiSelect):
 
             try:
                 self.parent.SellInput.value=depthMsg["asks"][0][0]
-            except:
+            except KeyError:
                 pass
         else:
             self.parent.SellInputHead.hidden=True
@@ -369,13 +369,13 @@ class MainApp(npyscreen.NPSAppManaged):
                     self.getForm("MAIN").bids[i].value ="[" + str((i+1)).zfill(1)+ "]" + str(depthMsg["bids"][i][0]) + " | " + str(float(depthMsg["bids"][i][1])).ljust(6,"0")
 
                     self.getForm("MAIN").asks[i].value ="[" + str((self.getForm("MAIN").obRange-i)).zfill(1)+ "]" + str(depthMsg["asks"][self.getForm("MAIN").obRange-i-1][0]) + " | " + str(float(depthMsg["asks"][self.getForm("MAIN").obRange-i-1][1])).ljust(6,"0")
-            except:
+            except KeyError:
                 pass
             # update spread
             try:
                 self.spreadVal = ((float(depthMsg["asks"][0][0])-float(depthMsg["bids"][0][0]))/float(depthMsg["asks"][0][0]))*100
                 self.getForm("MAIN").spread.value = "Spread: " + str(round(self.spreadVal,2))+"%"
-            except:
+            except (KeyError, ZeroDivisionError):
                 pass
 
             # Update trade history values
@@ -401,7 +401,7 @@ class MainApp(npyscreen.NPSAppManaged):
 
             try:
                 self.getForm("MAIN").display()
-            except:
+            except KeyError:
                 pass
 
 
@@ -424,7 +424,7 @@ class MainApp(npyscreen.NPSAppManaged):
 
         try:
             self.getForm("MAIN").tpm.value =  int(float(len(globalList))/(float(int(val["cs"])/60)))
-        except:
+        except (KeyError, ZeroDivisionError):
             pass
         self.getForm("MAIN").display()
 
