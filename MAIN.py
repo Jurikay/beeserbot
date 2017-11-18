@@ -40,12 +40,15 @@ from botFunctions import *
 
 # binance API
 from binance.client import Client
-from binance.websockets import BinanceSocketManager
+# from binance.websockets import BinanceSocketManager
 from binance.enums import *
+
+from customSocketManager import BinanceSocketManager
 
 # API related variables
 val["bm"] = BinanceSocketManager(client)
 val["exitThread"] = False
+val["priceList"] = getCurrentPrices()
 
 
 # main loop function
