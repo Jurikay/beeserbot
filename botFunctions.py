@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""API/ calculation functions."""
 # -*- coding: utf-8 -*-
 
 # by Jurek Baumann
@@ -9,7 +10,7 @@ import time
 # from math import fabs,ceil,floor
 
 # import os
-
+import atexit
 import logging
 # currently not needed
 
@@ -30,17 +31,14 @@ from twisted.internet.error import ReactorNotRunning
 
 client = Client(api_key, api_secret)
 
-def cleanExit():
-    '''
-    Stopping threads, npyscreen and the socket manager before exiting.
-    '''
 
+def cleanExit():
+    """Stop threads, npyscreen and the socket manager before exiting."""
     # Shutting down nicely
     print("     Shutting down...                  ")
 
     # trigger while loop to val["exitThread"]
     val["exitThread"] = True
-
 
     try:
         val["bm"].close()
@@ -49,37 +47,30 @@ def cleanExit():
         logging.debug("Error while closing socket manager: " + str(e))
 
 
-import atexit
 def exit_handler():
-    '''
-    Handle exit gracefully
-    '''
+    """Handle exit gracefully"""
     try:
         ui.app.switchForm(None)
     except AttributeError:
         pass
-    print ("\033c")
-    print ('🚫  Bot wurde beendet.')
+    print("\033c")
+    print('🚫  Bot wurde beendet.')
     # closeAllOrders()
 
+
 atexit.register(exit_handler)
+
 
 client = Client(api_key, api_secret)
 
 
-
-
 def availablePairs():
 
-    # API related variables
-
-    ''' Create a dictonary containing all BTC tradepairs excluding USDT.
-
-        Keys are:
-        {'symbol': 'ETHBTC', 'tradedMoney': 3024.89552855, 'baseAssetUnit': 'Ξ', 'active': True, 'minTrade': '0.00100000', 'baseAsset': 'ETH', 'activeSell': 66254.102, 'withdrawFee': '0', 'tickSize': '0.000001', 'prevClose': 0.044214, 'activeBuy': 0, 'volume': '66254.102000', 'high': '0.047998', 'lastAggTradeId': 2809764, 'decimalPlaces': 8, 'low': '0.043997', 'quoteAssetUnit': '฿', 'matchingUnitType': 'STANDARD', 'close': '0.047656', 'quoteAsset': 'BTC', 'open': '0.044214', 'status': 'TRADING', 'minQty': '1E-8'}
-    '''
+"""Create a dictonary containing all BTC tradepairs excluding USDT.
+    Keys are:
+    {'symbol': 'ETHBTC', 'tradedMoney': 3024.89552855, 'baseAssetUnit': 'Ξ', 'active': True, 'minTrade': '0.00100000', 'baseAsset': 'ETH', 'activeSell': 66254.102, 'withdrawFee': '0', 'tickSize': '0.000001', 'prevClose': 0.044214, 'activeBuy': 0, 'volume': '66254.102000', 'high': '0.047998', 'lastAggTradeId': 2809764, 'decimalPlaces': 8, 'low': '0.043997', 'quoteAssetUnit': '฿', 'matchingUnitType': 'STANDARD', 'close': '0.047656', 'quoteAsset': 'BTC', 'open': '0.044214', 'status': 'TRADING', 'minQty': '1E-8'}"""
     # create a local dictionary
-    coins=dict()
+    coins = dict()
 
     # API Call
     products = client.get_products()
@@ -87,30 +78,28 @@ def availablePairs():
     # For every entry in API answer:
     for i in range(len(products["data"])):
 
-        # Check if pair contains BTC, does not contain USDT and if volume is > 0
-        if "BTC" in products["data"][i]["symbol"] and not "USDT" in products["data"][i]["symbol"] and float(products["data"][i]["volume"]) > 0.0:
+        # Check if pair contains BTC, does not contain USDT and if volume is >0
+        if "BTC" in products["data"][i]["symbol"] and "USDT" not in products["data"][i]["symbol"] and float(products["data"][i]["volume"]) > 0.0:
             # Create a temporary dictionary to store keys and values
-            tempdict=dict()
+            tempdict = dict()
 
             # Add every key-value pair to the temp dictionary
             for key, value in products["data"][i].items():
                 tempdict[key] = value
             # Add every temp dictionary to the coin dictionary
-            coins[tempdict["symbol"]]=tempdict
+            coins[tempdict["symbol"]] = tempdict
     # return the newly created coin dictionary
 
     with open("coins.txt", "w") as f:
             f.write(str(coins))
-
-
     return coins
 
 
 # unused; TODO refactor
 def amountNumbers(bidAsk):
-    '''
-    Calculate the amount of numbers needed to properly display the order size
-    '''
+    """
+    Calculate the amount of numbers needed to properly display the order size.
+    """
     bidAmount = list()
     try:
         for i in range(len(depthMsg[bidAsk])):
@@ -120,16 +109,14 @@ def amountNumbers(bidAsk):
 
     # maxBidA = max(bidAmount)
     return bidAmount
-
-
     # time.sleep(0.1)
     # os._exit(0)
     # cleanly exit
 
 def fetchAsap(symbol):
-    '''
+    """
     Make a seperate API call to instantly get new ticker values after changing the coin.
-    '''
+    """
     tickers = client.get_ticker(symbol=symbol)
     tempDict = dict()
     iterator = 0
@@ -145,9 +132,9 @@ def fetchAsap(symbol):
 
 
 def fetchDepth(symbol):
-    '''
+    """
     Make a seperate API call to instantly get new orderbook values after changing the coin.
-    '''
+    """
     logging.debug("FETCHE DEPTH!!")
     depth = client.get_order_book(symbol=symbol)
     for key,value in depth.items():
@@ -155,9 +142,9 @@ def fetchDepth(symbol):
     depthMsg["lastUpdateId"] = "WAITING"
 
 def fillList(symbol):
-    '''
+    """
     Make a seperate API call to instantly get the trade history after changing the coin.
-    '''
+    """
     logging.debug("FILL LIST CALLED")
 
     # API Call
@@ -170,9 +157,9 @@ def fillList(symbol):
 
 
 def getHoldings():
-    '''
+    """
     Make an inital API call to get BTC and coin holdings.
-    '''
+    """
     # API Call:
     order = client.get_account()
 
@@ -184,11 +171,11 @@ def getHoldings():
     return accHoldings
 
 def getCurrentPrices():
-    '''
+    """
     Fetch bid and ask price and quantitiy of every coin. Access data this way: priceList["BNBBTC"]["askPrice"]
     Available values:
     'bidPrice', 'bidQty', 'askPrice', 'askQty'
-    '''
+    """
     priceList = dict()
 
     # API Call:
@@ -201,9 +188,9 @@ def getCurrentPrices():
     return priceList
 
 def restartSocket(symbol):
-    '''
+    """
     Checks if websocket connections are open, closeses them and starts new ones based on the given symbol.
-    '''
+    """
 
 
     logging.debug("RESTART SOCKET")
@@ -259,7 +246,7 @@ def depth_callback(msg):
         f.write(str(depthMsg))
 
 def trade_callback(msg):
-    # print ("\033[91mtrade update:")
+    # print("\033[91mtrade update:")
     # print(msg)
     for key, value in msg.items():
         tradesMsg[key] = value
@@ -281,7 +268,7 @@ def trade_callback(msg):
         f.write(str(tradesMsg))
 
 def ticker_callback(msg):
-    # print ("\033[92mticker update:")
+    # print("\033[92mticker update:")
     # print(msg)
     if msg[0]["s"] == val["symbol"]:
 
@@ -312,10 +299,10 @@ def user_callback(msg):
 ##################################################
 
 def isfloat(value):
-    '''
+    """
     Check if a value is convertable to float. Be aware of 'NaN', '-inf', 'infinity', 'True' etc.
     https://stackoverflow.com/questions/736043/checking-if-a-string-can-be-converted-to-float-in-python
-    '''
+    """
     try:
         float(value)
         return True
@@ -325,9 +312,9 @@ def isfloat(value):
 
 
 def validateOrderPrice(priceTarget, currentBid, currentAsk, order):
-    '''
+    """
     Check if entered buy price is reasonable. Returns "PERFECT", "GOOD", "OK" or "BAD" depending on evaluation
-    '''
+    """
 
     if isfloat(priceTarget):
         if order == "BUY":
@@ -354,9 +341,9 @@ def validateOrderPrice(priceTarget, currentBid, currentAsk, order):
 
 
 def calculateMinOrderSize(symbol, priceList):
-    '''
+    """
     calculate the lowest possible buy order size
-    '''
+    """
     # Define variables for better overview
     MIN_AMOUNT = 0.001
 
@@ -380,14 +367,14 @@ def calculateMinOrderSize(symbol, priceList):
         return round(minSellOrderSize,roundTo)
 
 def calculateMaxOrderSize(symbol, priceList, btcBalance):
-    '''
+    """
     Calculate the maximum possible order size (dependant on btc balance)
 
     discard (not round decimal places):
     https://stackoverflow.com/questions/17264733/remove-decimal-places-to-certain-digits-without-rounding
 
     maximum coin sell size = coin balance
-    '''
+    """
     minTrade = float(val["coins"][symbol]["minTrade"])
     roundTo = len(str(minTrade))-2
 

@@ -47,9 +47,9 @@ class MainForm(npyscreen.FormBaseNew):
     def switchCoin(self):
         self.coinPair.value = "LOADING"
         for i in range(self.obRange*2+5):
-            self.oHistory[i] = self.add(npyscreen.FixedText, value="                    ", editable=False, relx=50,rely=i+2)
+            self.oHistory[i] = self.add(npyscreen.FixedText, value="                    ", editable=False, relx=50, rely=i+2)
 
-    gridBuy=True
+    gridBuy = True
 
 
     #################################################################
@@ -79,7 +79,7 @@ class MainForm(npyscreen.FormBaseNew):
             else:
                 self.SellInput.color="DANGER"
 
-        except:
+        except KeyError:
             pass
 
 

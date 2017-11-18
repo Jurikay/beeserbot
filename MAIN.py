@@ -71,8 +71,6 @@ def mainLoop():
         logging.debug("###EINE SEC")
         try:
             ui.app.periodicUpdate()
-
-
         except KeyError:
             pass
         time.sleep(1)
@@ -83,13 +81,10 @@ def mainLoop():
                 ui.app.hardRefresh()
                 logging.debug("DISPLAY hardrefresh              ")
                 iterator = 0
-            except:
+            except KeyError:
                 pass
         else:
             iterator += 1
-
-
-
         # Test: running for:
 
         # val["timeRunning"] = str(datetime.timedelta(seconds=int(val["s"])))
