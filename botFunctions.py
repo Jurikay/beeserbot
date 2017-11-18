@@ -16,19 +16,50 @@ import logging
 # import sys
 # import os
 
-from config import *
+from config import api_key, api_secret
 from botLogic import *
+import ui
+
 
 from binance.client import Client
 from binance.websockets import BinanceSocketManager
 from binance.enums import *
+
+from twisted.internet import reactor, ssl
+from twisted.internet.error import ReactorAlreadyRunning, ReactorNotRunning
+
+
+client = Client(api_key, api_secret)
+
+def cleanExit():
+    '''
+    Stopping threads, npyscreen and the socket manager before exiting.
+    '''
+
+    # Shutting down nicely
+    print("Shutting down...                  ")
+
+    # trigger while loop to val["exitThread"]
+    val["exitThread"] = True
+
+
+    try:
+        val["bm"].close()
+        logging.debug("CLOSING MANAGER")
+    except (ReactorNotRunning) as e:
+        logging.debug("Error while closing socket manager: " + str(e))
+
 
 import atexit
 def exit_handler():
     '''
     Handle exit gracefully
     '''
-    cleanExit()
+    try:
+        ui.app.switchForm(None)
+    except:
+        pass
+    print ("\033c")
     print ('🚫  Bot wurde beendet.')
     # closeAllOrders()
 
@@ -91,26 +122,9 @@ def amountNumbers(bidAsk):
     maxBidA = max(bidAmount)
     return bidAmount
 
-def cleanExit():
-    '''
-    Stopping threads, npyscreen and the socket manager before exiting.
-    '''
 
-    # Shutting down nicely
-    print("Shutting down...")
-
-    # trigger while loop to exitThread
-    exitThread = True
-
-    with lock:
-        try:
-            val["bm"].close()
-            logging.debug("CLOSING MANAGER")
-        except:
-            pass
-
-    time.sleep(0.1)
-    os._exit(0)
+    # time.sleep(0.1)
+    # os._exit(0)
     # cleanly exit
 
 def fetchAsap(symbol):
@@ -180,10 +194,10 @@ def getCurrentPrices():
 
     # API Call:
     currentPrices = client.get_orderbook_tickers()
+    for index in enumerate(currentPrices):
+        if "BTC" in currentPrices[index]["symbol"] and not "USDT" in currentPrices[index]["symbol"]:
+            priceList[currentPrices[index]["symbol"]] = currentPrices[index]
 
-    for i in range(len(currentPrices)):
-        if "BTC" in currentPrices[i]["symbol"] and not "USDT" in currentPrices[i]["symbol"]:
-            priceList[currentPrices[i]["symbol"]] = currentPrices[i]
 
     return priceList
 
@@ -349,7 +363,7 @@ def calculateMinOrderSize(symbol, priceList):
     MIN_AMOUNT = 0.001
 
     currentBid = priceList[symbol]["bidPrice"]
-    currentAsk = priceList[symbol]["askPrice"]
+    # currentAsk = priceList[symbol]["askPrice"]
 
     minTrade = float(val["coins"][symbol]["minTrade"])
     roundTo = len(str(minTrade))-2

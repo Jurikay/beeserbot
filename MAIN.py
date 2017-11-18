@@ -8,8 +8,25 @@
 MAIN entrypoint of the bot
 '''
 
-print("starting engines 🛥")
+version ="1.01"
 
+
+
+print('''
+                     \033[94m__         _       __\033[93m
+                 \033[94m__ / /_ ______(_)__   / /_ ___ ___ ___ ___ ___ ____\033[93m
+/$$$$$$$  /$$   \033[94m/ // / // / __/ (_-<  / _  / -_) -_) -_|_-</ -_) __/\033[93m   /$$$$$$$              /$$
+| $$__  $$|__/  \033[94m\___/\_,_/_/ /_/___/ /_.__/\__/\__/\__/___/\__/_/\033[93m     | $$__  $$            | $$
+| $$  \ $$ /$$ /$$$$$$$   /$$$$$$  /$$$$$$$   /$$$$$$$  /$$$$$$       | $$  \ $$  /$$$$$$  /$$$$$$
+| $$$$$$$ | $$| $$__  $$ |____  $$| $$__  $$ /$$_____/ /$$__  $$      | $$$$$$$  /$$__  $$|_  $$_/
+| $$__  $$| $$| $$  \ $$  /$$$$$$$| $$  \ $$| $$      | $$$$$$$$      | $$__  $$| $$  \ $$  | $$
+| $$  \ $$| $$| $$  | $$ /$$__  $$| $$  | $$| $$      | $$_____/      | $$  \ $$| $$  | $$  | $$ /$$
+| $$$$$$$/| $$| $$  | $$|  $$$$$$$| $$  | $$|  $$$$$$$|  $$$$$$$      | $$$$$$$/|  $$$$$$/  |  $$$$/
+|_______/ |__/|__/  |__/ \_______/|__/  |__/ \_______/ \_______/      |_______/  \______/    \___/
+''')
+print("Version\033[0m " + str(version) +"\033[93m – https://github.com/Jurikay/beeserbot\033[0m")
+print("")
+print("starting engines... Please stand by..")
 # IMPORTS
 
 # various stuff
@@ -18,11 +35,11 @@ print("starting engines 🛥")
 import time
 import threading
 import logging
-from math import fabs,ceil,floor
+from math import ceil,floor
 
 
 # my stuff
-from config import *
+from config import api_key,api_secret
 from colorSyntax import *
 import ui
 from botFunctions import *
@@ -37,17 +54,18 @@ from binance.client import Client
 from binance.websockets import BinanceSocketManager
 from binance.enums import *
 
+
 # API related variables
 val["bm"] = BinanceSocketManager(client)
+val["exitThread"] = False
 
-exitThread = False
 
 # main loop function
 
 #  BOT LOGIC GOES HERE
 def mainLoop():
     iterator = 0
-    while exitThread == False:
+    while val["exitThread"] == False:
 
         val["s"] += 1
         val["cs"] += 1
@@ -78,7 +96,7 @@ def mainLoop():
 
         # val["timeRunning"] = str(datetime.timedelta(seconds=int(val["s"])))
 
-        # if exitThread == True:
+        # if val["exitThread"] == True:
         #     print("exit thread")
 
 

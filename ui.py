@@ -11,7 +11,6 @@ from botFunctions import *
 from botLogic import *
 import logging
 
-
 logging.basicConfig(filename="test.log", level=logging.DEBUG, format='%(asctime)s %(message)s')
 
 
@@ -41,32 +40,11 @@ COLORS:
 '''
 
 
-
-
-
 class MainForm(npyscreen.FormBaseNew):
-
-
 
     def hotkeyFix(self):
         self.coinPair.value="BUTTON PRESSED"
         logging.debug("BUTTON PRESSED")
-
-    #
-    # def clearOrderBook(self):
-    #     logging.debug("CLEAR ORDERBOOK PROCC")
-    #     # for i in range(self.obRange):
-    #     #     logging.debug(str(self.bids[i].value))
-    #     #     try:
-    #     #         self.bids[i].value = "-----------------------------------"
-    #     #
-    #     #         self.asks[i].value ="-----------------------------------"
-    #     #     except:
-    #     #         pass
-    #     self.date_widget.value = str("WAITING")
-    #
-    #     self.parentApp.hardRefresh()
-
 
     def switchCoin(self):
         self.coinPair.value = "LOADING"
@@ -74,17 +52,6 @@ class MainForm(npyscreen.FormBaseNew):
             self.oHistory[i] = self.add(npyscreen.FixedText, value="                    ", editable=False, relx=50,rely=i+2)
 
     gridBuy=True
-    # set (update) values periodically when no user input is present
-    # Form idle loop
-
-    # @staticmethod
-    # def updateOrderbook(self):
-    #     logging.debug("UPDATE ORDERBOOK!!!" + str(self))
-    #     # Update order book values
-    #     for i in range(self.obRange):
-    #         self.bids[i].value ="[" + str((i+1)).zfill(1)+ "]" + str(depthMsg["bids"][i][0]) + " | " + str(float(depthMsg["bids"][i][1])).ljust(6,"0")
-    #
-    #         self.asks[i].value ="[" + str((self.obRange-i)).zfill(1)+ "]" + str(depthMsg["asks"][self.obRange-i-1][0]) + " | " + str(float(depthMsg["asks"][self.obRange-i-1][1])).ljust(6,"0")
 
 
     #################################################################
@@ -118,73 +85,10 @@ class MainForm(npyscreen.FormBaseNew):
             pass
 
 
-        try:
-            # logging.debug(val["coins"])
-            logging.debug(val["coins"]["ETHBTC"])
-            self.debug.value=str(len(val["coins"]["ETHBTC"]["tickSize"])) + "  " + str(1 - float(val["coins"]["ETHBTC"]["minQty"])) + "  " + str(val["coins"]["ETHBTC"]["minTrade"])
-        except:
-            pass
+
 
         self.display()
-        # pass
-    #
-    #     # Catch KeyError if websocket update hasn't occured yet
-    #     try:
-    #         logging.debug("drawe changes")
-    #
-    #         self.coinPair.value = str(tickerMsg["s"])
-    #         # update values from websocket data, stored in "global" dictionary
-    #         #npyscreen.notify_wait(str(temp["lastUpdateId"]))
-    #
-    #         # self.date_widget.value = str(depthMsg["lastUpdateId"])
-    #
-    #
-    #         self.runningSince.value = str(datetime.timedelta(seconds=int(val["s"])))
-    #
-    #         try:
-    #             self.tpm.value =  int(float(len(globalList))/(float(int(val["cs"])/60)))
-    #         except:
-    #             pass
-    #
-    #         # Update order book values
-    #         # for i in range(self.obRange):
-    #         #     self.bids[i].value ="[" + str((i+1)).zfill(1)+ "]" + str(depthMsg["bids"][i][0]) + " | " + str(float(depthMsg["bids"][i][1])).ljust(6,"0")
-    #         #
-    #         #     self.asks[i].value ="[" + str((self.obRange-i)).zfill(1)+ "]" + str(depthMsg["asks"][self.obRange-i-1][0]) + " | " + str(float(depthMsg["asks"][self.obRange-i-1][1])).ljust(6,"0")
-    #
-    #
-    #         self.clearOb()
-    #         # Update trade history values
-    #         try:
-    #             for i in range(self.obRange*2+3):
-    #                 # self.oHistory[i].value = str(globalList[i])
-    #                 # with open("myfile2.txt", "w") as f:
-    #                 #     f.write(str(globalList))
-    #
-    #                 if globalList[i]["order"] == "True":
-    #                     self.oHistory[i] = self.add(SyntaxHistSell, npyscreen.FixedText, value=str(globalList[i]["price"])+"  "+str(float(globalList[i]["quantity"])).ljust(5,"0"), editable=False, relx=50,rely=i+2)
-    #                 else:
-    #                     self.oHistory[i] = self.add(SyntaxHistBuy, npyscreen.FixedText, value=str(globalList[i]["price"])+"  "+str(float(globalList[i]["quantity"])).ljust(5,"0"), editable=False, relx=50,rely=i+2)
-    #                 self.oHistory[i].syntax_highlighting=True
-    #
-    #         except:
-    #             pass
-    #
-    #         # Update trades, spread
-    #         self.tradesSinceStart.value = str(len(globalList))
-    #         try:
-    #             self.spreadVal = ((float(depthMsg["asks"][0][0])-float(depthMsg["bids"][0][0]))/float(depthMsg["asks"][0][0]))*100
-    #             self.spread.value = "Spread: " + str(round(self.spreadVal,2))+"%"
-    #         except:
-    #             pass
-    #
-    #         self.display()
-    #     except KeyError:
-    #         #print ("error")
-    #         pass
 
-        # commit updates and refresh view
-        # self.display()
     #################################################################
     # CREATE FUNCTION
     #################################################################
@@ -280,9 +184,6 @@ class MainForm(npyscreen.FormBaseNew):
         self.statusIndicator = self.add(npyscreen.FixedText, value="STATUS:", editable=False, relx=2,rely=-3,color="DANGER")
 
 
-
-
-
     def start_button_pressed(self):
         npyscreen.notify_wait("HI")
         # self.start_button.name="lul"
@@ -299,10 +200,9 @@ class MainForm(npyscreen.FormBaseNew):
 
     def exit_application(self):
         # curses.beep()
-        npyscreen.notify_wait("Shutting down")
+        # npyscreen.notify_wait("Shutting down")
 
         cleanExit()
-        time.sleep(1)
         self.editing = False
         self.parentApp.switchForm(None)
 
@@ -401,7 +301,7 @@ class coinInput(npyscreen.Textfield):
 
 
     # CHANGE COIN
-    def do_something(self, input):
+    def do_something(self, inputVal):
         if str(self.value).upper() + str("BTC") in val["coins"] and self.value + str("BTC") != val["symbol"]:
             val["symbol"] = str(self.value).upper() + str("BTC")
             self.color="DEFAULT"
@@ -504,24 +404,7 @@ class MainApp(npyscreen.NPSAppManaged):
                 self.getForm("MAIN").display()
             except:
                 pass
-            # self.getForm("MAIN").clearOb()
-            # try:
-            #     for i in range(self.getForm("MAIN").obRange*2+3):
-            #
-            #
-            #         if globalList[i]["order"] == "True":
-            #             self.getForm("MAIN").oHistory[i] =     self.getForm("MAIN").add(SyntaxHistSell, npyscreen.FixedText, value=str(globalList[i]["price"])+"  "+str(float(globalList[i]["quantity"])).ljust(5,"0"), editable=False, relx=50,rely=i+2)
-            #         elif globalList[i]["order"] == "False":
-            #             self.getForm("MAIN").oHistory[i] =     self.getForm("MAIN").add(SyntaxHistBuy, npyscreen.FixedText, value=str(globalList[i]["price"])+"  "+str(float(globalList[i]["quantity"])).ljust(5,"0"), editable=False, relx=50,rely=i+2)
-            #         else:
-            #             self.getForm("MAIN").oHistory[i].value="+++++++++++++++++++++++++++++"
-            #         self.getForm("MAIN").oHistory[i].syntax_highlighting=True
-            #
-            # except:
-            #     pass
-        # self.getForm("MAIN").display()
 
-        # logging.debug("testzugriff end")
 
 
     def setStatus(self, statusStr, statusTitle):
