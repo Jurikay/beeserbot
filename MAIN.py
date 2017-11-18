@@ -4,32 +4,10 @@
 
 # API IMPLEMENTATION FROM https://github.com/sammchardy/python-binance
 # DOCS: http://python-binance.readthedocs.io/en/latest/index.html
-'''
-MAIN entrypoint of the bot
-'''
-
-version = "1.02"
-
-
-
-print("""
-                    \033[94m__         _       __\033[93m
-                \033[94m__ / /_ ______(_)__   / /_ ___ ___ ___ ___ ___ ____\033[93m
-/$$$$$$$  /$$  \033[94m/ // / // / __/ (_-<  / _  / -_) -_) -_|_-</ -_) __/\033[93m    /$$$$$$$              /$$
-| $$__  $$|__/ \033[94m\___/\_,_/_/ /_/___/ /_.__/\__/\__/\__/___/\__/_/\033[93m      | $$__  $$            | $$
-| $$  \ $$ /$$ /$$$$$$$   /$$$$$$  /$$$$$$$   /$$$$$$$  /$$$$$$       | $$  \ $$  /$$$$$$  /$$$$$$
-| $$$$$$$ | $$| $$__  $$ |____  $$| $$__  $$ /$$_____/ /$$__  $$      | $$$$$$$  /$$__  $$|_  $$_/
-| $$__  $$| $$| $$  \ $$  /$$$$$$$| $$  \ $$| $$      | $$$$$$$$      | $$__  $$| $$  \ $$  | $$
-| $$  \ $$| $$| $$  | $$ /$$__  $$| $$  | $$| $$      | $$_____/      | $$  \ $$| $$  | $$  | $$ /$$
-| $$$$$$$/| $$| $$  | $$|  $$$$$$$| $$  | $$|  $$$$$$$|  $$$$$$$      | $$$$$$$/|  $$$$$$/  |  $$$$/
-|_______/ |__/|__/  |__/ \_______/|__/  |__/ \_______/ \_______/      |_______/  \______/    \___/""")
-
-print(" Version\033[0m " + str(version) + "\033[93m – https://github.com/Jurikay/beeserbot\033[0m")
-print("")
-print("starting engines... Please stand by..")
+"""MAIN entrypoint of the bot."""
 
 # IMPORTS
-
+import splashScreen
 import time
 import threading
 import logging
@@ -39,11 +17,14 @@ import ui
 from botFunctions import *
 
 # binance API
-from binance.client import Client
+# from binance.client import Client
 # from binance.websockets import BinanceSocketManager
 from binance.enums import *
 
 from customSocketManager import BinanceSocketManager
+
+# used to supress linter error...
+logging.debug("Juris beeser Bot version " + str(splashScreen.version) + " started")
 
 # API related variables
 val["bm"] = BinanceSocketManager(client)
