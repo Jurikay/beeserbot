@@ -8,7 +8,7 @@
 import time
 from math import fabs,ceil,floor
 
-import os
+# import os
 
 import logging
 # currently not needed
@@ -22,11 +22,10 @@ import ui
 
 
 from binance.client import Client
-from binance.websockets import BinanceSocketManager
+# from binance.websockets import BinanceSocketManager
 from binance.enums import *
 
-from twisted.internet import reactor, ssl
-from twisted.internet.error import ReactorAlreadyRunning, ReactorNotRunning
+from twisted.internet.error import ReactorNotRunning
 
 
 client = Client(api_key, api_secret)
@@ -119,7 +118,7 @@ def amountNumbers(bidAsk):
     except KeyError:
         pass
 
-    maxBidA = max(bidAmount)
+    # maxBidA = max(bidAmount)
     return bidAmount
 
 
@@ -395,7 +394,7 @@ def calculateMaxOrderSize(symbol, priceList, btcBalance):
 
     currentBid = priceList[symbol]["bidPrice"]
     ticksize = str(val["coins"][symbol]["tickSize"])
-    roundToBtc = len(str(ticksize))-2
+    # roundToBtc = len(str(ticksize))-2
 
     maxSize = float(btcBalance) / (float(currentBid) + float(ticksize))
 

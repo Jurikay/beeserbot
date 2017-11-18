@@ -61,7 +61,7 @@ class MainForm(npyscreen.FormBaseNew):
 
         # update buy input coloring
         try:
-            buyValidation = validateOrderPrice(    self.BuyInput.value, depthMsg["bids"][0][0], depthMsg["asks"][0][0],"BUY")
+            buyValidation = validateOrderPrice(self.BuyInput.value, depthMsg["bids"][0][0], depthMsg["asks"][0][0],"BUY")
             if buyValidation == "PERFECT":
                 self.BuyInput.color="STANDOUT"
             elif buyValidation == "GOOD":
@@ -71,12 +71,12 @@ class MainForm(npyscreen.FormBaseNew):
             else:
                 self.BuyInput.color="DANGER"
 
-            sellValidation = validateOrderPrice(    self.SellInput.value, depthMsg["bids"][0][0], depthMsg["asks"][0][0],"SELL")
-            if buyValidation == "PERFECT":
+            sellValidation = validateOrderPrice(self.SellInput.value, depthMsg["bids"][0][0], depthMsg["asks"][0][0],"SELL")
+            if sellValidation == "PERFECT":
                 self.SellInput.color="STANDOUT"
-            elif buyValidation == "GOOD":
+            elif sellValidation == "GOOD":
                 self.SellInput.color="GOOD"
-            elif buyValidation == "OK":
+            elif sellValidation == "OK":
                 self.SellInput.color="WARNING"
             else:
                 self.SellInput.color="DANGER"
@@ -192,10 +192,10 @@ class MainForm(npyscreen.FormBaseNew):
         else:
             self.start_button.name="Start"
 
-
-    def on_ok(self):
-        # Do stuff when the OK Button is pressed
-        npyscreen.notify_confirm("OK Button Pressed!")
+    # @classmethod
+    # def on_ok():
+    #     # Do stuff when the OK Button is pressed
+    #     npyscreen.notify_confirm("OK Button Pressed!")
 
 
     def exit_application(self):

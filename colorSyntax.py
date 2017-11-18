@@ -5,27 +5,19 @@
 
 import npyscreen
 
-
-
-class SyntaxHistSell(npyscreen.FixedText):
-    def update_highlighting(self, start, end):
-        colorRed=1792
-        colorCyan=1024
-        colorGreen=1280
-        colorYellow=2048
-        colorWhite=0
-        colorBlack=512
-
-        self._highlightingdata = [
-         colorRed,colorRed,colorRed,colorRed,colorRed,colorRed,colorRed,colorRed,colorRed,colorRed,
-        ]
-# class SyntaxHistBuy(npyscreen.FixedText):
+# class SyntaxHistSell(npyscreen.FixedText):
 #     def update_highlighting(self, start, end):
+#         colorRed=1792
 #         colorCyan=1024
+#         colorGreen=1280
+#         colorYellow=2048
+#         colorWhite=0
+#         colorBlack=512
 #
 #         self._highlightingdata = [
-#          colorCyan,colorCyan,colorCyan,colorCyan,colorCyan,colorCyan,colorCyan,colorCyan,colorCyan,colorCyan,
+#          colorRed,colorRed,colorRed,colorRed,colorRed,colorRed,colorRed,colorRed,colorRed,colorRed,
 #         ]
+
 
 class SyntaxObBids(npyscreen.FixedText):
     def update_highlighting(self, start, end):

@@ -3,11 +3,11 @@
 
 # by Jurek Baumann
 
-import botFunctions
+# import botFunctions
 
 import  threading
 
-import ui
+# import ui
 
 
 # DEBUG hardcode symbol
