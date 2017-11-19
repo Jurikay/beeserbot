@@ -22,21 +22,6 @@ logging.basicConfig(filename="test.log", level=logging.DEBUG, format='%(asctime)
 
 
 class MainForm(npyscreen.FormBaseNew):
-    def __init__(self, *args, **keywords):
-        super(npyscreen.FormBaseNew, self).__init__(*args, **keywords)
-        self.add_handlers(
-            {
-
-                curses.KEY_F1: self.start_button_pressed,
-                curses.KEY_F2: self.select_switcher,
-                "r": self.hotkeyFix
-
-
-
-
-            }
-        )
-
     """
     Main Form Class of npyscreen.
 
@@ -61,8 +46,21 @@ class MainForm(npyscreen.FormBaseNew):
         'CAUTION'     : 'YELLOW_BLACK',
         'CAUTIONHL'   : 'BLACK_YELLOW',
     """
+    # Overload init function to add key handlers
+    def __init__(self, *args, **keywords):
+        super(npyscreen.FormBaseNew, self).__init__(*args, **keywords)
+        self.add_handlers(
+            {
+
+                curses.KEY_F1: self.start_button_pressed,
+                curses.KEY_F2: self.select_switcher,
+                "r": self.hotkeyFix
+            }
+        )
+
+
     def select_switcher(self, keyCode):
-        self.coinPair.value = str(self.editw)
+        # self.coinPair.value = str(self.editw)
         # self.selectBS.hidden=True
         self.editw = 37
         self.how_exited = False
@@ -320,8 +318,8 @@ class orderSizeInput(npyscreen.Textfield):
         else:
             self.color = "DANGER"
 
-        # minTrade = float(val["coins"][symbol]["minTrade"])
-        # roundTo = len(str(minTrade))
+        minTrade = float(val["coins"][symbol]["minTrade"])
+        roundTo = len(str(minTrade))
 
         # Doesn't work like this
         # Must be something like so:
