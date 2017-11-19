@@ -76,11 +76,11 @@ def interpreteData(symbol):
 
     indicators = dict()
 
-    for index, value in enumerate(Intervals):
+    for value in enumerate(Intervals):
 
 
 
-        stock = stockstats.StockDataFrame.retype(pd.read_csv(str(symbol) + str(value) + '.csv'))
+        stock = stockstats.StockDataFrame.retype(pd.read_csv(str(symbol) + str(value[1]) + '.csv'))
 
         # Calculate chosen indicators
         rsi6hData = stock['rsi_6']
@@ -99,6 +99,6 @@ def interpreteData(symbol):
         lowerBoll = round(lowerBollData.iloc[-1],8)
 
 
-        indicators[value] = {"rsi6h": rsi6h, "rsi12h": rsi12h, "medBoll": medBoll, "upperBoll": upperBoll, "lowerBoll": lowerBoll}
-        print(medBoll)
+        indicators[value[1]] = {"rsi6h": rsi6h, "rsi12h": rsi12h, "medBoll": medBoll, "upperBoll": upperBoll, "lowerBoll": lowerBoll}
+        # print(medBoll)
     return indicators
