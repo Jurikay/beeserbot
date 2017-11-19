@@ -188,7 +188,7 @@ class MainForm(npyscreen.FormBaseNew):
         self.coinHeadline = self.add(npyscreen.FixedText, value="Coin:", editable=False, color="WARNING", relx=2, rely=self.obRange*2+5)
 
 
-        self.editT = self.add(coinInput, value=symbol.strip("BTC"), editable=True, relx=8, rely=self.obRange*2+5)
+        self.editT = self.add(coinInput, value=str(val["symbol"])[:-3], editable=True, relx=8, rely=self.obRange*2+5)
 
         # self.spacer = self.add(npyscreen.FixedText, value="", editable=False)
 
@@ -308,6 +308,7 @@ class orderSizeInput(npyscreen.Textfield):
 
     def when_value_edited(self):
         """Fire when value is edited."""
+        # TODO: refactor
         self.value = self.value
         sizeValidation = validateOrderSize(self.value, val["symbol"], val["priceList"], "0.021")
         if sizeValidation == "PERFECT":
@@ -319,8 +320,8 @@ class orderSizeInput(npyscreen.Textfield):
         else:
             self.color = "DANGER"
 
-        minTrade = float(val["coins"][symbol]["minTrade"])
-        roundTo = len(str(minTrade))
+        # minTrade = float(val["coins"][symbol]["minTrade"])
+        # roundTo = len(str(minTrade))
 
         # Doesn't work like this
         # Must be something like so:

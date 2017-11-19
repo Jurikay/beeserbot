@@ -6,4 +6,4 @@
 api_key = ''
 api_secret = ''
 
-recv_window = 6000000
+symbol = 'BNBBTC'
