@@ -15,6 +15,7 @@ import logging
 from colorSyntax import *
 import ui
 from botFunctions import *
+from botLogic import *
 
 # binance API
 # from binance.client import Client
@@ -31,6 +32,7 @@ val["bm"] = BinanceSocketManager(client)
 val["exitThread"] = False
 val["priceList"] = getCurrentPrices()
 
+val["buyLoop"] = True
 
 # main loop function
 
@@ -42,7 +44,6 @@ def mainLoop():
         val["s"] += 1
         val["cs"] += 1
 
-        logging.debug("###EINE SEC")
         try:
             ui.app.periodicUpdate()
         except KeyError:
@@ -50,7 +51,7 @@ def mainLoop():
         time.sleep(1)
         # Hard refresh Display every 15 seconds TODO: find a better way to fix display errors
 
-        if iterator >= 10:
+        if iterator > 9:
             try:
                 ui.app.hardRefresh()
                 logging.debug("DISPLAY hardrefresh              ")
@@ -81,12 +82,28 @@ def mainLoop():
 #     iterator = 0
 
 
-# Start npyscreen. Everything after this will be triggered on exit (ESC)
+# def buyLoop():
+#     while val["buyLoop"] is True:
+#         # while val["tryToBuy"] == 1:
+#         #     time.sleep(0.2)
+#         #     logging.debug("trying to buy")
+#
+#         time.sleep(0.5)
+#
+
+
+
+
 if __name__ == '__main__':
     # Starting main loop in separate Thread as a deamon
     mainThread = threading.Thread(target=mainLoop, args=(), daemon=True)
 
     mainThread.start()
+
+    # buyThread = threading.Thread(target=buyLoop, args=(), daemon=True)
+    #
+    # buyThread.start()
+
 
     # calcThread = threading.Thread(target=calcLoop,args=(), daemon=True)
 
