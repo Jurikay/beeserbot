@@ -34,6 +34,7 @@ logging.debug("Juris beeser Bot version " + str(splashScreen.version) + " starte
 #  BOT LOGIC GOES HERE
 def mainLoop():
     iterator = 0
+    minuteIt = 0
     while val["exitThread"] is False:
 
         val["s"] += 1
@@ -55,6 +56,14 @@ def mainLoop():
                 pass
         else:
             iterator += 1
+
+        if minuteIt > 60:
+
+            TA.createCSV()
+            val["indicators"] = TA.interpreteData(str(val["symbol"]))
+            minuteIt = 0
+        else:
+            minuteIt +=1
         # Test: running for:
 
         # val["timeRunning"] = str(datetime.timedelta(seconds=int(val["s"])))
@@ -103,6 +112,11 @@ if __name__ == '__main__':
     # calcThread = threading.Thread(target=calcLoop,args=(), daemon=True)
 
     # calcThread.start()
+
+    TA.createCSV()
+    val["indicators"] = TA.interpreteData(str(val["symbol"]))
+    # print(indicators["1h"]["lowerBoll"])
+
 
     # (re)start webSocket connections
     restartSocket(symbol)
