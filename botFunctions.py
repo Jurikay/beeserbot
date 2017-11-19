@@ -93,8 +93,8 @@ def availablePairs():
             coins[tempdict["symbol"]] = tempdict
     # return the newly created coin dictionary
 
-    with open("coins.txt", "w") as f:
-            f.write(str(coins))
+    # with open("coins.txt", "w") as f:
+    #         f.write(str(coins))
     return coins
 
 
@@ -232,8 +232,10 @@ def depth_callback(msg):
     # draw orderbook changes right as they are received
     ui.app.updateDepth()
 
-    with open("depthCallback.txt", "w") as f:
-        f.write(str(depthMsg))
+    # with open("depthCallback.txt", "w") as f:
+    #     f.write(str(depthMsg))
+    if val["tryToBuy"] == 1:
+        logging.debug("API BUY TRIGGER")
 
 
 def trade_callback(msg):
@@ -255,8 +257,8 @@ def trade_callback(msg):
     # except:
     #     logging.debug("KONNTE GLOBAL LIST NICHT SCHRUMPFEN")
     logging.debug("Global list: " + str(globalList))
-    with open("tradeCallback.txt", "w") as f:
-        f.write(str(tradesMsg))
+    # with open("tradeCallback.txt", "w") as f:
+    #     f.write(str(tradesMsg))
 
 
 def ticker_callback(msg):
@@ -266,8 +268,8 @@ def ticker_callback(msg):
 
         for key, value in msg[0].items():
             tickerMsg[key] = value
-        with open("tickerCallback.txt", "w") as f:
-            f.write(str(tickerMsg))
+        # with open("tickerCallback.txt", "w") as f:
+        #     f.write(str(tickerMsg))
 
 
 def user_callback(msg):
