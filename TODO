@@ -89,3 +89,11 @@ split apart application further: apiFunctions.py, initialize.py
 limit number of decimal places on order input (price and size)
 
 hotkeys: capture hotkeys S and R while on buy/sell selector or numeric input forms
+
+calculate RSI and possibly other indicators
+
+fix naming conventions
+
+trade analysis:
+https://github.com/jealous/stockstats
+get kline data, transform into correct format, export csv or pass to stockstats, get results, display in npyscreen Form

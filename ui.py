@@ -2,6 +2,12 @@
 # -*- coding: utf-8 -*-
 
 # by Jurek Baumann
+
+"""console UI based on npyscreen.
+
+Docs: npyscreen.readthedocs.io/form-objects.html
+"""
+
 import npyscreen
 import curses
 from colorSyntax import *
@@ -16,8 +22,24 @@ logging.basicConfig(filename="test.log", level=logging.DEBUG, format='%(asctime)
 
 
 class MainForm(npyscreen.FormBaseNew):
+    def __init__(self, *args, **keywords):
+        super(npyscreen.FormBaseNew, self).__init__(*args, **keywords)
+        self.add_handlers(
+            {
 
-    '''
+                curses.KEY_F1: self.start_button_pressed,
+                curses.KEY_F2: self.select_switcher,
+                "r": self.hotkeyFix
+
+
+
+
+            }
+        )
+
+    """
+    Main Form Class of npyscreen.
+
     COLORS:
         'DEFAULT'     : 'WHITE_BLACK',
         'FORMDEFAULT' : 'WHITE_BLACK',
@@ -38,14 +60,32 @@ class MainForm(npyscreen.FormBaseNew):
         'VERYGOOD'    : 'BLACK_GREEN',
         'CAUTION'     : 'YELLOW_BLACK',
         'CAUTIONHL'   : 'BLACK_YELLOW',
-    '''
+    """
+    def select_switcher(self, keyCode):
+        self.coinPair.value = str(self.editw)
+        # self.selectBS.hidden=True
+        self.editw = 37
+        self.how_exited = False
+        self.SellQuant.editing = False
+        self.BuyInput.editing = False
+        self.selectBS.editing = False
+        # self.selectBS.get_content().hidden=True
+        self.selectBS.h_select_exit(None)
+        self.editw = 37
+        self.selectBS.editing = False
+        # self.selectBS.hidden=False
 
-    def hotkeyFix(self):
-        self.coinPair.value = "BUTTON PRESSED"
-        logging.debug("BUTTON PRESSED")
+        # self.h_exit_down()
+
+        # self.editT.edit()
+
+
+    def hotkeyFix(self, keyCode):
+        self.DISPLAY()
 
     def switchCoin(self):
         self.coinPair.value = "LOADING"
+
         for i in range(self.obRange*2+5):
             self.oHistory[i] = self.add(npyscreen.FixedText, value="                    ", editable=False, relx=50, rely=i+2)
 
@@ -56,7 +96,6 @@ class MainForm(npyscreen.FormBaseNew):
     # WHILE WAITING LOOP
     #################################################################
     def while_waiting(self):
-
         # update buy input coloring
         try:
             buyValidation = validateOrderPrice(self.BuyInput.value, depthMsg["bids"][0][0], depthMsg["asks"][0][0], "BUY")
@@ -79,8 +118,14 @@ class MainForm(npyscreen.FormBaseNew):
             else:
                 self.SellInput.color = "DANGER"
 
+            if str(self.date_widget.value) != str("WAITING") and self.status.value == "Waiting for Websocket...":
+                self.status.value = "just watching the market"
+
         except KeyError:
             pass
+
+
+
 
         self.display()
 
@@ -91,8 +136,6 @@ class MainForm(npyscreen.FormBaseNew):
         # EXIT APP on ESC
         self.how_exited_handers[npyscreen.wgwidget.EXITED_ESCAPE] = self.exit_application
 
-        # Add F1 handler to fix display FIXME make it work
-        self.add_handlers({"KEY_F(1)": self.hotkeyFix})
 
         # Add various values TODO add values; implement headlines
         self.coinPair = self.add(npyscreen.FixedText, value=val["symbol"], editable=False, color="WARNING")
@@ -143,6 +186,8 @@ class MainForm(npyscreen.FormBaseNew):
 
         # Create Coin input field
         self.coinHeadline = self.add(npyscreen.FixedText, value="Coin:", editable=False, color="WARNING", relx=2, rely=self.obRange*2+5)
+
+
         self.editT = self.add(coinInput, value=symbol.strip("BTC"), editable=True, relx=8, rely=self.obRange*2+5)
 
         # self.spacer = self.add(npyscreen.FixedText, value="", editable=False)
@@ -184,19 +229,66 @@ class MainForm(npyscreen.FormBaseNew):
         self.indicator = self.add(npyscreen.FixedText, value="#", editable=False, relx=-5, rely=-3)
 
 
-    def start_button_pressed(self):
-        npyscreen.notify_wait("HI")
+
+
+    def start_button_pressed(self, *keyCode):
+        # npyscreen.notify_wait("HI")
         # self.start_button.name="lul"
-        if self.start_button.name == "Start":
-            self.start_button.name = "Stop"
+        if str(depthMsg["lastUpdateId"]) == "WAITING":
+            self.status.value = "Websocket connection not established..."
         else:
-            self.start_button.name = "Start"
+            if self.start_button.name == "Start":
+                self.start_button.name = "Stop "
+
+                if 0 in self.selectBS.value and 1 in self.selectBS.value:
+                    val["tryToBuy"] = True
+                    val["tryToSell"] = True
+                    self.status.value = "looking to buy and sell.."
+
+                elif 0 in self.selectBS.value:
+                    val["tryToBuy"] = True
+                    val["tryToSell"] = False
+                    self.status.value = "looking to buy.."
+                elif 1 in self.selectBS.value:
+                    val["tryToSell"] = True
+                    val["tryToSBuy"] = False
+                    self.status.value = "looking to sell.."
+
+
+
+
+            else:
+                self.start_button.name = "Start"
+                val["tryToBuy"] = False
+                val["tryToSell"] = False
+                self.status.value = "just watching the market"
 
     # @classmethod
     # def on_ok():
     #     # Do stuff when the OK Button is pressed
     #     npyscreen.notify_confirm("OK Button Pressed!")
 
+
+    def turnSelectorOff(self):
+        self.selectBS.value = []
+
+        self.BuyInputHead.hidden = True
+        self.BuyInput.hidden = True
+
+        self.BuyQuantHead.hidden = True
+        self.BuyQuant.hidden = True
+
+        self.SellInputHead.hidden = True
+        self.SellInput.hidden = True
+
+        self.SellQuantHead.hidden = True
+        self.SellQuant.hidden = True
+
+        self.start_button.hidden = True
+        val["tryT0Buy"] = False
+        val["tryT0Sell"] = False
+        self.status.value = "Waiting for Websocket..."
+        self.statusIndicator.color = "CRITICAL"
 
     def exit_application(self):
         # curses.beep()
@@ -206,13 +298,17 @@ class MainForm(npyscreen.FormBaseNew):
         self.editing = False
         self.parentApp.switchForm(None)
 
+
 class orderSizeInput(npyscreen.Textfield):
 
     """Input field class for defining the order size.
-    Input is evaluated and colorized"""
+
+    Input is evaluated and colorized
+    """
 
     def when_value_edited(self):
         """Fire when value is edited."""
+        self.value = self.value
         sizeValidation = validateOrderSize(self.value, val["symbol"], val["priceList"], "0.021")
         if sizeValidation == "PERFECT":
             self.color = "STANDOUT"
@@ -224,49 +320,63 @@ class orderSizeInput(npyscreen.Textfield):
             self.color = "DANGER"
 
         minTrade = float(val["coins"][symbol]["minTrade"])
-        roundTo = len(str(minTrade))-2
+        roundTo = len(str(minTrade))
 
+        # Doesn't work like this
+        # Must be something like so:
+        # get self.value until ., count from . limit length to length before point + point + roundto - 2
         if len(self.value) > roundTo:
-            self.value[:-1]
+            self.value = self.value[:-(len(self.value)-roundTo)]
 
 
 class buyInput(npyscreen.Textfield):
 
     """Input field class for defining the order price.
-    Input is evaluated and colorized"""
+
+    Input is evaluated and colorized
+    """
 
     def when_value_edited(self):
         """Fire when value is edited."""
-        buyValidation = validateOrderPrice(self.value, depthMsg["bids"][0][0], depthMsg["asks"][0][0], "BUY")
-        if buyValidation == "PERFECT":
-            self.color = "STANDOUT"
-        elif buyValidation == "GOOD":
-            self.color = "GOOD"
-        elif buyValidation == "OK":
-            self.color = "WARNING"
-        else:
-            self.color = "DANGER"
+        try:
+            buyValidation = validateOrderPrice(self.value, depthMsg["bids"][0][0], depthMsg["asks"][0][0], "BUY")
+            if buyValidation == "PERFECT":
+                self.color = "STANDOUT"
+            elif buyValidation == "GOOD":
+                self.color = "GOOD"
+            elif buyValidation == "OK":
+                self.color = "WARNING"
+            else:
+                self.color = "DANGER"
+        except KeyError:
+            pass
 
 
 
 class sellInput(npyscreen.Textfield):
+
     """Input field intended for sell order price."""
+
     def when_value_edited(self):
         """Fire when value is edited."""
-        buyValidation = validateOrderPrice(self.value, depthMsg["bids"][0][0], depthMsg["asks"][0][0], "SELL")
-        if buyValidation == "PERFECT":
-            self.color = "STANDOUT"
-        elif buyValidation == "GOOD":
-            self.color = "GOOD"
-        elif buyValidation == "OK":
-            self.color = "WARNING"
-        else:
-            self.color = "DANGER"
-
+        try:
+            buyValidation = validateOrderPrice(self.value, depthMsg["bids"][0][0], depthMsg["asks"][0][0], "SELL")
+            if buyValidation == "PERFECT":
+                self.color = "STANDOUT"
+            elif buyValidation == "GOOD":
+                self.color = "GOOD"
+            elif buyValidation == "OK":
+                self.color = "WARNING"
+            else:
+                self.color = "DANGER"
+        except KeyError:
+            pass
 
 # Buy/Sell Selector Class
 class buySellSelector(npyscreen.MultiSelect):
-    """Create a buy / sell selector that triggers several input fields"""
+
+    """Create a buy / sell selector that triggers several input fields."""
+
     def when_value_edited(self):
 
         # Hide/Show Buy/Sell input based on selector switches
@@ -278,7 +388,7 @@ class buySellSelector(npyscreen.MultiSelect):
             self.parent.BuyQuant.hidden = False
 
             try:
-                self.parent.BuyInput.value = str(float(depthMsg["bids"][0][0]))
+                self.parent.BuyInput.value = str(depthMsg["bids"][0][0])
                 self.parent.BuyQuant.value = str(calculateMinOrderSize(val["symbol"], val["priceList"]))
             except KeyError:
                 pass
@@ -296,8 +406,9 @@ class buySellSelector(npyscreen.MultiSelect):
             self.parent.SellQuantHead.hidden = False
             self.parent.SellQuant.hidden = False
 
+            # TODO: Fix
             try:
-                self.parent.SellInput.value = str(float(depthMsg["asks"][0][0])) # float(val["coins"][val["symbol"]]["ticksize"]))
+                self.parent.SellInput.value = str(depthMsg["asks"][0][0])  # float(val["coins"][val["symbol"]]["ticksize"]))
             except KeyError:
                 pass
         else:
@@ -322,12 +433,14 @@ class coinInput(npyscreen.Textfield):
     """Input field to change the selected coin."""
 
     def __init__(self, *args, **kwargs):
+        """Overwrite init function to add key handlers."""
         super().__init__(*args, **kwargs)
         self.add_handlers(
             {
-                curses.ascii.NL: self.do_something,
-                curses.ascii.CR: self.do_something,
-                curses.KEY_ENTER: self.do_something
+                curses.ascii.NL: self.change_coin,
+                curses.ascii.CR: self.change_coin,
+                curses.KEY_ENTER: self.change_coin,
+
 
             }
         )
@@ -337,12 +450,21 @@ class coinInput(npyscreen.Textfield):
         # self.value="VAL"
 
 
+    def key_pressed(self, inputVal):
+        npyscreen.notify_wait(str(inputVal))
+        self.parent.parentApp.hardRefresh()
+        # self.value = self.value[:-1]
+
     # CHANGE COIN
-    def do_something(self, inputVal):
+    def change_coin(self, inputVal):
         if str(self.value).upper() + str("BTC") in val["coins"] and self.value + str("BTC") != val["symbol"]:
             val["symbol"] = str(self.value).upper() + str("BTC")
             self.color = "DEFAULT"
 
+            self.parent.coinPair.value = str(val["symbol"])
+
+            # unselect buy/sell and hide input fields and start button
+            self.parent.turnSelectorOff()
             # logging.debug("triggere clearDepth")
             # clearDepth()
             restartSocket(str(val["symbol"]))
@@ -355,7 +477,7 @@ class coinInput(npyscreen.Textfield):
             del globalList[0:len(globalList)]
             fillList(str(val["symbol"]))
             app.updateDepth()
-            self.parent.coinPair.value = str(val["symbol"])
+
 
             val["cs"] = 0
 
@@ -385,11 +507,13 @@ class MainApp(npyscreen.NPSAppManaged):
     # update interval too low causes bugs?
     keypress_timeout_default = 5
 
+
     # initiate Forms on start
     def onStart(self):
         self.addForm("MAIN", MainForm, name="Juris beeesr Binance Bot", color="STANDOUT")
 
 
+    # TODO: seperate concerns
     def updateDepth(self):
         # self.getForm("MAIN").statusIndicator.color="VERYGOOD"
         with lock:
@@ -397,13 +521,11 @@ class MainApp(npyscreen.NPSAppManaged):
             try:
                 self.getForm("MAIN").date_widget.value = str(depthMsg["lastUpdateId"])
                 if str(depthMsg["lastUpdateId"]) == "WAITING":
-                    self.getForm("MAIN").date_widget.color = "DANGER"
+                    # self.getForm("MAIN").date_widget.color = "DANGER"
                     self.getForm("MAIN").statusIndicator.color = "CRITICAL"
                 else:
-                    self.getForm("MAIN").date_widget.color = "DEFAULT"
+                    # self.getForm("MAIN").date_widget.color = "DEFAULT"
                     self.getForm("MAIN").statusIndicator.color = "VERYGOOD"
-
-
                     self.getForm("MAIN").runningSince.value = str(datetime.timedelta(seconds=int(val["s"])))
 
                 # update Orderbook
@@ -412,7 +534,7 @@ class MainApp(npyscreen.NPSAppManaged):
                     self.getForm("MAIN").bids[i].value = "[" + str((i+1)).zfill(1) + "]" + str(depthMsg["bids"][i][0]) + " | " + str(float(depthMsg["bids"][i][1])).ljust(6, "0")
 
                     self.getForm("MAIN").asks[i].value = "[" + str((self.getForm("MAIN").obRange-i)).zfill(1) + "]" + str(depthMsg["asks"][self.getForm("MAIN").obRange-i-1][0]) + " | " + str(float(depthMsg["asks"][self.getForm("MAIN").obRange-i-1][1])).ljust(6, "0")
-            except KeyError:
+            except (KeyError, NameError):
                 pass
             # update spread
             try:
@@ -460,8 +582,9 @@ class MainApp(npyscreen.NPSAppManaged):
             #     pass
 
 
+    # TODO: check for refactor
     def periodicUpdate(self):
-        logging.debug("periodic update")
+        # logging.debug("periodic update")
         # self.getForm("MAIN").coinPair.value = str(tickerMsg["s"])
         self.getForm("MAIN").runningSince.value = str(datetime.timedelta(seconds=int(val["s"])))
 

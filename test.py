@@ -1,6 +1,13 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+# by Jurek Baumann
+
+"""Used for testing only. Not part of the app."""
+
 from MAIN import *
 
-symbol= "BCCBTC"
+symbol = "BCCBTC"
 #
 for coin in val["coins"]:
     print(coin + " " + val["coins"][coin]["minTrade"] + "ticksize: " + val["coins"][coin]["tickSize"])
