@@ -18,19 +18,16 @@ from math import ceil
 # import sys
 # import os
 
-from config import api_key, api_secret
 from botLogic import *
 import ui
 
 
-from binance.client import Client
 # from binance.websockets import BinanceSocketManager
 from binance.enums import *
 
 from twisted.internet.error import ReactorNotRunning
 
 
-client = Client(api_key, api_secret)
 
 
 def cleanExit():
@@ -161,23 +158,6 @@ def getHoldings():
     return accHoldings
 
 
-def getCurrentPrices():
-    """Fetch bid and ask price and quantitiy of every coin. Access data this way: priceList["BNBBTC"]["askPrice"].
-
-    Available values:
-    'bidPrice', 'bidQty', 'askPrice', 'askQty'
-
-    """
-    priceList = dict()
-
-    # API Call:
-    currentPrices = client.get_orderbook_tickers()
-    for index in enumerate(currentPrices):
-        if "BTC" in currentPrices[index[0]]["symbol"] and "USDT" not in currentPrices[index[0]]["symbol"]:
-            priceList[currentPrices[index[0]]["symbol"]] = currentPrices[index[0]]
-
-
-    return priceList
 
 
 def restartSocket(symbol):
