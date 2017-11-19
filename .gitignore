@@ -8,6 +8,8 @@ coins.txt
 depthCallback.txt
 tickerCallback.txt
 tradeCallback.txt
+*.csv
+TA/
 tests/
 
 .DS_Store
