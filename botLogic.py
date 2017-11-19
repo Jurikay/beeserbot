@@ -27,7 +27,7 @@ accHoldings = dict()
 lock = threading.RLock()
 
 # use val to store different values like websocket conn_keys
-val = {"s": 0, "cs": 0, "socket1": 0, "socket2": 0, "socket3": 0, "symbol": symbol, "iter1": 0, "bm": 0}
+val = {"s": 0, "cs": 0, "socket1": 0, "socket2": 0, "socket3": 0, "symbol": symbol, "iter1": 0, "bm": 0, "tryToBuy": False, "tryToSell": False}
 
 
 
