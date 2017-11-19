@@ -6,6 +6,10 @@
 from botLogic import *
 import datetime
 import pandas as pd
+import stockstats
+
+# Disable chained assignment warnings. Default='warn'
+pd.options.mode.chained_assignment = None
 
 def klinesToCsv(klines, filename):
 
@@ -63,4 +67,38 @@ def createCSV():
         klinesToCsv(timeFrames[i], tfIntervals[i])
 
 
-createCSV()
+def interpreteData(symbol):
+
+    """Takes current symbol and analyzes present .csv data.
+    """
+
+    Intervals = ["1m", "5m", "15m", "30m", "1h", "2h", "1d"]
+
+    indicators = dict()
+
+    for index, value in enumerate(Intervals):
+
+
+
+        stock = stockstats.StockDataFrame.retype(pd.read_csv(str(symbol) + str(value) + '.csv'))
+
+        # Calculate chosen indicators
+        rsi6hData = stock['rsi_6']
+        rsi12hData = stock['rsi_12']
+
+        medBollData = stock['boll']
+        upperBollData = stock['boll_ub']
+        lowerBollData = stock['boll_lb']
+
+        # get last respective entries from DataFrame
+        rsi6h = round(rsi6hData.iloc[-1],1)
+        rsi12h = round(rsi12hData.iloc[-1],1)
+
+        medBoll = round(medBollData.iloc[-1],8)
+        upperBoll = round(upperBollData.iloc[-1],8)
+        lowerBoll = round(lowerBollData.iloc[-1],8)
+
+
+        indicators[value] = {"rsi6h": rsi6h, "rsi12h": rsi12h, "medBoll": medBoll, "upperBoll": upperBoll, "lowerBoll": lowerBoll}
+        print(medBoll)
+    return indicators
