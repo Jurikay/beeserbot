@@ -93,3 +93,7 @@ hotkeys: capture hotkeys S and R while on buy/sell selector or numeric input for
 calculate RSI and possibly other indicators
 
 fix naming conventions
+
+trade analysis:
+https://github.com/jealous/stockstats
+get kline data, transform into correct format, export csv or pass to stockstats, get results, display in npyscreen Form
