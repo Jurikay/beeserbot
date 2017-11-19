@@ -119,6 +119,9 @@ class MainForm(npyscreen.FormBaseNew):
             if str(self.date_widget.value) != str("WAITING") and self.status.value == "Waiting for Websocket...":
                 self.status.value = "just watching the market"
 
+            # indicator test
+            self.debug.value=val["indicators"]["1m"]["medBoll"]
+
         except KeyError:
             pass
 
@@ -222,7 +225,7 @@ class MainForm(npyscreen.FormBaseNew):
         # Status indicator
         self.statusIndicator = self.add(npyscreen.FixedText, value="STATUS:", editable=False, relx=2, rely=-3, color="DANGER")
 
-        self.status = self.add(npyscreen.FixedText, value="hier steht status text", editable=False, relx=10, rely=-3)
+        self.status = self.add(npyscreen.FixedText, value="Ready and awaiting orders, General", editable=False, relx=10, rely=-3)
 
         self.indicator = self.add(npyscreen.FixedText, value="#", editable=False, relx=-5, rely=-3)
 
