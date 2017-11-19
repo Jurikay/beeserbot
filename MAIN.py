@@ -14,25 +14,20 @@ import logging
 
 from colorSyntax import *
 import ui
+import TA
 from botFunctions import *
 from botLogic import *
 
 # binance API
 # from binance.client import Client
 # from binance.websockets import BinanceSocketManager
-from binance.enums import *
 
-from customSocketManager import BinanceSocketManager
 
 # used to supress linter error...
 logging.debug("Juris beeser Bot version " + str(splashScreen.version) + " started")
 
 # API related variables
-val["bm"] = BinanceSocketManager(client)
-val["exitThread"] = False
-val["priceList"] = getCurrentPrices()
 
-val["buyLoop"] = True
 
 # main loop function
 
