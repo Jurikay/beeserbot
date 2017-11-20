@@ -66,11 +66,17 @@ def createCSV():
 
         klinesToCsv(timeFrames[i], tfIntervals[i])
 
-
+    indicators = interpreteData(val["symbol"])
+    return indicators
 def interpreteData(symbol):
 
     """Takes current symbol and analyzes present .csv data.
     """
+
+    tickSize = str(val["coins"][symbol]["tickSize"])
+    roundTo = len(str(tickSize))-2
+
+
 
     Intervals = ["1m", "5m", "15m", "30m", "1h", "2h", "1d"]
 
@@ -79,8 +85,11 @@ def interpreteData(symbol):
     for value in enumerate(Intervals):
 
 
+        try:
+            stock = stockstats.StockDataFrame.retype(pd.read_csv(str(symbol) + str(value[1]) + '.csv'))
+        except FileNotFoundError:
+            logging.debug("COULD NOT FIND CSV")
 
-        stock = stockstats.StockDataFrame.retype(pd.read_csv(str(symbol) + str(value[1]) + '.csv'))
 
         # Calculate chosen indicators
         rsi6hData = stock['rsi_6']
@@ -90,15 +99,18 @@ def interpreteData(symbol):
         upperBollData = stock['boll_ub']
         lowerBollData = stock['boll_lb']
 
+        volumeDeltaData = stock['volume_delta']
+
         # get last respective entries from DataFrame
         rsi6h = round(rsi6hData.iloc[-1],1)
         rsi12h = round(rsi12hData.iloc[-1],1)
 
-        medBoll = round(medBollData.iloc[-1],8)
-        upperBoll = round(upperBollData.iloc[-1],8)
-        lowerBoll = round(lowerBollData.iloc[-1],8)
+        medBoll = round(medBollData.iloc[-1],roundTo)
+        upperBoll = round(upperBollData.iloc[-1],roundTo)
+        lowerBoll = round(lowerBollData.iloc[-1],roundTo)
 
+        volumeDelta = volumeDeltaData.iloc[-1]
 
-        indicators[value[1]] = {"rsi6h": rsi6h, "rsi12h": rsi12h, "medBoll": medBoll, "upperBoll": upperBoll, "lowerBoll": lowerBoll}
+        indicators[value[1]] = {"rsi6h": rsi6h, "rsi12h": rsi12h, "medBoll": medBoll, "upperBoll": upperBoll, "lowerBoll": lowerBoll, "volumeDelta": volumeDelta}
         # print(medBoll)
     return indicators

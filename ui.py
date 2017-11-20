@@ -10,599 +10,224 @@ Docs: npyscreen.readthedocs.io/form-objects.html
 
 import npyscreen
 import curses
-from colorSyntax import *
+# from colorSyntax import *
 import datetime
 
 from botFunctions import *
 from botLogic import *
 import logging
 
+# from ui_static import *
+
 logging.basicConfig(filename="test.log", level=logging.DEBUG, format='%(asctime)s %(message)s')
 
 
-
-class MainForm(npyscreen.FormBaseNew):
-    """
-    Main Form Class of npyscreen.
-
-    COLORS:
-        'DEFAULT'     : 'WHITE_BLACK',
-        'FORMDEFAULT' : 'WHITE_BLACK',
-        'NO_EDIT'     : 'BLUE_BLACK',
-        'STANDOUT'    : 'CYAN_BLACK',
-        'CURSOR'      : 'WHITE_BLACK',
-        'CURSOR_INVERSE': 'BLACK_WHITE',
-        'LABEL'       : 'GREEN_BLACK',
-        'LABELBOLD'   : 'WHITE_BLACK',
-        'CONTROL'     : 'YELLOW_BLACK',
-        'IMPORTANT'   : 'GREEN_BLACK',
-        'SAFE'        : 'GREEN_BLACK',
-        'WARNING'     : 'YELLOW_BLACK',
-        'DANGER'      : 'RED_BLACK',
-        'CRITICAL'    : 'BLACK_RED',
-        'GOOD'        : 'GREEN_BLACK',
-        'GOODHL'      : 'GREEN_BLACK',
-        'VERYGOOD'    : 'BLACK_GREEN',
-        'CAUTION'     : 'YELLOW_BLACK',
-        'CAUTIONHL'   : 'BLACK_YELLOW',
-    """
-    # Overload init function to add key handlers
+class AlgoForm(npyscreen.FormBaseNew):
     def __init__(self, *args, **keywords):
         super(npyscreen.FormBaseNew, self).__init__(*args, **keywords)
         self.add_handlers(
             {
-
-                curses.KEY_F1: self.start_button_pressed,
-                curses.KEY_F2: self.select_switcher,
-                "r": self.hotkeyFix
+                # curses.KEY_F1: self.start_button_pressed,
+                # curses.KEY_F2: self.select_switcher,
+                "R": self.hotkeyFix
             }
         )
 
-
-    def select_switcher(self, keyCode):
-        # self.coinPair.value = str(self.editw)
-        # self.selectBS.hidden=True
-        self.editw = 37
-        self.how_exited = False
-        self.SellQuant.editing = False
-        self.BuyInput.editing = False
-        self.selectBS.editing = False
-        # self.selectBS.get_content().hidden=True
-        self.selectBS.h_select_exit(None)
-        self.editw = 37
-        self.selectBS.editing = False
-        # self.selectBS.hidden=False
-
-        # self.h_exit_down()
-
-        # self.editT.edit()
-
-
-    def hotkeyFix(self, keyCode):
+    def hotkeyFix(self, key):
         self.DISPLAY()
 
-    def switchCoin(self):
-        self.coinPair.value = "LOADING"
-
-        for i in range(self.obRange*2+5):
-            self.oHistory[i] = self.add(npyscreen.FixedText, value="                    ", editable=False, relx=50, rely=i+2)
-
-    gridBuy = True
-
-
-    #################################################################
-    # WHILE WAITING LOOP
-    #################################################################
     def while_waiting(self):
-        # update buy input coloring
         try:
-            buyValidation = validateOrderPrice(self.BuyInput.value, depthMsg["bids"][0][0], depthMsg["asks"][0][0], "BUY")
-            if buyValidation == "PERFECT":
-                self.BuyInput.color = "STANDOUT"
-            elif buyValidation == "GOOD":
-                self.BuyInput.color = "GOOD"
-            elif buyValidation == "OK":
-                self.BuyInput.color = "WARNING"
-            else:
-                self.BuyInput.color = "DANGER"
-
-            sellValidation = validateOrderPrice(self.SellInput.value, depthMsg["bids"][0][0], depthMsg["asks"][0][0], "SELL")
-            if sellValidation == "PERFECT":
-                self.SellInput.color = "STANDOUT"
-            elif sellValidation == "GOOD":
-                self.SellInput.color = "GOOD"
-            elif sellValidation == "OK":
-                self.SellInput.color = "WARNING"
-            else:
-                self.SellInput.color = "DANGER"
-
-            if str(self.date_widget.value) != str("WAITING") and self.status.value == "Waiting for Websocket...":
-                self.status.value = "just watching the market"
-
-            # indicator test
-            self.debug.value=val["indicators"]["1m"]["medBoll"]
-
+            self.volume.value=str(float(tickerMsg["v"])*float(tickerMsg["w"]))
         except KeyError:
-            pass
+            self.volume.value="Key Error"
 
-
-
-
-        self.display()
-
-    #################################################################
-    # CREATE FUNCTION
-    #################################################################
     def create(self):
-        # EXIT APP on ESC
-        self.how_exited_handers[npyscreen.wgwidget.EXITED_ESCAPE] = self.exit_application
+        self.timeFrame = "1m"
 
+        # SYMBOL
+        self.symbolHead = self.add(npyscreen.FixedText, value="Trade pair: ", editable=False, color="NO_EDIT", relx=2, rely=1)
 
-        # Add various values TODO add values; implement headlines
-        self.coinPair = self.add(npyscreen.FixedText, value=val["symbol"], editable=False, color="WARNING")
-        self.timeHeadline = self.add(npyscreen.FixedText, value="Orders:", editable=False)
-        self.date_widget = self.add(npyscreen.FixedText, value="LOADING", editable=False)
+        self.symbol = self.add(npyscreen.FixedText, value=str(val["symbol"]), editable=False, color="WARNING", relx=2+len(self.symbolHead.value), rely=1)
 
-        self.spacer = self.add(npyscreen.FixedText, value="", editable=False)
+        # TIME RUNNUNG
+        self.runningHead = self.add(npyscreen.FixedText, value="Runtime: ", editable=False, relx=2, rely=3, color="WARNING")
 
+        self.timeRunning = self.add(npyscreen.FixedText, value="0:00:00", editable=False,  relx=2+len(self.runningHead.value), rely=3)
 
-        self.timeHeadline = self.add(npyscreen.FixedText, value="Running for:", editable=False)
+        # DISPLAY STRATEGY
+        self.stratHead = self.add(npyscreen.FixedText, value="Strategy: ", editable=False, relx=2, rely=4, color="WARNING")
 
-        self.runningSince = self.add(npyscreen.FixedText, value="0:00:00", editable=False)
-        self.spacer = self.add(npyscreen.FixedText, value="", editable=False)
+        self.strat = self.add(npyscreen.FixedText, value="Boilinger Bot", editable=False,  relx=2+len(self.stratHead.value), rely=4)
 
-        self.tradesHeadline = self.add(npyscreen.FixedText, value="Trades:", editable=False)
-        self.tradesSinceStart = self.add(npyscreen.FixedText, value="0", editable=False)
+        # DISPLAY TIME INTERVAL
+        self.intervalHead = self.add(npyscreen.FixedText, value="Time interval: ", editable=False, relx=2, rely=5, color="WARNING")
 
-        self.tpmHeadline = self.add(npyscreen.FixedText, value="Trades per minute:", editable=False)
-        self.tpm = self.add(npyscreen.FixedText, value="0", editable=False)
+        self.interval = self.add(npyscreen.FixedText, value="1 Minute", editable=False,  relx=2+len(self.intervalHead.value), rely=5)
 
-        # initalize variables for various calculations
-        self.bids = {}
-        self.asks = {}
-        self.oHistory = {}
-        self.obRange = 5
 
-        # ORDERBOOK
+        # BOLLINGER DISPLAY:
 
-        # Create asks template
-        for i in range(self.obRange):
-            self.asks[i] = self.add(SyntaxObAsks, npyscreen.FixedText, value="01 0.00001337 ", editable=False, relx=25, rely=i+2)
-            self.asks[i].syntax_highlighting = True
+        #upper
+        self.upperBollHead = self.add(npyscreen.FixedText, value="Upper Band: ", editable=False, relx=2, rely=7, color="WARNING")
 
-        # Add Spread between asks and bids
-        self.spacer = self.add(npyscreen.FixedText, value="", editable=False)
-        self.spread = self.add(npyscreen.FixedText, value="Spread", editable=False, relx=25, rely=self.obRange+3)
+        self.upperBoll = self.add(npyscreen.FixedText, value='{:.8f}'.format(float(val["indicators"][str(self.timeFrame)]["upperBoll"]))[:len(str(val["coins"][symbol]["tickSize"]))], editable=False,  relx=2+len(self.upperBollHead.value), rely=7)
 
-        # Create bids template
-        for i in range(self.obRange):
-            self.bids[i] = self.add(SyntaxObBids, npyscreen.FixedText, value="01 0.00001337 ", editable=False, relx=25, rely=i+self.obRange + 5)
-            self.bids[i].syntax_highlighting = True
+        #middle
+        self.medBollHead = self.add(npyscreen.FixedText, value="Median Band: ", editable=False, relx=2, rely=8, color="WARNING")
 
+        self.medBoll = self.add(npyscreen.FixedText, value='{:.8f}'.format(float(val["indicators"][str(self.timeFrame)]["medBoll"]))[:len(str(val["coins"][symbol]["tickSize"]))],
+         editable=False,  relx=1+len(self.medBollHead.value), rely=8)
 
-        # Create order history template TODO: add quantity and timestamp
-        for i in range(self.obRange*2+3):
-            self.oHistory[i] = self.add(npyscreen.FixedText, value="+*", editable=False, relx=50, rely=i+2)
-            # self.OBasks+str(i) = self.add(npyscreen.FixedText, value="asks "+str(i  ), editable=False)
 
-        # Create Coin input field
-        self.coinHeadline = self.add(npyscreen.FixedText, value="Coin:", editable=False, color="WARNING", relx=2, rely=self.obRange*2+5)
+        #lower
+        self.lowerBollHead = self.add(npyscreen.FixedText, value="Lower Band: ", editable=False, relx=2, rely=9, color="WARNING")
 
+        self.lowerBoll = self.add(npyscreen.FixedText, value='{:.8f}'.format(float(val["indicators"][str(self.timeFrame)]["lowerBoll"]))[:len(str(val["coins"][symbol]["tickSize"]))], editable=False,  relx=2+len(self.lowerBollHead.value), rely=9)
 
-        self.editT = self.add(coinInput, value=str(val["symbol"])[:-3], editable=True, relx=8, rely=self.obRange*2+5)
 
-        # self.spacer = self.add(npyscreen.FixedText, value="", editable=False)
+        # Volume Delta
+        self.volumeHead = self.add(npyscreen.FixedText, value="Volume: ", editable=False, relx=2, rely=11, color="WARNING")
 
+        self.volume = self.add(npyscreen.FixedText, value="loading volume", editable=False,  relx=2+len(self.volumeHead.value), rely=11)
 
-        # BUY / SELL selector; shows price input field
-        self.selectBS = self.add(buySellSelector, max_height=2, value=[], name="Pick Several", values=["Buy", "Sell", ], scroll_exit=True)
+        # RSI
+        self.rsiHead = self.add(npyscreen.FixedText, value="RSI: ", editable=False, relx=2, rely=12, color="WARNING")
 
-        self.spacer = self.add(npyscreen.FixedText, value="", editable=False)
+        self.rsi = self.add(npyscreen.FixedText, value="loading rsi", editable=False,  relx=2+len(self.rsiHead.value), rely=12)
 
+        # MACD
+        self.macdHead = self.add(npyscreen.FixedText, value="MACD: ", editable=False, relx=2, rely=13, color="WARNING")
 
-        # Buy/Sell price inputs (hidden by default)
-        self.BuyInputHead = self.add(npyscreen.FixedText, value="Buy up to:", color="GOOD", relx=2, rely=19, editable=False, hidden=True)
-        self.BuyInput = self.add(buyInput, value="0.00000000", relx=13, rely=19, color="GOOD", hidden=True)
+        self.macd = self.add(npyscreen.FixedText, value="loading macd", editable=False,  relx=2+len(self.macdHead.value), rely=13)
 
-        self.BuyQuantHead = self.add(npyscreen.FixedText, value="Quantity:", color="DEFAULT", relx=2, rely=20, editable=False, hidden=True)
-        self.BuyQuant = self.add(orderSizeInput, value="50", relx=13, rely=20, color="GOOD", hidden=True)
 
+        # Time frame input
+        self.selectTfHead = self.add(npyscreen.FixedText, value="Choose interval: ", editable=False, relx=2, rely=14, color="NO_EDIT")
 
-        self.SellInputHead = self.add(npyscreen.FixedText, value="Sell from:", color="DANGER", relx=2, rely=21, editable=False, hidden=True)
-        self.SellInput = self.add(sellInput, value="0.00000000", relx=13, rely=21, color="GOOD", hidden=True)
+        self.selectTf = self.add(timeFrameInput, value="1m", editable=True,  relx=2+len(self.selectTfHead.value), rely=14)
 
-        self.SellQuantHead = self.add(npyscreen.FixedText, value="Quantity:", color="DEFAULT", relx=2, rely=22, editable=False, hidden=True)
-        self.SellQuant = self.add(orderSizeInput, value="50", relx=13, rely=22, color="GOOD", hidden=True)
+        # Sell condition
+        self.sellCondHead = self.add(npyscreen.FixedText, value="Sell if price is", editable=False, relx=2, rely=16, color="DANGER")
 
-        self.spacer = self.add(npyscreen.FixedText, value="", editable=False)
+        self.sellCond = self.add(npyscreen.Textfield, value="0.5", editable=True,  relx=2, rely=17, width=4)
 
-        # Start Button
-        self.start_button = self.add(npyscreen.ButtonPress, name='Start', relx=4, hidden=True)
-        self.start_button.whenPressed = self.start_button_pressed
+        self.sellCondPercent = self.add(npyscreen.FixedText, value="%", editable=False, relx=6, rely=17)
 
-        self.debug = self.add(npyscreen.FixedText, value="Debug", editable=False)
+        self.sellAboveBelow = self.add(npyscreen.Textfield, value="below", relx=2, rely=18)
 
-        # Status indicator
-        self.statusIndicator = self.add(npyscreen.FixedText, value="STATUS:", editable=False, relx=2, rely=-3, color="DANGER")
+        self.sellBand = self.add(npyscreen.Textfield, value="upper", relx=2, rely=19, width=7)
 
-        self.status = self.add(npyscreen.FixedText, value="Ready and awaiting orders, General", editable=False, relx=10, rely=-3)
+        self.sellBandHead = self.add(npyscreen.FixedText, value="Band", relx=9,rely=19)
 
-        self.indicator = self.add(npyscreen.FixedText, value="#", editable=False, relx=-5, rely=-3)
 
+        # Sell condition
+        self.buyCondHead = self.add(npyscreen.FixedText, value="Buy if price is", editable=False, relx=2, rely=21, color="GOOD")
 
+        self.buyCond = self.add(npyscreen.Textfield, value="0.7", editable=True,  relx=2, rely=22, width=4)
 
+        self.buyCondPercent = self.add(npyscreen.FixedText, value="%", editable=False, relx=6, rely=22)
 
-    def start_button_pressed(self, *keyCode):
-        # npyscreen.notify_wait("HI")
-        # self.start_button.name="lul"
-        if str(depthMsg["lastUpdateId"]) == "WAITING":
-            self.status.value = "Websocket connection not established..."
-        else:
-            if self.start_button.name == "Start":
-                self.start_button.name = "Stop "
+        self.buyAboveBelow = self.add(npyscreen.Textfield, value="below", relx=2, rely=23)
 
-                if 0 in self.selectBS.value and 1 in self.selectBS.value:
-                    val["tryToBuy"] = True
-                    val["tryToSell"] = True
-                    self.status.value = "looking to buy and sell.."
+        self.buyBand = self.add(npyscreen.Textfield, value="lower", relx=2, rely=24, width=7)
 
-                elif 0 in self.selectBS.value:
-                    val["tryToBuy"] = True
-                    val["tryToSell"] = False
-                    self.status.value = "looking to buy.."
-                elif 1 in self.selectBS.value:
-                    val["tryToSell"] = True
-                    val["tryToSBuy"] = False
-                    self.status.value = "looking to sell.."
+        self.buyBandHead = self.add(npyscreen.FixedText, value="Band", relx=9,rely=24)
 
+        self.statusHead = self.add(npyscreen.FixedText,value="[STATUS]", relx=2, rely=-3, editable=False, color="VERYGOOD")
 
+        self.status = self.add(npyscreen.FixedText,value="Hello Sir", relx=11, rely=-3, editable=False)
+        #
+        # self.debug = self.add(npyscreen.FixedText, value=val["coins"][symbol]["minTrade"])
+        #
+        # self.debug2 = self.add(npyscreen.FixedText, value=val["coins"][symbol]["tickSize"])
+        #
+        # self.debug2 = self.add(npyscreen.FixedText, value=len(str(val["coins"][symbol]["tickSize"])))
 
+        # self.testLOL  = self.add(npyscreen.FixedText, value="#", relx=1, rely=-3)
 
-            else:
-                self.start_button.name = "Start"
-                val["tryToBuy"] = False
-                val["tryToSell"] = False
-                self.status.value = "just watching the market"
+    def setBandInfo(self):
+        self.upperBoll.value='{:.8f}'.format(float(val["indicators"][str(self.timeFrame)]["upperBoll"]))[:len(str(val["coins"][symbol]["tickSize"]))]
 
-    # @classmethod
-    # def on_ok():
-    #     # Do stuff when the OK Button is pressed
-    #     npyscreen.notify_confirm("OK Button Pressed!")
-
-
-    def turnSelectorOff(self):
-        self.selectBS.value = []
-
-        self.BuyInputHead.hidden = True
-        self.BuyInput.hidden = True
-
-        self.BuyQuantHead.hidden = True
-        self.BuyQuant.hidden = True
-
-        self.SellInputHead.hidden = True
-        self.SellInput.hidden = True
+        self.medBoll.value='{:.8f}'.format(float(val["indicators"][str(self.timeFrame)]["medBoll"]))[:len(str(val["coins"][symbol]["tickSize"]))]
 
-        self.SellQuantHead.hidden = True
-        self.SellQuant.hidden = True
-
-        self.start_button.hidden = True
-        val["tryT0Buy"] = False
-        val["tryT0Sell"] = False
-        self.status.value = "Waiting for Websocket..."
-        self.statusIndicator.color = "CRITICAL"
+        self.lowerBoll.value='{:.8f}'.format(float(val["indicators"][str(self.timeFrame)]["lowerBoll"]))[:len(str(val["coins"][symbol]["tickSize"]))]
 
-    def exit_application(self):
-        # curses.beep()
-        # npyscreen.notify_wait("Shutting down")
-
-        cleanExit()
-        self.editing = False
-        self.parentApp.switchForm(None)
-
-
-class orderSizeInput(npyscreen.Textfield):
-
-    """Input field class for defining the order size.
-
-    Input is evaluated and colorized
-    """
-
-    def when_value_edited(self):
-        """Fire when value is edited."""
-        # TODO: refactor
-        self.value = self.value
-        sizeValidation = validateOrderSize(self.value, val["symbol"], val["priceList"], "0.021")
-        if sizeValidation == "PERFECT":
-            self.color = "STANDOUT"
-        elif sizeValidation == "GOOD":
-            self.color = "GOOD"
-        elif sizeValidation == "OK":
-            self.color = "WARNING"
-        else:
-            self.color = "DANGER"
-
-        minTrade = float(val["coins"][symbol]["minTrade"])
-        roundTo = len(str(minTrade))
-
-        # Doesn't work like this
-        # Must be something like so:
-        # get self.value until ., count from . limit length to length before point + point + roundto - 2
-        if len(self.value) > roundTo:
-            self.value = self.value[:-(len(self.value)-roundTo)]
-
 
-class buyInput(npyscreen.Textfield):
-
-    """Input field class for defining the order price.
-
-    Input is evaluated and colorized
-    """
-
-    def when_value_edited(self):
-        """Fire when value is edited."""
-        try:
-            buyValidation = validateOrderPrice(self.value, depthMsg["bids"][0][0], depthMsg["asks"][0][0], "BUY")
-            if buyValidation == "PERFECT":
-                self.color = "STANDOUT"
-            elif buyValidation == "GOOD":
-                self.color = "GOOD"
-            elif buyValidation == "OK":
-                self.color = "WARNING"
-            else:
-                self.color = "DANGER"
-        except KeyError:
-            pass
-
-
-
-class sellInput(npyscreen.Textfield):
-
-    """Input field intended for sell order price."""
-
-    def when_value_edited(self):
-        """Fire when value is edited."""
-        try:
-            buyValidation = validateOrderPrice(self.value, depthMsg["bids"][0][0], depthMsg["asks"][0][0], "SELL")
-            if buyValidation == "PERFECT":
-                self.color = "STANDOUT"
-            elif buyValidation == "GOOD":
-                self.color = "GOOD"
-            elif buyValidation == "OK":
-                self.color = "WARNING"
-            else:
-                self.color = "DANGER"
-        except KeyError:
-            pass
-
-# Buy/Sell Selector Class
-class buySellSelector(npyscreen.MultiSelect):
-
-    """Create a buy / sell selector that triggers several input fields."""
-
-    def when_value_edited(self):
-
-        # Hide/Show Buy/Sell input based on selector switches
-        if 0 in self.value:
-            self.parent.BuyInputHead.hidden = False
-            self.parent.BuyInput.hidden = False
-
-            self.parent.BuyQuantHead.hidden = False
-            self.parent.BuyQuant.hidden = False
-
-            try:
-                self.parent.BuyInput.value = str(depthMsg["bids"][0][0])
-                self.parent.BuyQuant.value = str(calculateMinOrderSize(val["symbol"], val["priceList"]))
-            except KeyError:
-                pass
-        else:
-            self.parent.BuyInputHead.hidden = True
-            self.parent.BuyInput.hidden = True
-
-            self.parent.BuyQuantHead.hidden = True
-            self.parent.BuyQuant.hidden = True
-
-        if 1 in self.value:
-            self.parent.SellInputHead.hidden = False
-            self.parent.SellInput.hidden = False
-
-            self.parent.SellQuantHead.hidden = False
-            self.parent.SellQuant.hidden = False
-
-            # TODO: Fix
-            try:
-                self.parent.SellInput.value = str(depthMsg["asks"][0][0])  # float(val["coins"][val["symbol"]]["ticksize"]))
-            except KeyError:
-                pass
-        else:
-            self.parent.SellInputHead.hidden = True
-            self.parent.SellInput.hidden = True
-
-            self.parent.SellQuantHead.hidden = True
-            self.parent.SellQuant.hidden = True
-
-        # Show/ Hide start button
-        if self.value != []:
-            self.parent.start_button.hidden = False
-        else:
-            self.parent.start_button.hidden = True
-
-        self.parent.display()
-
-
-
-class coinInput(npyscreen.Textfield):
-
-    """Input field to change the selected coin."""
-
-    def __init__(self, *args, **kwargs):
-        """Overwrite init function to add key handlers."""
-        super().__init__(*args, **kwargs)
-        self.add_handlers(
-            {
-                curses.ascii.NL: self.change_coin,
-                curses.ascii.CR: self.change_coin,
-                curses.KEY_ENTER: self.change_coin,
-
-
-            }
-        )
-        # npyscreen.notify_wait("EDITED")
-
-        # TODO Compare with accepted pairs/val["coins"]
-        # self.value="VAL"
-
-
-    def key_pressed(self, inputVal):
-        npyscreen.notify_wait(str(inputVal))
-        self.parent.parentApp.hardRefresh()
-        # self.value = self.value[:-1]
-
-    # CHANGE COIN
-    def change_coin(self, inputVal):
-        if str(self.value).upper() + str("BTC") in val["coins"] and self.value + str("BTC") != val["symbol"]:
-            val["symbol"] = str(self.value).upper() + str("BTC")
-            self.color = "DEFAULT"
-
-            self.parent.coinPair.value = str(val["symbol"])
-
-            # unselect buy/sell and hide input fields and start button
-            self.parent.turnSelectorOff()
-            # logging.debug("triggere clearDepth")
-            # clearDepth()
-            restartSocket(str(val["symbol"]))
-            npyscreen.notify_wait("Switching to " + str(self.value) + " please wait...")
-
-            #
-            # self.parent.clearOrderBook()
-            fetchDepth(str(val["symbol"]))
-            logging.debug("LÖSCHE GLOBALLIST!!!")
-            del globalList[0:len(globalList)]
-            fillList(str(val["symbol"]))
-            app.updateDepth()
-
-
-            val["cs"] = 0
-
-        elif self.value + str("BTC") != val["symbol"]:
-            npyscreen.notify_wait("Was soll " + str(self.value) + " bitte für eine Coin sein?")
-        # bm.stop_socket(conn_key)
-        else:
-            pass
-
-    def when_value_edited(self):
-        self.value = self.value
-        if str(self.value).upper() + str("BTC") in val["coins"]:
-            self.color = "LABEL"
-            self.value = str(self.value).upper()
-        elif len(str(self.value)) < 6:
-            self.color = "WARNING"
-
-        else:
-            self.color = "DANGER"
-
-
-
-class MainApp(npyscreen.NPSAppManaged):
+class AlgoBot(npyscreen.NPSAppManaged):
 
     """MAIN app class."""
 
     # update interval too low causes bugs?
-    keypress_timeout_default = 5
+    keypress_timeout_default = 10
 
 
     # initiate Forms on start
     def onStart(self):
-        self.addForm("MAIN", MainForm, name="Juris beeesr Binance Bot", color="STANDOUT")
+        self.addForm("MAIN", AlgoForm, name="Juris beeesr Binance Bot", color="GOOD")
 
 
-    # TODO: seperate concerns
-    def updateDepth(self):
-        # self.getForm("MAIN").statusIndicator.color="VERYGOOD"
-        with lock:
-            # logging.debug("testzugriff start")
-            try:
-                self.getForm("MAIN").date_widget.value = str(depthMsg["lastUpdateId"])
-                if str(depthMsg["lastUpdateId"]) == "WAITING":
-                    # self.getForm("MAIN").date_widget.color = "DANGER"
-                    self.getForm("MAIN").statusIndicator.color = "CRITICAL"
-                else:
-                    # self.getForm("MAIN").date_widget.color = "DEFAULT"
-                    self.getForm("MAIN").statusIndicator.color = "VERYGOOD"
-                    self.getForm("MAIN").runningSince.value = str(datetime.timedelta(seconds=int(val["s"])))
-
-                # update Orderbook
-                for i in range(self.getForm("MAIN").obRange):
-
-                    self.getForm("MAIN").bids[i].value = "[" + str((i+1)).zfill(1) + "]" + str(depthMsg["bids"][i][0]) + " | " + str(float(depthMsg["bids"][i][1])).ljust(6, "0")
-
-                    self.getForm("MAIN").asks[i].value = "[" + str((self.getForm("MAIN").obRange-i)).zfill(1) + "]" + str(depthMsg["asks"][self.getForm("MAIN").obRange-i-1][0]) + " | " + str(float(depthMsg["asks"][self.getForm("MAIN").obRange-i-1][1])).ljust(6, "0")
-            except (KeyError, NameError):
-                pass
-            # update spread
-            try:
-                self.spreadVal = ((float(depthMsg["asks"][0][0])-float(depthMsg["bids"][0][0]))/float(depthMsg["asks"][0][0]))*100
-                self.getForm("MAIN").spread.value = "Spread: " + str(round(self.spreadVal, 2))+"%"
-            except (KeyError, ZeroDivisionError):
-                pass
-
-            # Update trade history values
-            try:
-                # logging.debug("DRAWE ORDER HISTORY")
-
-                for i in range(13):
-                    if globalList[i]["order"] == "True":
-                        # logging.debug("order True")
-
-                        self.getForm("MAIN").oHistory[i].value = str(globalList[i]["price"])
-                        self.getForm("MAIN").oHistory[i].color = "DANGER"
-                    elif globalList[i]["order"] == "False":
-                        # logging.debug("order False")
-                        self.getForm("MAIN").oHistory[i].value = str(globalList[i]["price"])
-                        self.getForm("MAIN").oHistory[i].color = "GOOD"
-                    else:
-                        # overwriting empty values
-                        self.getForm("MAIN").oHistory[i].value = "          "
-
-            except Exception as err:
-                logging.debug("UPDATE_ERROR: " + str(err))
-
-            try:
-                self.getForm("MAIN").display()
-            except KeyError:
-                pass
-
-
-
-    def setStatus(self, statusStr, statusTitle):
-        with lock:
-            self.getForm("MAIN").statusBar.name = str(statusTitle)
-            self.getForm("MAIN").statusBar.value = " " + str(statusTitle)
-
-            # try:
-            #     self.getForm("MAIN").display()
-            # except:
-            #     pass
-
-
-    # TODO: check for refactor
     def periodicUpdate(self):
-        # logging.debug("periodic update")
-        # self.getForm("MAIN").coinPair.value = str(tickerMsg["s"])
-        self.getForm("MAIN").runningSince.value = str(datetime.timedelta(seconds=int(val["s"])))
-
-        try:
-            self.getForm("MAIN").tpm.value = int(float(len(globalList))/(float(int(val["cs"])/60)))
-        except (KeyError, ZeroDivisionError):
-            pass
+        self.getForm("MAIN").timeRunning.value = str(datetime.timedelta(seconds=int(val["s"])))
         self.getForm("MAIN").display()
-
 
 
     def hardRefresh(self):
         self.getForm("MAIN").DISPLAY()
 
-    def refreshDisplay(self):
-        self.getForm("MAIN").display()
+    def updateDepth(self):
+        pass
+
+app = AlgoBot()
 
 
-app = MainApp()
+class timeFrameInput(npyscreen.Textfield):
+
+    """Input field class for defining the order size.
+
+    Input is evaluated and colorized
+    """
+    def __init__(self, *args, **kwargs):
+        """Overwrite init function to add key handlers."""
+        super().__init__(*args, **kwargs)
+        self.add_handlers(
+            {
+                curses.ascii.NL: self.pressed_enter,
+                curses.ascii.CR: self.pressed_enter,
+                curses.KEY_ENTER: self.pressed_enter,
+            }
+        )
+
+    def when_value_edited(self):
+        """Fire when value is edited."""
+        if str(self.value) in self.tf1m or str(self.value) in self.tf5m or str(self.value) in self.tf15m or str(self.value) in self.tf30m or str(self.value) in self.tf1h:
+            self.color="GOOD"
+        else:
+            self.color="DEFAULT"
+
+    def pressed_enter(self, inputVal):
+
+        # stop bot, recalc data
+
+        if str(self.value) in self.tf1m:
+            self.parent.timeFrame = "1m"
+        elif str(self.value) in self.tf5m:
+            self.parent.timeFrame = "5m"
+        elif str(self.value) in self.tf15m:
+            self.parent.timeFrame = "15m"
+        elif str(self.value) in self.tf30m:
+            self.parent.timeFrame = "30m"
+        elif str(self.value) in self.tf1h:
+            self.parent.timeFrame = "1h"
+
+        else:
+            self.parent.status.value="was anderes"
+
+        self.parent.setBandInfo()
+        self.parent.display()
+        # self.parent.status.value = "Timeframe: " + str(self.value)
+    tf1m = ["1m", "1 min", "1min", "1minute" "1 minute", "1 Minute"]
+    tf5m = ["5", "5m", "5 min", "5min", "5minutes" "5 minutes", "5 Minutes", "5 minuten", "5 Minuten"]
+    tf15m = ["15", "15m", "15 min", "15min", "15minutes" "15 minutes", "15 Minutes", "15 minuten", "15 Minuten"]
+    tf30m = ["30", "30m", "30 min", "30min", "30minutes" "30 minutes", "30 Minutes", "30 minuten", "30 Minuten"]
+    tf1h = ["1h", "1 hour", "1hour", "1 stunde" "1 Stunde"]

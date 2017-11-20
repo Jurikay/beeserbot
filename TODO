@@ -97,3 +97,9 @@ fix naming conventions
 trade analysis:
 https://github.com/jealous/stockstats
 get kline data, transform into correct format, export csv or pass to stockstats, get results, display in npyscreen Form
+
+round indicator values to correct decimal place
+
+algo bot:
+access previous candle data (prev closing)
+start websocket for selected timeframe

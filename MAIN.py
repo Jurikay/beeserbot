@@ -59,8 +59,9 @@ def mainLoop():
 
         if minuteIt > 60:
 
-            TA.createCSV()
-            val["indicators"] = TA.interpreteData(str(val["symbol"]))
+            # TA.createCSV()
+            val["indicators"] = TA.createCSV()
+            ui.app.getForm("MAIN").setBandInfo()
             minuteIt = 0
         else:
             minuteIt +=1
@@ -113,8 +114,8 @@ if __name__ == '__main__':
 
     # calcThread.start()
 
-    TA.createCSV()
-    val["indicators"] = TA.interpreteData(str(val["symbol"]))
+    val["indicators"] = TA.createCSV()
+
     # print(indicators["1h"]["lowerBoll"])
 
 
