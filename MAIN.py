@@ -60,10 +60,13 @@ def mainLoop():
         if minuteIt > 60:
 
             TA.createCSV()
+
+            logging.debug("Creating CSVs! " + str(val["symbol"]))
+
             val["indicators"] = TA.interpreteData(str(val["symbol"]))
             minuteIt = 0
         else:
-            minuteIt +=1
+            minuteIt += 1
         # Test: running for:
 
         # val["timeRunning"] = str(datetime.timedelta(seconds=int(val["s"])))

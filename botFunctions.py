@@ -229,14 +229,14 @@ def trade_callback(msg):
 
     # if globalList has more than 15 elements, remove all above
     if len(globalList) >= 15:
-        logging.debug("REDUCE LIST!!")
+        # logging.debug("REDUCE LIST!!")
         del globalList[15:len(globalList)]
     # try:
     #     globalList = globalList[-5:]
     #     logging.debug("REDUCE LIST")
     # except:
     #     logging.debug("KONNTE GLOBAL LIST NICHT SCHRUMPFEN")
-    logging.debug("Global list: " + str(globalList))
+    # logging.debug("Global list: " + str(globalList))
     # with open("tradeCallback.txt", "w") as f:
     #     f.write(str(tradesMsg))
 

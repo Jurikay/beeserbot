@@ -97,3 +97,15 @@ fix naming conventions
 trade analysis:
 https://github.com/jealous/stockstats
 get kline data, transform into correct format, export csv or pass to stockstats, get results, display in npyscreen Form
+
+
+3 Modes:
+manual buy / sell price (dont buy into orders)
+
+spreadbot: buy and sell as long as spread is at least and trades at least/volume at least x
+
+track completed orders:
+calculate weighted average buy price
+
+track last x candles:
+if open price > closing price
