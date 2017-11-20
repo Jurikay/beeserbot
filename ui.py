@@ -120,7 +120,7 @@ class MainForm(npyscreen.FormBaseNew):
                 self.status.value = "just watching the market"
 
             # indicator test
-            self.debug.value=val["indicators"]["1m"]["medBoll"]
+            self.debug.value = val["indicators"]["1m"]["lowerBoll"]
 
         except KeyError:
             pass
@@ -462,7 +462,11 @@ class coinInput(npyscreen.Textfield):
         if str(self.value).upper() + str("BTC") in val["coins"] and self.value + str("BTC") != val["symbol"]:
             val["symbol"] = str(self.value).upper() + str("BTC")
             self.color = "DEFAULT"
-
+            val["indicators"] = dict()
+            try:
+                self.parent.debug.value = val["indicators"]["1m"]["lowerBoll"]
+            except KeyError:
+                self.parent.debug.value = "        "
             self.parent.coinPair.value = str(val["symbol"])
 
             # unselect buy/sell and hide input fields and start button
