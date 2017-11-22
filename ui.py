@@ -15,11 +15,9 @@ import datetime
 
 from botFunctions import *
 from botLogic import *
-import logging
 
 # from ui_static import *
 
-logging.basicConfig(filename="test.log", level=logging.DEBUG, format='%(asctime)s %(message)s')
 
 
 class AlgoForm(npyscreen.FormBaseNew):
@@ -37,10 +35,21 @@ class AlgoForm(npyscreen.FormBaseNew):
         self.DISPLAY()
 
     def while_waiting(self):
+        # self.setBandInfo()
         try:
-            self.volume.value=str(float(tickerMsg["v"])*float(tickerMsg["w"]))
+            self.volume.value = str(float(tickerMsg["v"])*float(tickerMsg["w"]))
+            self.debug.value = str(val["buyTarget"])
+            # self.debug.value = str(val["coins"][symbol]["tickSize"])
         except KeyError:
-            self.volume.value="Key Error"
+            self.volume.value = "Key Error"
+
+        if val["running"] == False:
+            self.statusHead2.color="CAUTIONHL"
+        elif val["running"] == True:
+            self.statusHead2.color="VERYGOOD"
+
+
+
 
     def create(self):
         self.timeFrame = "1m"
@@ -68,19 +77,19 @@ class AlgoForm(npyscreen.FormBaseNew):
 
         # BOLLINGER DISPLAY:
 
-        #upper
+        # upper
         self.upperBollHead = self.add(npyscreen.FixedText, value="Upper Band: ", editable=False, relx=2, rely=7, color="WARNING")
 
         self.upperBoll = self.add(npyscreen.FixedText, value='{:.8f}'.format(float(val["indicators"][str(self.timeFrame)]["upperBoll"]))[:len(str(val["coins"][symbol]["tickSize"]))], editable=False,  relx=2+len(self.upperBollHead.value), rely=7)
 
-        #middle
+        # middle
         self.medBollHead = self.add(npyscreen.FixedText, value="Median Band: ", editable=False, relx=2, rely=8, color="WARNING")
 
         self.medBoll = self.add(npyscreen.FixedText, value='{:.8f}'.format(float(val["indicators"][str(self.timeFrame)]["medBoll"]))[:len(str(val["coins"][symbol]["tickSize"]))],
          editable=False,  relx=1+len(self.medBollHead.value), rely=8)
 
 
-        #lower
+        # lower
         self.lowerBollHead = self.add(npyscreen.FixedText, value="Lower Band: ", editable=False, relx=2, rely=9, color="WARNING")
 
         self.lowerBoll = self.add(npyscreen.FixedText, value='{:.8f}'.format(float(val["indicators"][str(self.timeFrame)]["lowerBoll"]))[:len(str(val["coins"][symbol]["tickSize"]))], editable=False,  relx=2+len(self.lowerBollHead.value), rely=9)
@@ -107,38 +116,54 @@ class AlgoForm(npyscreen.FormBaseNew):
 
         self.selectTf = self.add(timeFrameInput, value="1m", editable=True,  relx=2+len(self.selectTfHead.value), rely=14)
 
+
         # Sell condition
         self.sellCondHead = self.add(npyscreen.FixedText, value="Sell if price is", editable=False, relx=2, rely=16, color="DANGER")
 
-        self.sellCond = self.add(npyscreen.Textfield, value="0.5", editable=True,  relx=2, rely=17, width=4)
+        self.sellPercent = self.add(userInput, value="0.5", editable=True,  relx=2, rely=17, width=4)
 
-        self.sellCondPercent = self.add(npyscreen.FixedText, value="%", editable=False, relx=6, rely=17)
+        self.sellPercentHead = self.add(npyscreen.FixedText, value="%", editable=False, relx=6, rely=17)
 
-        self.sellAboveBelow = self.add(npyscreen.Textfield, value="below", relx=2, rely=18)
+        self.sellAboveBelow = self.add(userInput, value="below", relx=2, rely=18)
 
-        self.sellBand = self.add(npyscreen.Textfield, value="upper", relx=2, rely=19, width=7)
+        self.sellBand = self.add(userInput, value="upper", relx=2, rely=19, width=7)
 
-        self.sellBandHead = self.add(npyscreen.FixedText, value="Band", relx=9,rely=19)
+        self.sellBandHead = self.add(npyscreen.FixedText, value="Band", relx=9,rely=19, editable=False)
 
 
-        # Sell condition
+        # Buy condition
         self.buyCondHead = self.add(npyscreen.FixedText, value="Buy if price is", editable=False, relx=2, rely=21, color="GOOD")
 
-        self.buyCond = self.add(npyscreen.Textfield, value="0.7", editable=True,  relx=2, rely=22, width=4)
+        self.buyPercent = self.add(buyInput, value="0.5", editable=True,  relx=2, rely=22, max_width=4)
 
-        self.buyCondPercent = self.add(npyscreen.FixedText, value="%", editable=False, relx=6, rely=22)
+        self.buyPercentHead = self.add(npyscreen.FixedText, value="%", editable=False, relx=6, rely=22)
 
-        self.buyAboveBelow = self.add(npyscreen.Textfield, value="below", relx=2, rely=23)
+        self.buyAboveBelow = self.add(userInput, value="below", relx=2, rely=23)
 
-        self.buyBand = self.add(npyscreen.Textfield, value="lower", relx=2, rely=24, width=7)
+        self.buyBand = self.add(userInput, value="lower", relx=2, rely=24, width=7)
 
-        self.buyBandHead = self.add(npyscreen.FixedText, value="Band", relx=9,rely=24)
+        self.buyBandHead = self.add(npyscreen.FixedText, value="Band", relx=9,rely=24, editable=False)
+
+
+
+        self.start_button = self.add(npyscreen.ButtonPress, name='Start', relx=4, hidden=False)
+        self.start_button.whenPressed = self.start_button_pressed
+
+
+        ##########
+
+        self.debug = self.add(npyscreen.FixedText, value="debug")
+
+        self.status2 = self.add(npyscreen.FixedText, value="fake status")
 
         self.statusHead = self.add(npyscreen.FixedText,value="[STATUS]", relx=2, rely=-3, editable=False, color="VERYGOOD")
 
-        self.status = self.add(npyscreen.FixedText,value="Hello Sir", relx=11, rely=-3, editable=False)
+        self.statusHead2 = self.add(npyscreen.FixedText,value=" ", relx=11, rely=-3, editable=False, color="CAUTIONHL")
+
+        self.status = self.add(npyscreen.FixedText,value="Hello Sir", relx=13, rely=-3, editable=False)
+
+
         #
-        # self.debug = self.add(npyscreen.FixedText, value=val["coins"][symbol]["minTrade"])
         #
         # self.debug2 = self.add(npyscreen.FixedText, value=val["coins"][symbol]["tickSize"])
         #
@@ -146,12 +171,125 @@ class AlgoForm(npyscreen.FormBaseNew):
 
         # self.testLOL  = self.add(npyscreen.FixedText, value="#", relx=1, rely=-3)
 
+    # START BUTTON PRESSED
+    def start_button_pressed(self):
+        if self.start_button.name == "Start":
+            self.start_button.name = "Stop"
+            val["running"] = True
+            #debug
+            val["initiateBuy"] = True
+        else:
+            self.start_button.name = "Start"
+            val["running"] = False
+            cancelAllOrders()
+
+        isvalid = self.validateInput()
+        if isvalid == "not valid":
+            self.status.value="INPUT NOT VALID"
+        else:
+            self.status.value="SUCCESS! Buy: " + str(isvalid[0]) + " Sell: " + str(isvalid[1])
+            val["buyTarget"] = str(isvalid[0])[:len(str(val["coins"][symbol]["tickSize"]))]
+            val["sellTarget"] = str(isvalid[1])[:len(str(val["coins"][symbol]["tickSize"]))]
+
+    def revalidate(self):
+        isvalid = self.validateInput()
+        if isvalid == "not valid":
+            self.status.value="INPUT NOT VALID"
+        else:
+
+            val["buyTarget"] = str(isvalid[0])[:len(str(val["coins"][symbol]["tickSize"]))]
+            val["sellTarget"] = str(isvalid[1])[:len(str(val["coins"][symbol]["tickSize"]))]
+            self.debug.value = val["sellTarget"]
+
+    def validateInput(self):
+        notValid = False
+
+        # CHeck sell percent input
+        if isfloat(self.sellPercent.value) and float(self.sellPercent.value) > 0 and float(self.sellPercent.value) < 100:
+            userSellPrice = self.sellPercent.value
+        else:
+            notValid = True
+            logging.debug("SELL PRICE NOT VALID")
+
+
+        # Check buy percent input
+        if isfloat(self.buyPercent.value) and float(self.buyPercent.value) > 0 and float(self.buyPercent.value) < 100:
+            userBuyPrice = self.buyPercent.value
+        else:
+            notValid = True
+            logging.debug("BUY PRICE NOT VALID")
+
+
+        # Check sell Band
+        if str(self.sellBand.value) == "upper":
+            sellBand = "upperBoll"
+        elif str(self.sellBand.value) == "middle":
+            sellBand = "medBoll"
+        elif str(self.sellBand.value) == "lower":
+            sellBand = "lowerBoll"
+        else:
+            notValid = True
+            logging.debug("SELL BAND NOT VALID")
+
+        # Check buy Band
+        if str(self.buyBand.value) == "upper":
+            buyBand = "upperBoll"
+        elif str(self.buyBand.value) == "middle":
+            buyBand = "medBoll"
+        elif str(self.buyBand.value) == "lower":
+            buyBand = "lowerBoll"
+        else:
+            notValid = True
+            logging.debug("BUY BAND NOT VALID")
+
+
+        # Check sell operator
+        if self.sellAboveBelow.value == "below":
+            sellOperator = "<"
+            targetSellPrice = float(val["indicators"][self.timeFrame][sellBand] * (1 -(float(userSellPrice) / 100)))
+
+        elif self.sellAboveBelow.value == "above":
+            targetSellPrice = float(val["indicators"][self.timeFrame][sellBand] * (1 +(float(userSellPrice) / 100)))
+
+        else: notValid = True
+
+        # Check buy operator
+        if self.buyAboveBelow.value == "below":
+            buyOperator = "<"
+            targetBuyPrice = float(val["indicators"][self.timeFrame][buyBand] * (1 -(float(userBuyPrice) / 100)))
+
+        elif self.buyAboveBelow.value == "above":
+            targetBuyPrice = float(val["indicators"][self.timeFrame][buyBand] * (1 +(float(userBuyPrice) / 100)))
+
+        else: notValid = True
+
+
+
+        if notValid == False:
+            logging.debug("ALL GOOD")
+            return [str(targetBuyPrice)[:len(str(val["coins"][symbol]["tickSize"]))], str(targetSellPrice)[:len(str(val["coins"][symbol]["tickSize"]))]]
+        else:
+            return "not valid"
+
+
+
+
+
     def setBandInfo(self):
-        self.upperBoll.value='{:.8f}'.format(float(val["indicators"][str(self.timeFrame)]["upperBoll"]))[:len(str(val["coins"][symbol]["tickSize"]))]
+        self.upperBoll.value = '{:.8f}'.format(float(val["indicators"][str(self.timeFrame)]["upperBoll"]))[:len(str(val["coins"][symbol]["tickSize"]))]
 
         self.medBoll.value='{:.8f}'.format(float(val["indicators"][str(self.timeFrame)]["medBoll"]))[:len(str(val["coins"][symbol]["tickSize"]))]
 
         self.lowerBoll.value='{:.8f}'.format(float(val["indicators"][str(self.timeFrame)]["lowerBoll"]))[:len(str(val["coins"][symbol]["tickSize"]))]
+
+        if self.start_button.name == "Stop":
+            self.revalidate()
+            logging.debug("setbandinfo")
+            # self.status.value="SET BAND INFO"
+
+
+
+        self.display()
 
 
 class AlgoBot(npyscreen.NPSAppManaged):
@@ -200,6 +338,8 @@ class timeFrameInput(npyscreen.Textfield):
 
     def when_value_edited(self):
         """Fire when value is edited."""
+
+
         if str(self.value) in self.tf1m or str(self.value) in self.tf5m or str(self.value) in self.tf15m or str(self.value) in self.tf30m or str(self.value) in self.tf1h:
             self.color="GOOD"
         else:
@@ -208,6 +348,8 @@ class timeFrameInput(npyscreen.Textfield):
     def pressed_enter(self, inputVal):
 
         # stop bot, recalc data
+        self.parent.start_button.name="Start"
+        val["running"] = False
 
         if str(self.value) in self.tf1m:
             self.parent.timeFrame = "1m"
@@ -220,9 +362,12 @@ class timeFrameInput(npyscreen.Textfield):
         elif str(self.value) in self.tf1h:
             self.parent.timeFrame = "1h"
 
+
+
         else:
             self.parent.status.value="was anderes"
 
+        self.parent.revalidate()
         self.parent.setBandInfo()
         self.parent.display()
         # self.parent.status.value = "Timeframe: " + str(self.value)
@@ -231,3 +376,22 @@ class timeFrameInput(npyscreen.Textfield):
     tf15m = ["15", "15m", "15 min", "15min", "15minutes" "15 minutes", "15 Minutes", "15 minuten", "15 Minuten"]
     tf30m = ["30", "30m", "30 min", "30min", "30minutes" "30 minutes", "30 Minutes", "30 minuten", "30 Minuten"]
     tf1h = ["1h", "1 hour", "1hour", "1 stunde" "1 Stunde"]
+
+class buyInput(npyscreen.Textfield):
+    def when_value_edited(self):
+
+        self.parent.start_button.name="Start"
+        val["running"] = False
+
+        if isfloat(str(self.value)) and float(self.value) < 100 and float(self.value) >= 0:
+            self.parent.buyPercentHead.value="%"
+            self.color="DEFAULT"
+        else:
+            self.parent.buyPercentHead.value=""
+            self.color="DANGER"
+    pass
+
+class userInput(npyscreen.Textfield):
+    def when_value_edited(self):
+        self.parent.start_button.name="Start"
+        val["running"] = False
