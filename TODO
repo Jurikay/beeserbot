@@ -103,3 +103,6 @@ round indicator values to correct decimal place
 algo bot:
 access previous candle data (prev closing)
 start websocket for selected timeframe
+
+
+Fragen: soll bot detecten ob bands zu narrow sind?

@@ -5,8 +5,10 @@
 
 """Used for testing only. Not part of the app."""
 
-from MAIN import *
 
+import logging
+logging.basicConfig(filename="test.log", level=logging.DEBUG, format='%(asctime)s %(message)s')
+from MAIN import *
 symbol = "BCCBTC"
 #
 for coin in val["coins"]:
@@ -23,23 +25,25 @@ val["bm"].start()
 time.sleep(4)
 
 
-
-# test max order size calculation
-for coin in val["coins"]:
-    maxsize = calculateMaxOrderSize(coin, priceList, "0.20811381")
-    print(coin + ": " + "max order size: " + str(maxsize))
-
-time.sleep(4)
-
-# test min order size calculation
+#
+#
+#
+# # test max order size calculation
 # for coin in val["coins"]:
-#     minsize = calculateMinOrderSize(coin, priceList)
-#     print(coin + ": " + "min order size: " + str(minsize))
-
-# print(depthMsg)
-test = getHoldings()
-print(len(test))
-print(accHoldings["BTC"])
+#     maxsize = calculateMaxOrderSize(coin, priceList, "0.20811381")
+#     print(coin + ": " + "max order size: " + str(maxsize))
+#
+# time.sleep(4)
+#
+# # test min order size calculation
+# # for coin in val["coins"]:
+# #     minsize = calculateMinOrderSize(coin, priceList)
+# #     print(coin + ": " + "min order size: " + str(minsize))
+#
+# # print(depthMsg)
+# test = getHoldings()
+# print(len(test))
+# print(accHoldings["BTC"])
 while True:
 
     # print (validateOrderSize(symbol, "BUY"))
@@ -47,6 +51,9 @@ while True:
     # print(float(validateOrderSize(symbol, "BUY")) * float(depthMsg["bids"][0][0]))
     # print(userMsg)
     time.sleep(.5)
+    findOrder()
+    cancelAllOrders()
+    logging.debug("test")
 
 
 
