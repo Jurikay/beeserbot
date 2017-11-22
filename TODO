@@ -106,3 +106,51 @@ start websocket for selected timeframe
 
 
 Fragen: soll bot detecten ob bands zu narrow sind?
+
+####
+short term TODO
+
+1. Fix interface
+
+add order book, history, fix history, rename variables (fillList)
+
+choose time interval --> reflect change
+
+clean up ui
+
+show btc / coin balance btc gain since running
+
+implement hotkeys
+
+2. finalise first bot buy/sell LOGIC
+variable order size (25 or less)
+
+close orders on exit
+
+3. log filled orders create Quittung
+
+----
+berechnungen mit price targets:
+
+check ob man auf oder direkt hinter ner fedden dicken wall sitzt
+
+fail safe mechanisms:
+nie in orders rein shoppen
+
+Idee: twitter anbindung: Bot twittert trades
+
+sei der nächstbilligste ab wert x
+
+for i in bids/ask length
+  if bids price < pricetarget and bids price not myOrder:
+      myBuyOrderPrice = bids[i][0] + EINSAT
+
+0% input should be possible
+
+create order in queue
+BUG: multiple orders
+
+aggroSELL einrichten
+
+if my order = targetprice:
+  check distance to next order (satCheck) recreate if > 2 tix

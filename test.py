@@ -9,7 +9,7 @@
 import logging
 logging.basicConfig(filename="test.log", level=logging.DEBUG, format='%(asctime)s %(message)s')
 from MAIN import *
-symbol = "BCCBTC"
+# symbol = "BCCBTC"
 #
 for coin in val["coins"]:
     print(coin + " " + val["coins"][coin]["minTrade"] + "ticksize: " + val["coins"][coin]["tickSize"])
@@ -22,9 +22,12 @@ restartSocket(symbol)
 
 val["bm"].start()
 
-time.sleep(4)
+time.sleep(3)
 
 
+print(str(depthMsg["bids"][5][0]))
+
+priceRefiner(str(depthMsg["bids"][5][0]))
 #
 #
 #
