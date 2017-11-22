@@ -6,14 +6,20 @@
 """Functions related to buy / sell decision logic."""
 
 # import botFunctions
-
 import threading
+import logging
 from binance.enums import *
 from binance.client import Client
-from config import api_key, api_secret, symbol
-
+from binance.exceptions import BinanceAPIException
+try:
+    from config import api_key, api_secret, symbol
+except ModuleNotFoundError:
+    print("Where is your config?")
+    sys.exit()
 from customSocketManager import BinanceSocketManager
 # import ui
+
+logging.basicConfig(filename="test.log", filemode='w', level=logging.DEBUG, format='%(asctime)s %(message)s')
 
 
 # use val to store different values like websocket conn_keys
@@ -24,13 +30,16 @@ client = Client(api_key, api_secret)
 
 val["bm"] = BinanceSocketManager(client)
 val["exitThread"] = False
+val["exitSecondThread"] = False
 val["symbol"] = symbol
 val["buyLoop"] = True
 val["indicators"] = dict()
 
+val["running"] = False
+val["openOrders"] = dict()
 # DEBUG hardcode symbol
 # symbol = 'ETHBTC'
-
+val["initiateBuy"] = False
 # initilize "global" dictionaries
 depthMsg = dict()
 tradesMsg = dict()
@@ -41,10 +50,16 @@ tradeHistDict = dict()
 accHoldings = dict()
 indicators = dict()
 
+val["myOrders"] = dict()
+
+
+val["angelBuyId"] = None
+val["angelSellId"] = None
 lock = threading.RLock()
 
-
-
+#debug
+val["buySize"] = 25
+val["sellSize"] = 6
 
 def botCalc():
     """Fire this every time the orderbook is updated."""
