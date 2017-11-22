@@ -9,6 +9,8 @@
 import time
 # from math import fabs,ceil,floor
 
+import copy
+
 # import os
 import atexit
 import logging
@@ -35,8 +37,11 @@ def cleanExit():
     # Shutting down nicely
     print("     Shutting down...                  ")
 
+    cancelAllOrders()
+
     # trigger while loop to val["exitThread"]
     val["exitThread"] = True
+    val["exitSecondThread"] = True
 
     try:
         val["bm"].close()
@@ -47,6 +52,7 @@ def cleanExit():
 
 def exit_handler():
     """Handle exit gracefully."""
+
     try:
         ui.app.switchForm(None)
     except AttributeError:
@@ -104,6 +110,7 @@ def amountNumbers(bidAsk):
             bidAmount.append(int(float(depthMsg[bidAsk][i][1])))
     except KeyError:
         pass
+
     # maxBidA = max(bidAmount)
     return bidAmount
     # time.sleep(0.1)
@@ -206,7 +213,15 @@ def depth_callback(msg):
         for key, value in msg.items():
             depthMsg[key] = value
     # run certain logic everytime an order is placed
-    botCalc()
+    # botCalc()
+
+    # if val["running"] == True:
+    #     try:
+    #         algoLogic(depthMsg["bids"][0][0], depthMsg["asks"][0][0], val["buyTarget"], val["sellTarget"])
+    #         algoLogic2(depthMsg["bids"][0][0], depthMsg["asks"][0][0], val["buyTarget"], val["sellTarget"])
+    #     except KeyError:
+    #         pass
+
     # MainForm.updateOrderbook()
 
     # draw orderbook changes right as they are received
@@ -236,7 +251,7 @@ def trade_callback(msg):
     #     logging.debug("REDUCE LIST")
     # except:
     #     logging.debug("KONNTE GLOBAL LIST NICHT SCHRUMPFEN")
-    logging.debug("Global list: " + str(globalList))
+    # logging.debug("Global list: " + str(globalList))
     # with open("tradeCallback.txt", "w") as f:
     #     f.write(str(tradesMsg))
 
@@ -264,6 +279,19 @@ def user_callback(msg):
             # put account info in accHoldings dictionary. Access free and locked holdings like so: accHoldings["BTC"]["free"]
             accHoldings[userMsg["B"][i]["a"]] = {"free": userMsg["B"][i]["f"], "locked": userMsg["B"][i]["l"]}
 
+    elif userMsg["e"] == "executionReport":
+            if userMsg["X"] == "NEW":
+                val["myOrders"][userMsg["i"]] = {"symbol": userMsg["s"], "price": userMsg["p"], "quantity": userMsg["q"], "side": userMsg["S"], "id": userMsg["i"]}
+
+            elif userMsg["X"] == "CANCELED":
+                val["myOrders"].pop(userMsg["i"], None)
+                if val["angelSellId"] == userMsg["i"]:
+                    val["angelSellId"] = None
+
+            elif userMsg["X"] == "FILLED":
+                val["myOrders"].pop(userMsg["i"], None)
+                if val["angelBuyId"] == userMsg["i"]:
+                    val["angelBuyId"] = None
 
 
 
@@ -283,7 +311,7 @@ def isfloat(value):
         float(value)
         return True
 
-    except ValueError:
+    except (ValueError, TypeError):
         return False
 
 
@@ -416,8 +444,191 @@ def validateOrderSize(size, symbol, priceList, btcBalance):
     # else:
     #     return "BAD"
 
+# return true if two values are identical in satoshis/smallest unit
+def satCheckEqual(val1, val2, tickSize):
+
+    return (round(fabs(val1 - val2),8) >= 0.0 and round(fabs(val1 - val2),8) < float(tickSize))
+
+
+# returns True if difference between two values is exaclty one satoshi/smallest unit
+def satCheckOneDiff(val1, val2, tickSize):
+
+    return (round(fabs(val1 - val2),8) > 0.0 and round(fabs(val1 - val2),8) <= float(tickSize))
+
+# returns True if difference between two values is at least two satoshi/smallest unit
+def satCheckTwoDiff(val1, val2, tickSize):
+
+    return (round(fabs(val1 - val2),8) >= 0.0 and round(fabs(val1 - val2),8) > float(tickSize))
+
+
+def comparePrices(current, target, order):
+    if order == "BUY":
+        if current < target:
+            checkOrder()
+
+
+
+def getOrders(symbol):
+    # API Call
+    orders = client.get_open_orders(symbol=symbol)
+    return orders
+
+
+def findInOrders(side, price, size):
+    for order in enumerate(val["openOrders"]):
+
+        if order[1]["symbol"] == val["symbol"] and str(order[1]["price"]) == str(price) and float(order[1]["origQty"]) == float(size) and order[1]["side"] == side:
+
+            return str("FOUND")
+
+    return str("NOT FOUND")
+
+
+def findInOrdersN(price, size):
+    myOrders = copy.deepcopy(val["myOrders"])
+    for index, value in myOrders.items():
+        logging.debug("orders in findorders")
+        logging.debug(value["symbol"] + "  " + val["symbol"] + "  " + str(value["price"]) + "  " + str(price) + str(value["quantity"]) + "  " + str(size))
+        if value["symbol"] == val["symbol"] and str(value["price"]) == str(price):
+            logging.debug("found the order")
+
+            return True
+
+    return False
+
+def findOrder():
+    myOrders = copy.deepcopy(val["myOrders"])
+    for order in myOrders.items():
+        try:
+            logging.debug(order[0])
+            logging.debug(order[1])
+            logging.debug(order[2])
+        except:
+            pass
+
+def cancelOrdersOfType(symbol, orderType):
+    myOrders = copy.deepcopy(val["myOrders"])
+    for index, order in myOrders.items():
+        logging.debug("FOUND OPEN ORDER")
+        if order["symbol"] == val["symbol"] and str(order["side"]) == orderType:
+            orderID = str(order["id"])
+            try:
+                client.cancel_order(symbol=symbol, orderId=orderID)
+            except BinanceAPIException:
+                pass
+
+def cancelAllOrders():
+    myOrders = copy.deepcopy(val["myOrders"])
+    for index, order in myOrders.items():
+        orderID = str(order["id"])
+        logging.debug("CANCELE")
+        try:
+            logging.debug(" ORDER ID: " + str(orderID))
+            order = client.cancel_order(symbol=val["symbol"], orderId=orderID)
+        except (TypeError, BinanceAPIException):
+            pass
+
+
+        try:
+            client.cancel_order(symbol=symbol, orderId=orderID)
+        except BinanceAPIException:
+            pass
+
+def cancelOrderById(orderId):
+    try:
+        order = client.cancel_order(symbol=val["symbol"], orderId=orderId)
+        return order
+    except BinanceAPIException:
+        pass
+
+
+def createOrder(symbol, side, price, size):
+    if side == "BUY":
+        logging.debug("SIDE: BUY")
+        order = client.order_limit_buy(
+            symbol=symbol,
+            quantity=size,
+            price=price)
+        return order
+
+    elif side == "SELL":
+        logging.debug("SIDE: SELL")
+        Sorder = client.order_limit_sell(
+            symbol=symbol,
+            quantity=size,
+            price=price)
+        return Sorder
+
+def recreateOrder(target, side):
+    cancelOrdersOfType(val["symbol"], str(side))
+    try:
+
+        order = createOrder(val["symbol"], str(side), str(target), val["buySize"])
+        return order
+    except:
+        pass
+
+def algoLogic(currentBid, currentAsk, buyTarget, sellTarget):
+    # if currentBid > buyTarget:
+        # ui.app.getForm("MAIN").status.value="ANGEL MODUS"
+    with lock:
+        if findInOrdersN(str(buyTarget), float(val["buySize"])):
+            logging.debug("BUY")
+            ui.app.getForm("MAIN").status.value="ANGEL MODUS AM ANGELN"
+        else:
+            # ui.app.getForm("MAIN").status.value="ANGEL MODUS FINDE DIE ORDER NICHT ERSTELLE"
+            # cancel open orders
+            # cancelOrdersOfType(val["symbol"], "BUY")
+            logging.debug("ERSTELLE BUY ORDER")
+            val["angelBuyId"] = recreateOrder(buyTarget, "BUY")
+
+        if findInOrdersN(str(sellTarget), float(val["sellSize"])):
+            logging.debug("SELL ORDER GEFUNDEN")
+            ui.app.getForm("MAIN").status.value = "Warte auf Sell opportunity"
+        else:
+            logging.debug("CREATE SELL ORDER!!!")
+            recreateOrder(sellTarget, "SELL")
+
+
+
+
+def algoLogic2(currentBid, currentAsk, buyTarget, sellTarget):
+    logging.debug("AL2: " + str(currentBid) + " " +str(currentAsk) + " " +str(buyTarget) + " " +str(sellTarget))
+    if findInOrdersN( str(sellTarget), float(val["sellSize"])):
+        logging.debug("SELL ORDER GEFUNDEN")
+        ui.app.getForm("MAIN").status.value="Warte auf Sell opportunity"
+    else:
+        logging.debug("CREATE SELL ORDER!!!")
+        # recreateOrder(sellTarget, "SELL")
+
+
+def neueAlgoLogic(buyTarget, sellTarget):
+    logging.warning("NEUE ALGO LOGIC")
+    if isfloat(val["angelBuyId"]):
+        logging.log("versuche order mit id zu canceln")
+        cancelOrderById(val["angelBuyId"])
+    val["angelBuyId"] = createOrder(val["symbol"], "BUY", buyTarget, val["buySize"])
+    logging.log("angelbuyid: " + str(val["angelBuyID"]))
+
+        # cancelAllOrders()
+        # time.sleep(0.1)
+        # createOrder(val["symbol"], "BUY", buyTarget, val["buySize"])
+        # logging.debug("ERSTELLE BUY ORDER!!!!")
+        # logging.debug(val["symbol"]+ str(buyTarget)+" "+str(val["buySize"]))
+        # createOrder("BNBBTC", "BUY", "0.000194", "6")
+
+# TODO elif aggrobuy
+    # logging.debug("current ask - selltarget:")
+    # logging.debug(str(currentAsk)+ "   "+ str(sellTarget))
+# if currentAsk < sellTarget:
+
+# else:
+#     logging.debug("DAS HIER")
+    # time.sleep(0.01)
 
 val["coins"] = dict()
 
 
 val["coins"] = availablePairs()
+
+val["openOrders"] = getOrders(val["symbol"])
