@@ -11,19 +11,18 @@ import logging
 from binance.enums import *
 from binance.client import Client
 from binance.exceptions import BinanceAPIException
+from customSocketManager import BinanceSocketManager
+
 try:
     from config import api_key, api_secret, symbol
 except ModuleNotFoundError:
-    print("Where is your config?")
-    sys.exit()
-from customSocketManager import BinanceSocketManager
-# import ui
+    print("Paste Your API key and secret into config_sample.py and rename it to config.py!")
 
 logging.basicConfig(filename="test.log", filemode='w', level=logging.DEBUG, format='%(asctime)s %(message)s')
 
 
 # use val to store different values like websocket conn_keys
-val = {"s": 0, "cs": 0, "socket1": 0, "socket2": 0, "socket3": 0, "symbol": symbol, "iter1": 0, "bm": 0, "tryToBuy": False, "tryToSell": False}
+val = {"s": 0, "cs": 0, "socket1": 0, "socket2": 0, "socket3": 0, "symbol": symbol, "iter1": 0, "bm": 0, "tryToBuy": False, "tryToSell": False, "runTime": 0}
 
 
 client = Client(api_key, api_secret)
@@ -58,16 +57,10 @@ val["angelSellId"] = None
 lock = threading.RLock()
 
 #debug
-val["buySize"] = 25
-val["sellSize"] = 6
+val["buySize"] = 20
+val["sellSize"] = 25
 
-def botCalc():
-    """Fire this every time the orderbook is updated."""
-    # logging.debug("bot calculations " + str(depthMsg["bids"][0]))
-
-
-    pass
-# app = ui.MainApp()
+val["depthTracker"] = 0
 
 
 def getCurrentPrices():
