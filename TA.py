@@ -90,7 +90,6 @@ def interpreteData(symbol):
         except FileNotFoundError:
             logging.debug("COULD NOT FIND CSV")
 
-
         # Calculate chosen indicators
         rsi6hData = stock['rsi_6']
         rsi12hData = stock['rsi_12']
@@ -102,12 +101,12 @@ def interpreteData(symbol):
         volumeDeltaData = stock['volume_delta']
 
         # get last respective entries from DataFrame
-        rsi6h = round(rsi6hData.iloc[-1],1)
-        rsi12h = round(rsi12hData.iloc[-1],1)
+        rsi6h = round(rsi6hData.iloc[-1], 1)
+        rsi12h = round(rsi12hData.iloc[-1], 1)
 
-        medBoll = round(medBollData.iloc[-1],roundTo)
-        upperBoll = round(upperBollData.iloc[-1],roundTo)
-        lowerBoll = round(lowerBollData.iloc[-1],roundTo)
+        medBoll = round(medBollData.iloc[-1], roundTo)
+        upperBoll = round(upperBollData.iloc[-1], roundTo)
+        lowerBoll = round(lowerBollData.iloc[-1], roundTo)
 
         volumeDelta = volumeDeltaData.iloc[-1]
 

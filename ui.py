@@ -44,9 +44,9 @@ class AlgoForm(npyscreen.FormBaseNew):
             self.volume.value = "Key Error"
 
         if val["running"] == False:
-            self.statusHead2.color="CAUTIONHL"
+            self.statusHead2.color = "CAUTIONHL"
         elif val["running"] == True:
-            self.statusHead2.color="VERYGOOD"
+            self.statusHead2.color = "VERYGOOD"
 
 
 
@@ -152,15 +152,15 @@ class AlgoForm(npyscreen.FormBaseNew):
 
         ##########
 
-        self.debug = self.add(npyscreen.FixedText, value="debug")
+        self.debug = self.add(npyscreen.FixedText, value = "debug")
 
-        self.status2 = self.add(npyscreen.FixedText, value="fake status")
+        self.status2 = self.add(npyscreen.FixedText, value = "fake status")
 
-        self.statusHead = self.add(npyscreen.FixedText,value="[STATUS]", relx=2, rely=-3, editable=False, color="VERYGOOD")
+        self.statusHead = self.add(npyscreen.FixedText,value = "[STATUS]", relx=2, rely=-3, editable=False, color = "VERYGOOD")
 
-        self.statusHead2 = self.add(npyscreen.FixedText,value=" ", relx=11, rely=-3, editable=False, color="CAUTIONHL")
+        self.statusHead2 = self.add(npyscreen.FixedText,value = " ", relx=11, rely=-3, editable=False, color = "CAUTIONHL")
 
-        self.status = self.add(npyscreen.FixedText,value="Hello Sir", relx=13, rely=-3, editable=False)
+        self.status = self.add(npyscreen.FixedText,value = "Hello Sir", relx=13, rely=-3, editable=False)
 
 
         #
@@ -169,7 +169,7 @@ class AlgoForm(npyscreen.FormBaseNew):
         #
         # self.debug2 = self.add(npyscreen.FixedText, value=len(str(val["coins"][symbol]["tickSize"])))
 
-        # self.testLOL  = self.add(npyscreen.FixedText, value="#", relx=1, rely=-3)
+        # self.testLOL  = self.add(npyscreen.FixedText, value = "#", relx=1, rely=-3)
 
     # START BUTTON PRESSED
     def start_button_pressed(self):
@@ -185,16 +185,16 @@ class AlgoForm(npyscreen.FormBaseNew):
 
         isvalid = self.validateInput()
         if isvalid == "not valid":
-            self.status.value="INPUT NOT VALID"
+            self.status.value = "INPUT NOT VALID"
         else:
-            self.status.value="SUCCESS! Buy: " + str(isvalid[0]) + " Sell: " + str(isvalid[1])
+            self.status.value = "SUCCESS! Buy: " + str(isvalid[0]) + " Sell: " + str(isvalid[1])
             val["buyTarget"] = str(isvalid[0])[:len(str(val["coins"][symbol]["tickSize"]))]
             val["sellTarget"] = str(isvalid[1])[:len(str(val["coins"][symbol]["tickSize"]))]
 
     def revalidate(self):
         isvalid = self.validateInput()
         if isvalid == "not valid":
-            self.status.value="INPUT NOT VALID"
+            self.status.value = "INPUT NOT VALID"
         else:
 
             val["buyTarget"] = str(isvalid[0])[:len(str(val["coins"][symbol]["tickSize"]))]
@@ -278,14 +278,14 @@ class AlgoForm(npyscreen.FormBaseNew):
     def setBandInfo(self):
         self.upperBoll.value = '{:.8f}'.format(float(val["indicators"][str(self.timeFrame)]["upperBoll"]))[:len(str(val["coins"][symbol]["tickSize"]))]
 
-        self.medBoll.value='{:.8f}'.format(float(val["indicators"][str(self.timeFrame)]["medBoll"]))[:len(str(val["coins"][symbol]["tickSize"]))]
+        self.medBoll.value = '{:.8f}'.format(float(val["indicators"][str(self.timeFrame)]["medBoll"]))[:len(str(val["coins"][symbol]["tickSize"]))]
 
-        self.lowerBoll.value='{:.8f}'.format(float(val["indicators"][str(self.timeFrame)]["lowerBoll"]))[:len(str(val["coins"][symbol]["tickSize"]))]
+        self.lowerBoll.value = '{:.8f}'.format(float(val["indicators"][str(self.timeFrame)]["lowerBoll"]))[:len(str(val["coins"][symbol]["tickSize"]))]
 
         if self.start_button.name == "Stop":
             self.revalidate()
             logging.debug("setbandinfo")
-            # self.status.value="SET BAND INFO"
+            # self.status.value = "SET BAND INFO"
 
 
 
@@ -302,7 +302,7 @@ class AlgoBot(npyscreen.NPSAppManaged):
 
     # initiate Forms on start
     def onStart(self):
-        self.addForm("MAIN", AlgoForm, name="Juris beeesr Binance Bot", color="GOOD")
+        self.addForm("MAIN", AlgoForm, name = "Juris beeesr Binance Bot", color = "GOOD")
 
 
     def periodicUpdate(self):
@@ -316,6 +316,7 @@ class AlgoBot(npyscreen.NPSAppManaged):
     def updateDepth(self):
         pass
 
+
 app = AlgoBot()
 
 
@@ -325,6 +326,7 @@ class timeFrameInput(npyscreen.Textfield):
 
     Input is evaluated and colorized
     """
+
     def __init__(self, *args, **kwargs):
         """Overwrite init function to add key handlers."""
         super().__init__(*args, **kwargs)
@@ -339,16 +341,15 @@ class timeFrameInput(npyscreen.Textfield):
     def when_value_edited(self):
         """Fire when value is edited."""
 
-
         if str(self.value) in self.tf1m or str(self.value) in self.tf5m or str(self.value) in self.tf15m or str(self.value) in self.tf30m or str(self.value) in self.tf1h:
-            self.color="GOOD"
+            self.color = "GOOD"
         else:
-            self.color="DEFAULT"
+            self.color = "DEFAULT"
 
     def pressed_enter(self, inputVal):
 
         # stop bot, recalc data
-        self.parent.start_button.name="Start"
+        self.parent.start_button.name = "Start"
         val["running"] = False
 
         if str(self.value) in self.tf1m:
@@ -365,7 +366,7 @@ class timeFrameInput(npyscreen.Textfield):
 
 
         else:
-            self.parent.status.value="was anderes"
+            self.parent.status.value = "was anderes"
 
         self.parent.revalidate()
         self.parent.setBandInfo()
@@ -380,18 +381,18 @@ class timeFrameInput(npyscreen.Textfield):
 class buyInput(npyscreen.Textfield):
     def when_value_edited(self):
 
-        self.parent.start_button.name="Start"
+        self.parent.start_button.name = "Start"
         val["running"] = False
 
         if isfloat(str(self.value)) and float(self.value) < 100 and float(self.value) >= 0:
-            self.parent.buyPercentHead.value="%"
-            self.color="DEFAULT"
+            self.parent.buyPercentHead.value = "%"
+            self.color = "DEFAULT"
         else:
-            self.parent.buyPercentHead.value=""
-            self.color="DANGER"
+            self.parent.buyPercentHead.value = ""
+            self.color = "DANGER"
     pass
 
 class userInput(npyscreen.Textfield):
     def when_value_edited(self):
-        self.parent.start_button.name="Start"
+        self.parent.start_button.name = "Start"
         val["running"] = False
