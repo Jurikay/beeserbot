@@ -57,20 +57,51 @@ def mainLoop():
         else:
             iterator += 1
 
-        if minuteIt > 60:
+        if minuteIt > 10:
+            val["openOrders"] = getOrders(val["symbol"])
+            logging.debug("open orders: " + str(val["openOrders"]))
+
+
 
             # TA.createCSV()
             val["indicators"] = TA.createCSV()
             ui.app.getForm("MAIN").setBandInfo()
             minuteIt = 0
         else:
-            minuteIt +=1
+            minuteIt += 1
         # Test: running for:
 
         # val["timeRunning"] = str(datetime.timedelta(seconds=int(val["s"])))
 
         # if val["exitThread"] == True:
         #     print("exit thread")
+
+        #
+        # if val["running"] == True:
+        #     try:
+        #         algoLogic(depthMsg["bids"][0][0], depthMsg["asks"][0][0], val["buyTarget"], val["sellTarget"])
+        #         # algoLogic2(depthMsg["bids"][0][0], depthMsg["asks"][0][0], val["buyTarget"], val["sellTarget"])
+        #     except KeyError:
+        #         pass
+            val["initiateBuy"] = True
+
+
+def secondLoop():
+    logging.debug("second loop")
+    while val["exitSecondThread"] is False:
+        logging.debug("second loop iteration")
+        if val["initiateBuy"]:
+            logging.debug("ONCE PLS")
+            val["initiateBuy"] = False
+        if val["running"] is True:
+            try:
+                neueAlgoLogic(val["buyTarget"], val["sellTarget"])
+                logging.debug("calle neueAlgoLogic")
+            except KeyError:
+                logging.debug("neue algo logic: KeyError!")
+
+        time.sleep(0.5)
+
 # def calcLoop():
 #     loadingList = ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█", "▇", "▆", "▅", "▄", "▃"]
 #     iterator = 0
@@ -104,6 +135,10 @@ if __name__ == '__main__':
     mainThread = threading.Thread(target=mainLoop, args=(), daemon=True)
 
     mainThread.start()
+
+    secondThread = threading.Thread(target=secondLoop, args=(), daemon=True)
+
+    secondThread.start()
 
     # buyThread = threading.Thread(target=buyLoop, args=(), daemon=True)
     #
