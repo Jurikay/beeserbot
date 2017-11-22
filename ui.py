@@ -27,7 +27,7 @@ class AlgoForm(npyscreen.FormBaseNew):
             {
                 # curses.KEY_F1: self.start_button_pressed,
                 # curses.KEY_F2: self.select_switcher,
-                "R": self.hotkeyFix
+                "r": self.hotkeyFix
             }
         )
 
@@ -35,10 +35,10 @@ class AlgoForm(npyscreen.FormBaseNew):
         self.DISPLAY()
 
     def while_waiting(self):
-        # self.setBandInfo()
+        # self.setIndicatorData()
         try:
             self.volume.value = str(float(tickerMsg["v"])*float(tickerMsg["w"]))
-            self.debug.value = str(val["buyTarget"])
+            # self.debug.value = str(val["buyTarget"])
             # self.debug.value = str(val["coins"][symbol]["tickSize"])
         except KeyError:
             self.volume.value = "Key Error"
@@ -120,11 +120,13 @@ class AlgoForm(npyscreen.FormBaseNew):
         # Sell condition
         self.sellCondHead = self.add(npyscreen.FixedText, value="Sell if price is", editable=False, relx=2, rely=16, color="DANGER")
 
+        self.sellTargetDisplay = self.add(npyscreen.FixedText, value="0", editable=False,relx=len(self.sellCondHead.value)+3, rely=16)
+
         self.sellPercent = self.add(userInput, value="0.5", editable=True,  relx=2, rely=17, width=4)
 
         self.sellPercentHead = self.add(npyscreen.FixedText, value="%", editable=False, relx=6, rely=17)
 
-        self.sellAboveBelow = self.add(userInput, value="below", relx=2, rely=18)
+        self.sellAboveBelow = self.add(userInput, value="above", relx=2, rely=18)
 
         self.sellBand = self.add(userInput, value="upper", relx=2, rely=19, width=7)
 
@@ -133,6 +135,9 @@ class AlgoForm(npyscreen.FormBaseNew):
 
         # Buy condition
         self.buyCondHead = self.add(npyscreen.FixedText, value="Buy if price is", editable=False, relx=2, rely=21, color="GOOD")
+
+        self.buyTargetDisplay = self.add(npyscreen.FixedText, value="0", editable=False,relx=len(self.buyCondHead.value)+3, rely=21)
+
 
         self.buyPercent = self.add(buyInput, value="0.5", editable=True,  relx=2, rely=22, max_width=4)
 
@@ -155,6 +160,8 @@ class AlgoForm(npyscreen.FormBaseNew):
         self.debug = self.add(npyscreen.FixedText, value = "debug")
 
         self.status2 = self.add(npyscreen.FixedText, value = "fake status")
+
+        self.statusLine = self.add(npyscreen.FixedText,value = "2nd status", relx=2, rely=-4, editable=False)
 
         self.statusHead = self.add(npyscreen.FixedText,value = "[STATUS]", relx=2, rely=-3, editable=False, color = "VERYGOOD")
 
@@ -199,7 +206,10 @@ class AlgoForm(npyscreen.FormBaseNew):
 
             val["buyTarget"] = str(isvalid[0])[:len(str(val["coins"][symbol]["tickSize"]))]
             val["sellTarget"] = str(isvalid[1])[:len(str(val["coins"][symbol]["tickSize"]))]
-            self.debug.value = val["sellTarget"]
+            # self.debug.value = val["sellTarget"]
+            logging.debug("revalidate: buy targget")
+            logging.debug(str(self.timeFrame))
+            logging.debug(str(val["buyTarget"]))
 
     def validateInput(self):
         notValid = False
@@ -275,7 +285,7 @@ class AlgoForm(npyscreen.FormBaseNew):
 
 
 
-    def setBandInfo(self):
+    def setIndicatorData(self):
         self.upperBoll.value = '{:.8f}'.format(float(val["indicators"][str(self.timeFrame)]["upperBoll"]))[:len(str(val["coins"][symbol]["tickSize"]))]
 
         self.medBoll.value = '{:.8f}'.format(float(val["indicators"][str(self.timeFrame)]["medBoll"]))[:len(str(val["coins"][symbol]["tickSize"]))]
@@ -284,9 +294,12 @@ class AlgoForm(npyscreen.FormBaseNew):
 
         if self.start_button.name == "Stop":
             self.revalidate()
-            logging.debug("setbandinfo")
             # self.status.value = "SET BAND INFO"
-
+        try:
+            self.sellTargetDisplay.value = str(val["sellTarget"])
+            self.buyTargetDisplay.value = str(val["buyTarget"])
+        except KeyError:
+            pass
 
 
         self.display()
@@ -306,7 +319,7 @@ class AlgoBot(npyscreen.NPSAppManaged):
 
 
     def periodicUpdate(self):
-        self.getForm("MAIN").timeRunning.value = str(datetime.timedelta(seconds=int(val["s"])))
+        self.getForm("MAIN").timeRunning.value = str(datetime.timedelta(seconds=int(val["runTime"])))
         self.getForm("MAIN").display()
 
 
@@ -314,7 +327,12 @@ class AlgoBot(npyscreen.NPSAppManaged):
         self.getForm("MAIN").DISPLAY()
 
     def updateDepth(self):
-        pass
+        try:
+            self.getForm("MAIN").debug.value = str(val["depthTracker"])
+            self.getForm("MAIN").display()
+            self.getForm("MAIN").statusLine.value = "Buy under: " + str(val["buyTarget"]) + " order at: " + str(val["realBuyPrice"])
+        except KeyError:
+            pass
 
 
 app = AlgoBot()
@@ -369,7 +387,7 @@ class timeFrameInput(npyscreen.Textfield):
             self.parent.status.value = "was anderes"
 
         self.parent.revalidate()
-        self.parent.setBandInfo()
+        self.parent.setIndicatorData()
         self.parent.display()
         # self.parent.status.value = "Timeframe: " + str(self.value)
     tf1m = ["1m", "1 min", "1min", "1minute" "1 minute", "1 Minute"]
