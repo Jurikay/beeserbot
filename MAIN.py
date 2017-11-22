@@ -32,6 +32,17 @@ logging.debug("Juris beeser Bot version " + str(splashScreen.version) + " starte
 # main loop function
 
 #  BOT LOGIC GOES HERE
+def clockLoop():
+    while val["exitThread"] is False:
+        try:
+            ui.app.periodicUpdate()
+        except KeyError:
+            pass
+        val["runTime"] += 1
+        time.sleep(1)
+
+
+
 def mainLoop():
     iterator = 0
     minuteIt = 0
@@ -40,10 +51,10 @@ def mainLoop():
         val["s"] += 1
         val["cs"] += 1
 
-        try:
-            ui.app.periodicUpdate()
-        except KeyError:
-            pass
+        # try:
+        #     ui.app.periodicUpdate()
+        # except KeyError:
+        #     pass
         time.sleep(1)
         # Hard refresh Display every 15 seconds TODO: find a better way to fix display errors
 
@@ -58,14 +69,12 @@ def mainLoop():
             iterator += 1
 
         if minuteIt > 10:
-            val["openOrders"] = getOrders(val["symbol"])
-            logging.debug("open orders: " + str(val["openOrders"]))
-
-
+            # val["openOrders"] = getOrders(val["symbol"])
+            # logging.debug("open orders: " + str(val["openOrders"]))
 
             # TA.createCSV()
-            val["indicators"] = TA.createCSV()
-            ui.app.getForm("MAIN").setBandInfo()
+            val["indicators"] = TA.getTA()
+            ui.app.getForm("MAIN").setIndicatorData()
             minuteIt = 0
         else:
             minuteIt += 1
@@ -87,20 +96,21 @@ def mainLoop():
 
 
 def secondLoop():
-    logging.debug("second loop")
     while val["exitSecondThread"] is False:
-        logging.debug("second loop iteration")
-        if val["initiateBuy"]:
-            logging.debug("ONCE PLS")
-            val["initiateBuy"] = False
-        if val["running"] is True:
-            try:
-                neueAlgoLogic(val["buyTarget"], val["sellTarget"])
-                logging.debug("calle neueAlgoLogic")
-            except KeyError:
-                logging.debug("neue algo logic: KeyError!")
 
-        time.sleep(0.5)
+        if val["running"] is True:
+
+            try:
+                if isfloat(val["buyTarget"]):
+                    priceRefiner(val["buyTarget"])
+                    time.sleep(0.01)
+                neueAlgoLogic(val["buyTarget"], val["sellTarget"])
+            except KeyError as err:
+                logging.debug("neue algo logic: KeyError!")
+                logging.debug(KeyError)
+                logging.debug(err)
+
+        time.sleep(0.1)
 
 # def calcLoop():
 #     loadingList = ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█", "▇", "▆", "▅", "▄", "▃"]
@@ -140,6 +150,11 @@ if __name__ == '__main__':
 
     secondThread.start()
 
+
+    clockThread = threading.Thread(target=clockLoop, args=(), daemon=True)
+
+    clockThread.start()
+
     # buyThread = threading.Thread(target=buyLoop, args=(), daemon=True)
     #
     # buyThread.start()
@@ -149,7 +164,7 @@ if __name__ == '__main__':
 
     # calcThread.start()
 
-    val["indicators"] = TA.createCSV()
+
 
     # print(indicators["1h"]["lowerBoll"])
 
@@ -161,9 +176,16 @@ if __name__ == '__main__':
     # start the websocket manager
     val["bm"].start()
 
-    # start npyscreen ui
+    # get trade history
     fillList(val["symbol"])
+
+    # get TA indicators
+    val["indicators"] = TA.getTA()
+
     try:
+        # start npyscreen
         ui.app.run()
+
+    # Throw exception if window size is too small
     except npyscreen.wgwidget.NotEnoughSpaceForWidget:
         print("\033[91mWindow too small")
