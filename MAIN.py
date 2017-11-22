@@ -102,13 +102,16 @@ def secondLoop():
 
             try:
                 if isfloat(val["buyTarget"]):
-                    priceRefiner(val["buyTarget"])
+                    priceRefiner(float(val["buyTarget"]))
                     time.sleep(0.01)
-                neueAlgoLogic(val["buyTarget"], val["sellTarget"])
+                    neueAlgoLogic()
+                else:
+                    logging.debug("buy target error: " +str(val["buyTarget"]))
             except KeyError as err:
                 logging.debug("neue algo logic: KeyError!")
                 logging.debug(KeyError)
                 logging.debug(err)
+                logging.debug(str(val["buyTarget"]))
 
         time.sleep(0.1)
 

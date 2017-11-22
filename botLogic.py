@@ -57,8 +57,8 @@ val["angelSellId"] = None
 lock = threading.RLock()
 
 #debug
-val["buySize"] = 20
-val["sellSize"] = 25
+val["buySize"] = 10
+val["sellSize"] = 10
 
 val["depthTracker"] = 0
 

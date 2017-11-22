@@ -572,15 +572,15 @@ def algoLogic2(currentBid, currentAsk, buyTarget, sellTarget):
         # recreateOrder(sellTarget, "SELL")
 
 
-def neueAlgoLogic(buyTarget, sellTarget):
+def neueAlgoLogic():
 
 
     # habe ich eine offene buy order
     if val["angelBuyId"] in val["myOrders"]:
 
-        # wenn ich schon eine habe beim aktuellen Zielpreis ist alles gut
-        if val["myOrders"][val["angelBuyId"]]["price"] == str(val["realBuyPrice"]):
-            logging.debug("Order steht alles gucci")
+        # wenn ich schon eine habe beim aktuellen Zielpreis ist alles gut need satcheck
+        if float(val["myOrders"][val["angelBuyId"]]["price"]) == float(val["realBuyPrice"]):
+            logging.debug("BUY Order steht alles gucci")
         else:
             logging.debug("ORDER CANCEL:")
             logging.debug(type(val["myOrders"][val["angelBuyId"]]["price"]))
@@ -599,7 +599,7 @@ def neueAlgoLogic(buyTarget, sellTarget):
 
         # wenn ich schon eine habe beim aktuellen Zielpreis ist alles gut
         if val["myOrders"][val["angelSellId"]]["price"] == sellTarget:
-            logging.debug("Order steht alles gucci")
+            logging.debug("SELL Order steht alles gucci")
         else:
             # logging.debug()
             # wenn nicht canceln und neu erstellen
