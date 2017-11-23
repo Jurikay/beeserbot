@@ -64,7 +64,7 @@ val["sellSize"] = 12
 val["depthTracker"] = 0
 
 filledTrades = []
-reportFilename = "report-" + str(datetime.datetime.now().strftime("%m-%d %H:%M:%S")) + ".csv"
+reportFilename = "report-" + str(datetime.datetime.now().strftime("%m-%d-%H:%M"))
 
 def getCurrentPrices():
     """Fetch bid and ask price and quantitiy of every coin. Access data this way: priceList["BNBBTC"]["askPrice"].
