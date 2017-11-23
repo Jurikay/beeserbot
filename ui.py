@@ -15,7 +15,7 @@ import datetime
 
 from botFunctions import *
 from botLogic import *
-
+from colorSyntax import SyntaxObAsks, SyntaxObBids
 # from ui_static import *
 
 
@@ -27,7 +27,7 @@ class AlgoForm(npyscreen.FormBaseNew):
     def while_waiting(self):
         # self.setIndicatorData()
         try:
-            self.volume.value = str(round(float(tickerMsg["v"])*float(tickerMsg["w"]), 8))
+            self.volume.value = str(round(float(tickerMsg["v"])*float(tickerMsg["w"]), 4)) + " BTC"
             # self.debug.value = str(val["buyTarget"])
             # self.debug.value = str(val["coins"][symbol]["tickSize"])
             self.status2.value = "rbp: " + str(val["realBuyPrice"]) + " rsp: " + str(val["realSellPrice"])
@@ -38,6 +38,12 @@ class AlgoForm(npyscreen.FormBaseNew):
             self.statusHead2.color = "CAUTIONHL"
         elif val["running"] is True:
             self.statusHead2.color = "VERYGOOD"
+
+        # DEBUG:
+        if self.test1.value == "Open Orders.":
+            self.test1.value = "hin und he"
+        else:
+            self.test1.value = "Open Orders."
 
 
 
@@ -119,34 +125,36 @@ class AlgoForm(npyscreen.FormBaseNew):
 
 
         # Sell condition
-        self.sellCondHead = self.add(npyscreen.FixedText, value="Sell if price is >", editable=False, relx=2, rely=17, color="DANGER")
+        self.sellCondHead = self.add(npyscreen.FixedText, value="Sell if >", editable=False, relx=2, rely=17, color="DANGER")
 
         self.sellTargetDisplay = self.add(npyscreen.FixedText, value="0", editable=False, relx=len(self.sellCondHead.value)+3, rely=17)
 
-        self.sellPercent = self.add(userInput, value="0.5", editable=True, relx=2, rely=18, width=4)
+        self.sellPercent = self.add(userInput, value="0.5", editable=True, relx=2, rely=18, width=4, name="sellPercent")
 
         self.sellPercentHead = self.add(npyscreen.FixedText, value="%", editable=False, relx=6, rely=18)
 
-        self.sellAboveBelow = self.add(userInput, value="above", relx=2, rely=19)
 
-        self.sellBand = self.add(userInput, value="upper", relx=2, rely=20, width=7)
+
+        self.sellAboveBelow = self.add(userInput, value="above", relx=2, rely=19, name="sellAboveBelow")
+
+        self.sellBand = self.add(userInput, value="upper", relx=2, rely=20, width=7, name="sellBand")
 
         self.sellBandHead = self.add(npyscreen.FixedText, value="Band", relx=9, rely=20, editable=False)
 
 
         # Buy condition
-        self.buyCondHead = self.add(npyscreen.FixedText, value="Buy if price is <", editable=False, relx=2, rely=22, color="GOOD")
+        self.buyCondHead = self.add(npyscreen.FixedText, value="Buy if <", editable=False, relx=2, rely=22, color="GOOD")
 
         self.buyTargetDisplay = self.add(npyscreen.FixedText, value="0", editable=False, relx=len(self.buyCondHead.value)+3, rely=22)
 
 
-        self.buyPercent = self.add(buyInput, value="0.5", editable=True, relx=2, rely=23, max_width=4)
+        self.buyPercent = self.add(buyInput, value="0.5", editable=True, relx=2, rely=23, max_width=4, name="buyPercent")
 
         self.buyPercentHead = self.add(npyscreen.FixedText, value="%", editable=False, relx=6, rely=23)
 
-        self.buyAboveBelow = self.add(userInput, value="below", relx=2, rely=24)
+        self.buyAboveBelow = self.add(userInput, value="below", relx=2, rely=24, name="buyAboveBelow")
 
-        self.buyBand = self.add(userInput, value="lower", relx=2, rely=25, width=7)
+        self.buyBand = self.add(userInput, value="lower", relx=2, rely=25, width=7, name="buyBand")
 
         self.buyBandHead = self.add(npyscreen.FixedText, value="Band", relx=9, rely=25, editable=False)
 
@@ -171,6 +179,44 @@ class AlgoForm(npyscreen.FormBaseNew):
         self.statusHead2 = self.add(npyscreen.FixedText, value=" ", relx=11, rely=-3, editable=False, color="CAUTIONHL")
 
         self.status = self.add(npyscreen.FixedText, value="Ready and awaiting orders, Sir [$]◡[$]", relx=13, rely=-3, editable=False)
+
+        self.test1 = self.add(npyscreen.FixedText, value="Open Orders.", editable=False, relx=17, rely=18)
+        ###########################
+        # Orderbook / trade history
+        ###########################
+
+        # initalize variables for various calculations
+        self.bids = {}
+        self.asks = {}
+        self.oHistory, self.oHistoryTime, self.oHistoryQuant = {}, {}, {}
+        self.obRange = 5
+        self.obMargin = 30
+
+        # ORDERBOOK
+
+        # Create asks template
+        for i in range(self.obRange):
+            self.asks[i] = self.add(SyntaxObAsks, npyscreen.FixedText, value="[" + str(int(self.obRange)-i) + "]0.00001337 ", editable=False, relx=self.obMargin, rely=i+3)
+            self.asks[i].syntax_highlighting = True
+
+        # Add Spread between asks and bids
+        self.spread = self.add(npyscreen.FixedText, value="Spread", editable=False, relx=self.obMargin, rely=self.obRange+4)
+
+        # Create bids template
+        for i in range(self.obRange):
+            self.bids[i] = self.add(SyntaxObBids, npyscreen.FixedText, value="[" + str(i+1) + "]0.00001337 ", editable=False, relx=self.obMargin, rely=i+self.obRange + 6)
+            self.bids[i].syntax_highlighting = True
+
+        # Create order history template TODO: add quantity and timestamp
+        for i in range(self.obRange*2+3):
+            self.oHistory[i] = self.add(npyscreen.FixedText, value="+*", editable=False, relx=self.obMargin+25, rely=i+3)
+
+            self.oHistoryQuant[i] = self.add(npyscreen.FixedText, value="0.00", editable=False, relx=self.obMargin+36, rely=i+3)
+
+            self.oHistoryTime[i] = self.add(npyscreen.FixedText, value="13:37:00", editable=False, relx=self.obMargin+42, rely=i+3)
+
+
+
 
 
         self.revalidate()
@@ -201,12 +247,11 @@ class AlgoForm(npyscreen.FormBaseNew):
 
             val["buyTarget"] = str(isvalid[0])[:len(str(val["coins"][symbol]["tickSize"]))]
             val["sellTarget"] = str(isvalid[1])[:len(str(val["coins"][symbol]["tickSize"]))]
-            # self.debug.value = val["sellTarget"]
-            logging.debug("revalidate: buy targget")
-            logging.debug(str(self.timeFrame))
-            logging.debug(str(val["buyTarget"]))
-            logging.debug("revalidate: sell targget")
-            logging.debug(str(val["sellTarget"]))
+            try:
+                self.sellTargetDisplay.value = str(val["sellTarget"])
+                self.buyTargetDisplay.value = str(val["buyTarget"])
+            except KeyError:
+                self.status.value = "buy/ sell targets not available"
 
 
     # START BUTTON PRESSED
@@ -241,14 +286,16 @@ class AlgoForm(npyscreen.FormBaseNew):
         if isfloat(self.sellPercent.value) and float(self.sellPercent.value) > 0 and float(self.sellPercent.value) < 100:
             userSellPrice = self.sellPercent.value
         else:
-            return "not valid"
+            self.sellPercent.color="DANGER"
+            notValid = True
 
 
         # Check buy percent input
         if isfloat(self.buyPercent.value) and float(self.buyPercent.value) > 0 and float(self.buyPercent.value) < 100:
             userBuyPrice = self.buyPercent.value
         else:
-            return "not valid"
+            self.buyPercent.color="DANGER"
+            notValid = True
 
 
         # Check sell Band
@@ -259,7 +306,8 @@ class AlgoForm(npyscreen.FormBaseNew):
         elif str(self.sellBand.value) == "lower":
             sellBand = "lowerBoll"
         else:
-            return "not valid"
+            self.sellBand.color="DANGER"
+            notValid = True
 
         # Check buy Band
         if str(self.buyBand.value) == "upper":
@@ -269,27 +317,34 @@ class AlgoForm(npyscreen.FormBaseNew):
         elif str(self.buyBand.value) == "lower":
             buyBand = "lowerBoll"
         else:
-            return "not valid"
+            self.buyBand.color="DANGER"
+            notValid = True
 
 
         # Check sell operator
-        if self.sellAboveBelow.value == "below":
-            targetSellPrice = float(val["indicators"][self.timeFrame][sellBand] * (1 - (float(userSellPrice) / 100)))
+        try:
+            if self.sellAboveBelow.value == "below":
+                targetSellPrice = float(val["indicators"][self.timeFrame][sellBand] * (1 - (float(userSellPrice) / 100)))
 
-        elif self.sellAboveBelow.value == "above":
-            targetSellPrice = float(val["indicators"][self.timeFrame][sellBand] * (1 + (float(userSellPrice) / 100)))
+            elif self.sellAboveBelow.value == "above":
+                targetSellPrice = float(val["indicators"][self.timeFrame][sellBand] * (1 + (float(userSellPrice) / 100)))
 
-        else:
-            return "not valid"
+            else:
+                self.sellAboveBelow.color = "DANGER"
+                notValid = True
 
-        # Check buy operator
-        if self.buyAboveBelow.value == "below":
-            targetBuyPrice = float(val["indicators"][self.timeFrame][buyBand] * (1 - (float(userBuyPrice) / 100)))
+            # Check buy operator
+            if self.buyAboveBelow.value == "below":
+                targetBuyPrice = float(val["indicators"][self.timeFrame][buyBand] * (1 - (float(userBuyPrice) / 100)))
 
-        elif self.buyAboveBelow.value == "above":
-            targetBuyPrice = float(val["indicators"][self.timeFrame][buyBand] * (1 + (float(userBuyPrice) / 100)))
+            elif self.buyAboveBelow.value == "above":
+                targetBuyPrice = float(val["indicators"][self.timeFrame][buyBand] * (1 + (float(userBuyPrice) / 100)))
 
-
+            else:
+                self.buyAboveBelow.color = "DANGER"
+                notValid = True
+        except UnboundLocalError:
+            notValid = True
 
 
 
@@ -298,6 +353,13 @@ class AlgoForm(npyscreen.FormBaseNew):
             finaltargetBuyPrice = '{:.8f}'.format(targetBuyPrice)[:len(str(val["coins"][symbol]["tickSize"]))]
 
             finaltargetSellPrice = '{:.8f}'.format(targetSellPrice)[:len(str(val["coins"][symbol]["tickSize"]))]
+
+            self.sellPercent.color="DEFAULT"
+            self.buyPercent.color="DEFAULT"
+            self.sellBand.color="DEFAULT"
+            self.buyBand.color="DEFAULT"
+            self.sellAboveBelow.color="DEFAULT"
+            self.buyAboveBelow.color="DEFAULT"
 
             return [finaltargetBuyPrice, finaltargetSellPrice]
 
@@ -315,14 +377,15 @@ class AlgoForm(npyscreen.FormBaseNew):
 
         self.lowerBoll.value = '{:.8f}'.format(float(val["indicators"][str(self.timeFrame)]["lowerBoll"]))[:len(str(val["coins"][symbol]["tickSize"]))]
 
+
+        self.rsi.value = val["indicators"][str(self.timeFrame)]["rsi6h"]
+
+        self.macd.value = val["indicators"][str(self.timeFrame)]["macd"]
+
         if self.start_button.name == "Stop":
             self.revalidate()
             # self.status.value = "SET BAND INFO"
-        try:
-            self.sellTargetDisplay.value = str(val["sellTarget"])
-            self.buyTargetDisplay.value = str(val["buyTarget"])
-        except KeyError:
-            self.status.value = "buy/ sell targets not available"
+
 
 
         self.display()
@@ -445,7 +508,12 @@ class userInput(npyscreen.Textfield):
         )
 
     def pressed_enter(self, key):
+        self.parent.start_button.name = "Start"
+        val["running"] = False
+        cancelAllOrders()
+
         self.parent.status.value = "pressed enter"
+        self.parent.revalidate()
 
     def pressed_r(self, key):
         self.parent.DISPLAY()
@@ -462,9 +530,26 @@ class userInput(npyscreen.Textfield):
         npyscreen.notify_confirm("+++ INFO +++\nJuris Binance Boilinger Bot Version 0.1\n \n Achtung: \n Q:     exit program\nS:     start/stop the bot\nR:     refresh the screen\nI: this info window")
 
     def when_value_edited(self):
-        self.parent.start_button.name = "Start"
-        val["running"] = False
-        cancelAllOrders()
+        if self.name == "sellAboveBelow" or self.name == "buyAboveBelow":
+            if self.value == "below" or self.value == "above":
+                self.color = "GOOD"
+            else:
+                self.color = "DEFAULT"
+
+        if self.name == "sellPercent" or self.name == "buyPercent":
+            if isfloat(self.value):
+                if float(self.value) > 0 and float(self.value) < 100:
+                    self.color = "GOOD"
+                else:
+                    self.color = "DEFAULT"
+
+        if self.name == "sellBand" or self.name == "buyBand":
+            if self.value == "upper" or self.value == "middle" or self.value == "lower":
+                self.color = "GOOD"
+            else:
+                self.color = "DEFAULT"
+
+
 
 
 class buyInput(userInput):
