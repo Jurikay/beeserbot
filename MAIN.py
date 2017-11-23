@@ -105,19 +105,21 @@ def secondLoop():
     while val["exitSecondThread"] is False:
 
         if val["running"] is True:
-            logging.debug("DEBUG TEST: " + str(val["buyTarget"]) + " and: " + str(val["sellTarget"]))
 
-            try:
-                if isfloat(val["buyTarget"]) and isfloat(val["sellTarget"]):
-                    if priceRefiner(float(val["buyTarget"]), float(val["sellTarget"])):
-                        neueAlgoLogic()
-                else:
-                    logging.debug("buy target error: " +str(val["buyTarget"]))
-            except KeyError as err:
-                logging.debug("neue algo logic: KeyError!")
-                logging.debug(KeyError)
-                logging.debug(err)
-                logging.debug(str(val["buyTarget"]))
+
+            if isfloat(val["buyTarget"]) and isfloat(val["sellTarget"]):
+                logging.debug(" BUY UND SELL TARGET VORHANDEN")
+                if priceRefiner(float(val["buyTarget"]), float(val["sellTarget"])):
+                    logging.debug("PRICE HAS BEEN REFINED")
+                    neueAlgoLogic()
+            else:
+                logging.debug("buy target error: " + str(val["buyTarget"]))
+        # except KeyError as err:
+            #     logging.debug("neue algo logic: KeyError!")
+            #     logging.debug(KeyError)
+            #     logging.debug(err)
+            #     logging.debug("buy target error: " + str(val["buyTarget"]) + " buy order: " + str(val["realBuyPrice"]))
+            #     logging.debug("sell target error: " + str(val["sellTarget"]) + " sell order: " + str(val["realSellPrice"]))
 
         time.sleep(0.1)
 
@@ -187,6 +189,11 @@ if __name__ == '__main__':
 
     # get trade history
     fillList(val["symbol"])
+
+    accHoldings = getHoldings()
+
+    fetchDepth(val["symbol"])
+
 
     # get TA indicators
     val["indicators"] = TA.getTA()
