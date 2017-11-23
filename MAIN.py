@@ -7,10 +7,10 @@
 """MAIN entrypoint of the bot."""
 
 # IMPORTS
-import splashScreen
 import time
 import threading
 import logging
+import splashScreen
 
 from colorSyntax import *
 import ui
