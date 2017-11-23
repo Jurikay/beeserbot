@@ -21,24 +21,13 @@ from botLogic import *
 
 
 class AlgoForm(npyscreen.FormBaseNew):
-    def __init__(self, *args, **keywords):
-        """Overload init function to add custom key handlers"""
-        super(AlgoForm, self).__init__(*args, **keywords)
-        self.add_handlers(
-            {
-                # curses.KEY_F1: self.start_button_pressed,
-                # curses.KEY_F2: self.select_switcher,
-                "r": self.hotkeyFix
-            }
-        )
 
-    def hotkeyFix(self, key):
-        self.DISPLAY()
+    """Main algo bot form."""
 
     def while_waiting(self):
         # self.setIndicatorData()
         try:
-            self.volume.value = str(float(tickerMsg["v"])*float(tickerMsg["w"]))
+            self.volume.value = str(round(float(tickerMsg["v"])*float(tickerMsg["w"]), 8))
             # self.debug.value = str(val["buyTarget"])
             # self.debug.value = str(val["coins"][symbol]["tickSize"])
             self.status2.value = "rbp: " + str(val["realBuyPrice"]) + " rsp: " + str(val["realSellPrice"])
@@ -57,6 +46,13 @@ class AlgoForm(npyscreen.FormBaseNew):
 
     def create(self):
         self.timeFrame = "1m"
+
+        # htokey
+        # key_of_choice = 'p'
+        # what_to_display = 'Press {} for popup \n Press escape key to quit'.format(key_of_choice)
+        #
+        # self.how_exited_handers[npyscreen.wgwidget.EXITED_ESCAPE] = self.exit_application
+        # self.add_handlers({key_of_choice: self.spawn_notify_popup})
 
 
 
@@ -91,8 +87,7 @@ class AlgoForm(npyscreen.FormBaseNew):
         # middle
         self.medBollHead = self.add(npyscreen.FixedText, value="Median Band: ", editable=False, relx=2, rely=8, color="WARNING")
 
-        self.medBoll = self.add(npyscreen.FixedText, value='{:.8f}'.format(float(val["indicators"][str(self.timeFrame)]["medBoll"]))[:len(str(val["coins"][symbol]["tickSize"]))],
-         editable=False,  relx=1+len(self.medBollHead.value), rely=8)
+        self.medBoll = self.add(npyscreen.FixedText, value='{:.8f}'.format(float(val["indicators"][str(self.timeFrame)]["medBoll"]))[:len(str(val["coins"][symbol]["tickSize"]))], editable=False, relx=1+len(self.medBollHead.value), rely=8)
 
 
         # lower
@@ -126,9 +121,9 @@ class AlgoForm(npyscreen.FormBaseNew):
         # Sell condition
         self.sellCondHead = self.add(npyscreen.FixedText, value="Sell if price is >", editable=False, relx=2, rely=16, color="DANGER")
 
-        self.sellTargetDisplay = self.add(npyscreen.FixedText, value="0", editable=False,relx=len(self.sellCondHead.value)+3, rely=16)
+        self.sellTargetDisplay = self.add(npyscreen.FixedText, value="0", editable=False, relx=len(self.sellCondHead.value)+3, rely=16)
 
-        self.sellPercent = self.add(userInput, value="0.5", editable=True,  relx=2, rely=17, width=4)
+        self.sellPercent = self.add(userInput, value="0.5", editable=True, relx=2, rely=17, width=4)
 
         self.sellPercentHead = self.add(npyscreen.FixedText, value="%", editable=False, relx=6, rely=17)
 
@@ -136,7 +131,7 @@ class AlgoForm(npyscreen.FormBaseNew):
 
         self.sellBand = self.add(userInput, value="upper", relx=2, rely=19, width=7)
 
-        self.sellBandHead = self.add(npyscreen.FixedText, value="Band", relx=9,rely=19, editable=False)
+        self.sellBandHead = self.add(npyscreen.FixedText, value="Band", relx=9, rely=19, editable=False)
 
 
         # Buy condition
@@ -145,7 +140,7 @@ class AlgoForm(npyscreen.FormBaseNew):
         self.buyTargetDisplay = self.add(npyscreen.FixedText, value="0", editable=False, relx=len(self.buyCondHead.value)+3, rely=21)
 
 
-        self.buyPercent = self.add(buyInput, value="0.5", editable=True,  relx=2, rely=22, max_width=4)
+        self.buyPercent = self.add(buyInput, value="0.5", editable=True, relx=2, rely=22, max_width=4)
 
         self.buyPercentHead = self.add(npyscreen.FixedText, value="%", editable=False, relx=6, rely=22)
 
@@ -175,11 +170,12 @@ class AlgoForm(npyscreen.FormBaseNew):
 
         self.statusHead2 = self.add(npyscreen.FixedText, value=" ", relx=11, rely=-3, editable=False, color="CAUTIONHL")
 
-        self.status = self.add(npyscreen.FixedText, value="Ready and awaiting Orders, Sir", relx=13, rely=-3, editable=False)
+        self.status = self.add(npyscreen.FixedText, value="Ready and awaiting orders, Sir [$]◡[$]", relx=13, rely=-3, editable=False)
 
 
         self.revalidate()
-
+        self.setIndicatorData()
+        self.parentApp.updateDepth()
         #
         #
         # self.debug2 = self.add(npyscreen.FixedText, value=val["coins"][symbol]["tickSize"])
@@ -187,6 +183,15 @@ class AlgoForm(npyscreen.FormBaseNew):
         # self.debug2 = self.add(npyscreen.FixedText, value=len(str(val["coins"][symbol]["tickSize"])))
 
         # self.testLOL  = self.add(npyscreen.FixedText, value = "#", relx=1, rely=-3)
+
+    def spawn_notify_popup(self, code_of_key_pressed):
+        message_to_display = 'I popped up \n passed: {}'.format(code_of_key_pressed)
+        npyscreen.notify(message_to_display, title='Popup Title')
+        time.sleep(5)  # needed to have it show up for a visible amount of time
+
+    def exit_application(self):
+        self.parentApp.setNextForm(None)
+        self.editing = False
 
     def revalidate(self):
         isvalid = self.validateInput()
@@ -219,7 +224,7 @@ class AlgoForm(npyscreen.FormBaseNew):
         self.revalidate()
 
 
-
+    # TODO: refactor
     def validateInput(self):
         notValid = False
 
@@ -260,22 +265,20 @@ class AlgoForm(npyscreen.FormBaseNew):
 
         # Check sell operator
         if self.sellAboveBelow.value == "below":
-            sellOperator = "<"
-            targetSellPrice = float(val["indicators"][self.timeFrame][sellBand] * (1 -(float(userSellPrice) / 100)))
+            targetSellPrice = float(val["indicators"][self.timeFrame][sellBand] * (1 - (float(userSellPrice) / 100)))
 
         elif self.sellAboveBelow.value == "above":
-            targetSellPrice = float(val["indicators"][self.timeFrame][sellBand] * (1 +(float(userSellPrice) / 100)))
+            targetSellPrice = float(val["indicators"][self.timeFrame][sellBand] * (1 + (float(userSellPrice) / 100)))
 
         else:
             return "not valid"
 
         # Check buy operator
         if self.buyAboveBelow.value == "below":
-            buyOperator = "<"
-            targetBuyPrice = float(val["indicators"][self.timeFrame][buyBand] * (1 -(float(userBuyPrice) / 100)))
+            targetBuyPrice = float(val["indicators"][self.timeFrame][buyBand] * (1 - (float(userBuyPrice) / 100)))
 
         elif self.buyAboveBelow.value == "above":
-            targetBuyPrice = float(val["indicators"][self.timeFrame][buyBand] * (1 +(float(userBuyPrice) / 100)))
+            targetBuyPrice = float(val["indicators"][self.timeFrame][buyBand] * (1 + (float(userBuyPrice) / 100)))
 
 
 
@@ -326,7 +329,7 @@ class AlgoBot(npyscreen.NPSAppManaged):
 
     # initiate Forms on start
     def onStart(self):
-        self.addForm("MAIN", AlgoForm, name = "Juris beeesr Binance Bot", color = "GOOD")
+        self.addForm("MAIN", AlgoForm, name="Juris beeesr Binance Bot", color="GOOD")
 
 
     def periodicUpdate(self):
@@ -417,7 +420,6 @@ class userInput(npyscreen.Textfield):
     Featuring hotkeys and automatic stopping behavior.
     """
 
-
     def __init__(self, *args, **kwargs):
         """Overwrite init function to add key handlers."""
         super().__init__(*args, **kwargs)
@@ -429,6 +431,7 @@ class userInput(npyscreen.Textfield):
                 "R": self.pressed_r,
                 "q": self.pressed_q,
                 "s": self.pressed_s,
+                "I": self.pressed_i,
             }
         )
 
@@ -446,6 +449,9 @@ class userInput(npyscreen.Textfield):
     def pressed_s(self, key):
         self.parent.status.value = "pressed s"
 
+    def pressed_i(self, key):
+        npyscreen.notify_confirm("+++ INFO +++\nJuris Binance Boilinger Bot Version 0.1\n \n Achtung: \n Q:     exit program\nS:     start/stop the bot\nR:     refresh the screen\nI: this info window")
+
     def when_value_edited(self):
         self.parent.start_button.name = "Start"
         val["running"] = False
@@ -453,6 +459,7 @@ class userInput(npyscreen.Textfield):
 
 
 class buyInput(userInput):
+
     def when_value_edited(self):
 
         self.parent.start_button.name = "Start"
@@ -465,3 +472,18 @@ class buyInput(userInput):
             self.parent.buyPercentHead.value = ""
             self.color = "DANGER"
     pass
+
+
+class NotifyInfo(npyscreen.Form):
+    def create(self):
+        key_of_choice = 'p'
+        what_to_display = 'Press {} for popup \n Press escape key to quit'.format(key_of_choice)
+
+        self.how_exited_handers[npyscreen.wgwidget.EXITED_ESCAPE] = self.exit_application
+        self.add_handlers({key_of_choice: self.spawn_notify_popup})
+        self.add(npyscreen.FixedText, value=what_to_display)
+
+    def spawn_notify_popup(self, code_of_key_pressed):
+        message_to_display = 'I popped up \n passed: {}'.format(code_of_key_pressed)
+        npyscreen.notify(message_to_display, title='Popup Title')
+        time.sleep(1)  # needed to have it show up for a visible amount of time
