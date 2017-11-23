@@ -25,6 +25,7 @@ logging.basicConfig(filename="test.log", filemode='w', level=logging.DEBUG, form
 # use val to store different values like websocket conn_keys
 val = {"s": 0, "cs": 0, "socket1": 0, "socket2": 0, "socket3": 0, "symbol": symbol, "iter1": 0, "bm": 0, "tryToBuy": False, "tryToSell": False, "runTime": 0}
 
+recv_window = 6000000
 
 client = Client(api_key, api_secret)
 
@@ -64,7 +65,8 @@ val["sellSize"] = sell_size
 val["depthTracker"] = 0
 
 filledTrades = []
-reportFilename = "report-" + str(datetime.datetime.now().strftime("%m-%d-%H:%M"))
+reportFilename = "report-" + str(datetime.datetime.now().strftime("%m-%d-%H.%M"))
+
 
 def getCurrentPrices():
     """Fetch bid and ask price and quantitiy of every coin. Access data this way: priceList["BNBBTC"]["askPrice"].
