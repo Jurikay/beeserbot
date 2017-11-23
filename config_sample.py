@@ -7,3 +7,6 @@ api_key = ''
 api_secret = ''
 
 symbol = 'BNBBTC'
+
+buy_size = '15'
+sell_size = '20'

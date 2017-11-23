@@ -15,7 +15,7 @@ from binance.exceptions import BinanceAPIException
 from customSocketManager import BinanceSocketManager
 
 try:
-    from config import api_key, api_secret, symbol
+    from config import api_key, api_secret, symbol, buy_size, sell_size
 except ModuleNotFoundError:
     print("Paste Your API key and secret into config_sample.py and rename it to config.py!")
 
@@ -58,8 +58,8 @@ val["angelSellId"] = None
 lock = threading.RLock()
 
 # debug
-val["buySize"] = 12
-val["sellSize"] = 12
+val["buySize"] = buy_size
+val["sellSize"] = sell_size
 
 val["depthTracker"] = 0
 
