@@ -491,7 +491,8 @@ def createOrder(coinPair, side, price, size):
                 symbol=coinPair,
                 quantity=size,
                 price=price)
-        except BinanceAPIException:
+        except BinanceAPIException as apiError:
+            logging.debug("create BUY order failed !!!" +str(apiError))
             return None
         return order["orderId"]
 
@@ -502,7 +503,9 @@ def createOrder(coinPair, side, price, size):
                 symbol=coinPair,
                 quantity=size,
                 price=price)
-        except BinanceAPIException:
+        except BinanceAPIException as apiError:
+            logging.debug("create SELL order failed !!!" +str(apiError))
+
             return None
         return order["orderId"]
 
@@ -574,65 +577,114 @@ def algoLogic2(currentBid, currentAsk, buyTarget, sellTarget):
 
 def neueAlgoLogic():
 
+    logging.debug("NeueAlgoLogic: type realbuy/sell price: " + str(val["realBuyPrice"]) + " and: " + str(val["realSellPrice"]))
 
-    # habe ich eine offene buy order
+    if val["realBuyPrice"] is None or val["realSellPrice"] is None:
+        logging.debug("NONETYPE starte algoLogic nicht")
+        return
+
     if val["angelBuyId"] in val["myOrders"]:
 
         # wenn ich schon eine habe beim aktuellen Zielpreis ist alles gut need satcheck
+
         if float(val["myOrders"][val["angelBuyId"]]["price"]) == float(val["realBuyPrice"]):
-            logging.debug("BUY Order steht alles gucci")
+            logging.debug("hier käme satcheck")
         else:
-            logging.debug("ORDER CANCEL:")
-            logging.debug(type(val["myOrders"][val["angelBuyId"]]["price"]))
-            logging.debug(type(val["realBuyPrice"]))
             # wenn nicht canceln und neu erstellen
             cancelOrderById(val["angelBuyId"])
             val["angelBuyId"] = createOrder(val["symbol"], "BUY", val["realBuyPrice"], val["buySize"])
     else:
         # wenn ich noch keine offene order habe: neu erstellen
-        val["angelBuyId"] = createOrder(val["symbol"], "BUY", val["realBuyPrice"], float(val["buySize"]))
 
+
+        val["angelBuyId"] = createOrder(val["symbol"], "BUY", val["realBuyPrice"], float(val["buySize"]))
     # time.sleep(0.1)
 
     # habe ich eine offene buy order
     if val["angelSellId"] in val["myOrders"]:
 
         # wenn ich schon eine habe beim aktuellen Zielpreis ist alles gut
-        if val["myOrders"][val["angelSellId"]]["price"] == sellTarget:
-            logging.debug("SELL Order steht alles gucci")
+        if val["myOrders"][val["angelSellId"]]["price"] == val["realSellPrice"]:
+            logging.debug("hier käme satcheck")
+
         else:
-            # logging.debug()
             # wenn nicht canceln und neu erstellen
             cancelOrderById(val["angelSellId"])
-            val["angelSellId"] = createOrder(val["symbol"], "SELL", sellTarget, float(val["sellSize"]))
+
+
+            val["angelSellId"] = createOrder(val["symbol"], "SELL", val["realSellPrice"], float(val["sellSize"]))
     else:
         # wenn ich noch keine offene order habe: neu erstellen
-        val["angelSellId"] = createOrder(val["symbol"], "SELL", sellTarget, val["sellSize"])
 
 
-def priceRefiner(buyTarget):
+        val["angelSellId"] = createOrder(val["symbol"], "SELL", val["realSellPrice"], val["sellSize"])
 
+
+
+def priceRefiner(buyTarget, sellTarget):
+
+    """Be greedy and calculate how much higher or lower one can get away with while staying within targeted price range."""
+
+    logging.debug("refine price ###")
+
+    if isfloat(buyTarget) and isfloat(sellTarget):
+        val["realBuyPrice"] = getRealBuyPrice(buyTarget)
+
+        val["realSellPrice"] = getRealSellPrice(sellTarget)
+
+        logging.debug("buy target: " + str(buyTarget) + "sell target" + str(sellTarget))
+        logging.debug("rbp: " + str(val["realBuyPrice"]) + " rsp:  " + str(val["realSellPrice"]))
+        return True
+    return False
+
+
+def getRealBuyPrice(buyTarget):
+    logging.debug("get real buy price: " + str(buyTarget))
     ticksize = str(val["coins"][symbol]["tickSize"])
 
-    roundTo = len(ticksize)-2
-
     for index, value in enumerate(depthMsg["bids"]):
-        # print(index)
-        # print(value)
-        # print(value[0])
         if float(value[0]) < float(buyTarget):
             if findInOrdersN(value[0]):
-                break
-            else:
-                if round(float(value[0]) + float(ticksize), roundTo) < float(buyTarget):
+                logging.debug("get real bp break")
+                return str(value[0])
 
-                    val["realBuyPrice"] = round(float(value[0]) + float(ticksize), roundTo)
-                    break
-                else:
-                    val["realBuyPrice"] = float(buyTarget)
-                    break
+            if float(value[0]) + float(ticksize) < float(buyTarget):
+
+                realBuyPrice = "{:.8f}".format(float(value[0]) + float(ticksize))
+                logging.debug("buy target: " + str(buyTarget) + " order price: " + str(realBuyPrice))
+                logging.debug("return2")
+
+                return str(realBuyPrice)
+
+            realBuyPrice = "{:.8f}".format(float(buyTarget))
+            logging.debug("return3")
+
+            return str(realBuyPrice)
 
 
+def getRealSellPrice(sellTarget):
+    logging.debug("get real sell price: " + str(sellTarget))
+
+    ticksize = str(val["coins"][symbol]["tickSize"])
+    logging.debug("###########DAS INTERESSIERT MICH#################")
+    for index, value in enumerate(depthMsg["asks"]):
+        if float(value[0]) > float(sellTarget):
+            if findInOrdersN(value[0]):
+                logging.debug("first sell return")
+                return str(value[0])
+
+                # sat check logic
+
+            if float(value[0]) - float(ticksize) > float(sellTarget):
+
+
+                realSellPrice = "{:.8f}".format(float(value[0]) - float(ticksize))
+                logging.debug("sell target: " + str(sellTarget) + " order price: " + str(realSellPrice))
+                return str(realSellPrice)
+
+            logging.debug("last sell return")
+            realSellPrice = "{:.8f}".format(float(sellTarget))
+            return str(realSellPrice)
 
         # else:
 
