@@ -152,5 +152,9 @@ BUG: multiple orders
 
 aggroSELL einrichten
 
+
+
 if my order = targetprice:
-  check distance to next order (satCheck) recreate if > 2 tix
+  check distance to next order (satCheck)
+  (iterate through bids or asks until order = myorder)
+   recreate if > 2 tix

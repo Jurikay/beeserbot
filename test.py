@@ -9,7 +9,7 @@
 import logging
 logging.basicConfig(filename="test.log", level=logging.DEBUG, format='%(asctime)s %(message)s')
 from MAIN import *
-# symbol = "BCCBTC"
+symbol = "QSPBTC"
 #
 for coin in val["coins"]:
     print(coin + " " + val["coins"][coin]["minTrade"] + "ticksize: " + val["coins"][coin]["tickSize"])
@@ -27,7 +27,15 @@ time.sleep(3)
 
 print(str(depthMsg["bids"][5][0]))
 
-priceRefiner(str(depthMsg["bids"][5][0]))
+priceRefiner(str(depthMsg["bids"][5][0]), str(depthMsg["asks"][5][0]))
+
+while True:
+    print(val["symbol"])
+    print(val["realBuyPrice"] + "  " + val["realSellPrice"])
+    priceRefiner(str(depthMsg["bids"][5][0]), str(depthMsg["asks"][5][0]))
+    # print("realbp: " + str(val["realBuyPrice"]) + " realsp: " + str(val["realSellPrice"]))
+
+    time.sleep(.5)
 #
 #
 #
