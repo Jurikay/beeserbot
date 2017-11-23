@@ -8,6 +8,7 @@
 # import botFunctions
 import threading
 import logging
+import datetime
 from binance.enums import *
 from binance.client import Client
 from binance.exceptions import BinanceAPIException
@@ -62,6 +63,8 @@ val["sellSize"] = 12
 
 val["depthTracker"] = 0
 
+filledTrades = []
+reportFilename = "report-" + str(datetime.datetime.now().strftime("%m-%d %H:%M:%S")) + ".csv"
 
 def getCurrentPrices():
     """Fetch bid and ask price and quantitiy of every coin. Access data this way: priceList["BNBBTC"]["askPrice"].

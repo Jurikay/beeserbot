@@ -14,6 +14,7 @@ import copy
 # import os
 import atexit
 import logging
+import datetime
 # currently not needed
 
 # import sys
@@ -277,6 +278,10 @@ def user_callback(msg):
 
         elif userMsg["X"] == "FILLED":
             val["myOrders"].pop(userMsg["i"], None)
+
+            # store filled trades
+            filledTrades.append({"date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "symbol": userMsg["s"], "price": userMsg["p"], "quantity": userMsg["q"], "side": userMsg["S"], "id": userMsg["i"]})
+
             if val["angelBuyId"] == userMsg["i"]:
                 val["angelBuyId"] = None
 

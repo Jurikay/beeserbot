@@ -113,42 +113,42 @@ class AlgoForm(npyscreen.FormBaseNew):
 
 
         # Time frame input
-        self.selectTfHead = self.add(npyscreen.FixedText, value="Choose interval: ", editable=False, relx=2, rely=14, color="NO_EDIT")
+        self.selectTfHead = self.add(npyscreen.FixedText, value="Time interval: ", editable=False, relx=2, rely=15, color="NO_EDIT")
 
-        self.selectTf = self.add(timeFrameInput, value="1m", editable=True,  relx=2+len(self.selectTfHead.value), rely=14)
+        self.selectTf = self.add(timeFrameInput, value="1m", editable=True,  relx=2+len(self.selectTfHead.value), rely=15)
 
 
         # Sell condition
-        self.sellCondHead = self.add(npyscreen.FixedText, value="Sell if price is >", editable=False, relx=2, rely=16, color="DANGER")
+        self.sellCondHead = self.add(npyscreen.FixedText, value="Sell if price is >", editable=False, relx=2, rely=17, color="DANGER")
 
-        self.sellTargetDisplay = self.add(npyscreen.FixedText, value="0", editable=False, relx=len(self.sellCondHead.value)+3, rely=16)
+        self.sellTargetDisplay = self.add(npyscreen.FixedText, value="0", editable=False, relx=len(self.sellCondHead.value)+3, rely=17)
 
-        self.sellPercent = self.add(userInput, value="0.5", editable=True, relx=2, rely=17, width=4)
+        self.sellPercent = self.add(userInput, value="0.5", editable=True, relx=2, rely=18, width=4)
 
-        self.sellPercentHead = self.add(npyscreen.FixedText, value="%", editable=False, relx=6, rely=17)
+        self.sellPercentHead = self.add(npyscreen.FixedText, value="%", editable=False, relx=6, rely=18)
 
-        self.sellAboveBelow = self.add(userInput, value="above", relx=2, rely=18)
+        self.sellAboveBelow = self.add(userInput, value="above", relx=2, rely=19)
 
-        self.sellBand = self.add(userInput, value="upper", relx=2, rely=19, width=7)
+        self.sellBand = self.add(userInput, value="upper", relx=2, rely=20, width=7)
 
-        self.sellBandHead = self.add(npyscreen.FixedText, value="Band", relx=9, rely=19, editable=False)
+        self.sellBandHead = self.add(npyscreen.FixedText, value="Band", relx=9, rely=20, editable=False)
 
 
         # Buy condition
-        self.buyCondHead = self.add(npyscreen.FixedText, value="Buy if price is <", editable=False, relx=2, rely=21, color="GOOD")
+        self.buyCondHead = self.add(npyscreen.FixedText, value="Buy if price is <", editable=False, relx=2, rely=22, color="GOOD")
 
-        self.buyTargetDisplay = self.add(npyscreen.FixedText, value="0", editable=False, relx=len(self.buyCondHead.value)+3, rely=21)
+        self.buyTargetDisplay = self.add(npyscreen.FixedText, value="0", editable=False, relx=len(self.buyCondHead.value)+3, rely=22)
 
 
-        self.buyPercent = self.add(buyInput, value="0.5", editable=True, relx=2, rely=22, max_width=4)
+        self.buyPercent = self.add(buyInput, value="0.5", editable=True, relx=2, rely=23, max_width=4)
 
-        self.buyPercentHead = self.add(npyscreen.FixedText, value="%", editable=False, relx=6, rely=22)
+        self.buyPercentHead = self.add(npyscreen.FixedText, value="%", editable=False, relx=6, rely=23)
 
-        self.buyAboveBelow = self.add(userInput, value="below", relx=2, rely=23)
+        self.buyAboveBelow = self.add(userInput, value="below", relx=2, rely=24)
 
-        self.buyBand = self.add(userInput, value="lower", relx=2, rely=24, width=7)
+        self.buyBand = self.add(userInput, value="lower", relx=2, rely=25, width=7)
 
-        self.buyBandHead = self.add(npyscreen.FixedText, value="Band", relx=9, rely=24, editable=False)
+        self.buyBandHead = self.add(npyscreen.FixedText, value="Band", relx=9, rely=25, editable=False)
 
 
 
@@ -214,15 +214,24 @@ class AlgoForm(npyscreen.FormBaseNew):
         if self.start_button.name == "Start":
             self.start_button.name = "Stop"
             val["running"] = True
+            self.status.value="Bot is running."
             # debug
             val["initiateBuy"] = True
         else:
             self.start_button.name = "Start"
             val["running"] = False
+            self.status.value="Ready and awaiting orders, Sir [$]◡[$]"
             cancelAllOrders()
 
         self.revalidate()
 
+    def turn_off_bot(self):
+        """Disable bot activity and return everything back to normal."""
+
+        self.start_button.name = "Stop"
+        val["running"] = False
+        self.status.value = "Ready and awaiting orders, Sir [$]◡[$]"
+        cancelAllOrders()
 
     # TODO: refactor
     def validateInput(self):

@@ -10,6 +10,7 @@
 import time
 import threading
 import logging
+import pandas as pd
 import splashScreen
 
 from colorSyntax import *
@@ -76,6 +77,10 @@ def mainLoop():
             cancelAllOrders()
 
             ui.app.getForm("MAIN").revalidate()
+
+            if filledTrades:
+                quittung = (pd.DataFrame(filledTrades))[::-1]
+                quittung.to_csv(str(reportFilename) + ".csv", index=False, encoding='utf-8')
 
 
             # TA.createCSV()
