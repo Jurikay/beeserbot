@@ -72,6 +72,12 @@ def mainLoop():
             # val["openOrders"] = getOrders(val["symbol"])
             # logging.debug("open orders: " + str(val["openOrders"]))
 
+            # debug: cancel all orders every 10 seconds to prevent multiple buy or sell orders... (WORKAROUND)
+            cancelAllOrders()
+
+            ui.app.getForm("MAIN").revalidate()
+
+
             # TA.createCSV()
             val["indicators"] = TA.getTA()
             ui.app.getForm("MAIN").setIndicatorData()
@@ -99,12 +105,12 @@ def secondLoop():
     while val["exitSecondThread"] is False:
 
         if val["running"] is True:
+            logging.debug("DEBUG TEST: " + str(val["buyTarget"]) + " and: " + str(val["sellTarget"]))
 
             try:
-                if isfloat(val["buyTarget"]):
-                    priceRefiner(float(val["buyTarget"]))
-                    time.sleep(0.01)
-                    neueAlgoLogic()
+                if isfloat(val["buyTarget"]) and isfloat(val["sellTarget"]):
+                    if priceRefiner(float(val["buyTarget"]), float(val["sellTarget"])):
+                        neueAlgoLogic()
                 else:
                     logging.debug("buy target error: " +str(val["buyTarget"]))
             except KeyError as err:
