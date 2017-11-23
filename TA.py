@@ -109,6 +109,9 @@ def interpreteData(intervals, dataFrames):
         rsi6hData = stock['rsi_6']
         rsi12hData = stock['rsi_12']
 
+        # MACD
+        macdData = stock['macd']
+
         # BOLLINGER BANDS
         medBollData = stock['boll']
         upperBollData = stock['boll_ub']
@@ -118,18 +121,21 @@ def interpreteData(intervals, dataFrames):
         volumeDeltaData = stock['volume_delta']
 
         # get last respective entries from DataFrame
-        rsi6h = round(rsi6hData.iloc[-1], 1)
-        rsi12h = round(rsi12hData.iloc[-1], 1)
+        rsi6h = round(rsi6hData.iloc[-1], 2)
+        rsi12h = round(rsi12hData.iloc[-1], 2)
+
+        macd = "{:.8f}".format(macdData.iloc[-1])
 
         medBoll = round(medBollData.iloc[-1], roundTo)
         upperBoll = round(upperBollData.iloc[-1], roundTo)
         lowerBoll = round(lowerBollData.iloc[-1], roundTo)
 
+
         volumeDelta = volumeDeltaData.iloc[-1]
 
         # For every time interval, add the last value of the
         # chosen indicator to a dictionary as a 'key': value pair
-        indicatorData[value[1]] = {"rsi6h": rsi6h, "rsi12h": rsi12h, "medBoll": medBoll, "upperBoll": upperBoll, "lowerBoll": lowerBoll, "volumeDelta": volumeDelta}
+        indicatorData[value[1]] = {"rsi6h": rsi6h, "rsi12h": rsi12h, "medBoll": medBoll, "upperBoll": upperBoll, "lowerBoll": lowerBoll, "volumeDelta": volumeDelta, "macd": macd}
 
     # return indicator data sorted by timeframe.
     return indicatorData
