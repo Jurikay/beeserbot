@@ -18,6 +18,7 @@ pd.options.mode.chained_assignment = None
 # entrypoint
 def getTA():
     """Make a kline API call for every time interval.
+
     Then pass the received data to createFrame.
     """
 

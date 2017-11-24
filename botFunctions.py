@@ -165,7 +165,11 @@ def getHoldings():
     return accHoldings
 
 
-
+def getTotalBtc():
+    """Get all coin balances and calculate total account value in BTC"""
+    for index in enumerate(accountHoldings):
+        print(index[0])
+        print(index[1])
 
 def restartSocket(symbol):
     """Check if websocket connections are open, closeses them and starts new ones based on the given symbol."""
@@ -523,8 +527,14 @@ def validateOrderSize(size, symbol, priceList, btcBalance):
 
 def validateHoldings(side):
 
+    val["buySize"] = buy_size
+    val["sellSize"] = sell_size
+
     btc = accHoldings["BTC"]["free"]
     coin = accHoldings[val["symbol"][:-3]]["free"]
+
+    minOrder = calculateMinOrderSize(val["symbol"], val["priceList"])
+
 
     logging.debug("validate Holdings:")
     logging.debug(str(coin))
@@ -537,6 +547,10 @@ def validateHoldings(side):
     elif side == "SELL":
         if float(coin) >= float(val["sellSize"]):
             return True
+        elif float(coin) >= float(minOrder):
+            val["sellSize"] = float(coin)
+            return True
+
 
     return False
 
