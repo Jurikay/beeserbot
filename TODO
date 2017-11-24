@@ -158,3 +158,5 @@ if my order = targetprice:
   check distance to next order (satCheck)
   (iterate through bids or asks until order = myorder)
    recreate if > 2 tix
+
+allgemeine quantity format function: ticksize mintrade

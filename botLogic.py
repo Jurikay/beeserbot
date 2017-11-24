@@ -23,7 +23,7 @@ logging.basicConfig(filename="test.log", filemode='w', level=logging.DEBUG, form
 
 
 # use val to store different values like websocket conn_keys
-val = {"s": 0, "cs": 0, "socket1": 0, "socket2": 0, "socket3": 0, "symbol": symbol, "iter1": 0, "bm": 0, "tryToBuy": False, "tryToSell": False, "runTime": 0}
+val = {"s": 0, "cs": 0, "socket1": 0, "socket2": 0, "socket3": 0, "symbol": symbol, "iter1": 0, "bm": 0, "tryToBuy": False, "tryToSell": False, "runTime": 0, "newTrade": False}
 
 recv_window = 6000000
 

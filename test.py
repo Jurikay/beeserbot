@@ -21,21 +21,24 @@ priceList = getCurrentPrices()
 restartSocket(symbol)
 
 val["bm"].start()
+accHoldings = getHoldings()
 
-time.sleep(3)
+time.sleep(4)
 
 
-print(str(depthMsg["bids"][5][0]))
+getTotalBtc()
 
-priceRefiner(str(depthMsg["bids"][5][0]), str(depthMsg["asks"][5][0]))
-
-while True:
-    print(val["symbol"])
-    print(val["realBuyPrice"] + "  " + val["realSellPrice"])
-    priceRefiner(str(depthMsg["bids"][5][0]), str(depthMsg["asks"][5][0]))
-    # print("realbp: " + str(val["realBuyPrice"]) + " realsp: " + str(val["realSellPrice"]))
-
-    time.sleep(.5)
+# print(str(depthMsg["bids"][5][0]))
+#
+# priceRefiner(str(depthMsg["bids"][5][0]), str(depthMsg["asks"][5][0]))
+#
+# while True:
+#     print(val["symbol"])
+#     print(val["realBuyPrice"] + "  " + val["realSellPrice"])
+#     priceRefiner(str(depthMsg["bids"][5][0]), str(depthMsg["asks"][5][0]))
+#     # print("realbp: " + str(val["realBuyPrice"]) + " realsp: " + str(val["realSellPrice"]))
+#
+#     time.sleep(.5)
 #
 #
 #
@@ -55,16 +58,16 @@ while True:
 # test = getHoldings()
 # print(len(test))
 # print(accHoldings["BTC"])
-while True:
-
-    # print (validateOrderSize(symbol, "BUY"))
-    #
-    # print(float(validateOrderSize(symbol, "BUY")) * float(depthMsg["bids"][0][0]))
-    # print(userMsg)
-    time.sleep(.5)
-    findOrder()
-    cancelAllOrders()
-    logging.debug("test")
+# while True:
+#
+#     # print (validateOrderSize(symbol, "BUY"))
+#     #
+#     # print(float(validateOrderSize(symbol, "BUY")) * float(depthMsg["bids"][0][0]))
+#     # print(userMsg)
+#     time.sleep(.5)
+#     findOrder()
+#     cancelAllOrders()
+#     logging.debug("test")
 
 
 

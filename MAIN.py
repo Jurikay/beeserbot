@@ -36,6 +36,7 @@ logging.debug("Juris beeser Bot version " + str(splashScreen.version) + " starte
 def clockLoop():
     while val["exitThread"] is False:
         try:
+
             ui.app.periodicUpdate()
         except KeyError:
             pass
@@ -78,10 +79,14 @@ def mainLoop():
 
             ui.app.getForm("MAIN").revalidate()
 
-            if filledTrades:
-                quittung = (pd.DataFrame(filledTrades))[::-1]
-                quittung.to_csv(str(reportFilename) + ".csv", index=False, encoding='utf-8')
 
+
+
+            if filledTrades and val["newTrade"]:
+                quittung = (pd.DataFrame(filledTrades, columns=["date", "account value", "symbol", "price", "quantity", "side", "id"]))[::-1]
+
+                quittung.to_csv(str(reportFilename)+".csv", index = False, encoding = 'utf-8')
+                val["newTrade"] = False
 
             # TA.createCSV()
             val["indicators"] = TA.getTA()
