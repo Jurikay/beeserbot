@@ -166,17 +166,27 @@ def getHoldings():
 
 
 def getTotalBtc():
-    """Get all coin balances and calculate total account value in BTC"""
-    for index in enumerate(accountHoldings):
-        print(index[0])
-        print(index[1])
+    """Get all coin balances and calculate total account value in BTC."""
+
+    btcValues = []
+
+    for index in enumerate(accHoldings):
+        coinQuant = "{:.8f}".format(float(accHoldings[index[1]]["free"]) + float(accHoldings[index[1]]["locked"]))
+
+        if float(coinQuant) > 0:
+            if index[1] != "BTC":
+                btcValues.append(float(coinQuant) * float(val["coins"][index[1] + "BTC"]["close"]))
+            elif index[1] == "BTC":
+                btcValues.append(float(coinQuant))
+    accValue = "{:.8f}".format(sum(btcValues))
+    return accValue
+
 
 def restartSocket(symbol):
     """Check if websocket connections are open, closeses them and starts new ones based on the given symbol."""
     logging.debug("RESTART SOCKET")
 
 
-    # tickerMsg = fetchAsap(symbol)
 
     # bm = BinanceSocketManager(client)
     with lock:
@@ -219,9 +229,14 @@ def depth_callback(msg):
     # MainForm.updateOrderbook()
     val["depthTracker"] += 1
 
-    # draw orderbook changes right as they are received
-    ui.app.updateDepth()
 
+    # draw orderbook changes right as they are received
+    # ui.app.getForm("MAIN").update_order_book()
+    # ui.app.updateDepth()
+    # try:
+    ui.app.forward_update()
+    # except:
+    #     print("EXCEPT!")
     # priceRefiner()
 
 
@@ -255,8 +270,8 @@ def ticker_callback(msg):
 
         for key, value in msg[0].items():
             tickerMsg[key] = value
-        # with open("tickerCallback.txt", "w") as f:
-        #     f.write(str(tickerMsg))
+        with open("tickerCallback.txt", "w") as f:
+            f.write(str(tickerMsg))
 
 
 def user_callback(msg):
@@ -282,9 +297,11 @@ def user_callback(msg):
 
         elif userMsg["X"] == "FILLED":
             val["myOrders"].pop(userMsg["i"], None)
+            val["newTrade"] = True
 
             # store filled trades
-            filledTrades.append({"date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "symbol": userMsg["s"], "price": userMsg["p"], "quantity": userMsg["q"], "side": userMsg["S"], "id": userMsg["i"]})
+
+            filledTrades.append({"date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "symbol": userMsg["s"], "price": userMsg["p"], "quantity": userMsg["q"], "side": userMsg["S"], "id": userMsg["i"], "account value": str(getTotalBtc())})
 
             if val["angelBuyId"] == userMsg["i"]:
                 val["angelBuyId"] = None
@@ -698,6 +715,7 @@ def getRealSellPrice(sellTarget):
     # time.sleep(0.01)
 val["coins"] = dict()
 
+# tickerMsg = fetchAsap(val["symbol"])
 
 val["coins"] = availablePairs()
 
