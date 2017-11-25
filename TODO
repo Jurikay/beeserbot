@@ -160,3 +160,7 @@ if my order = targetprice:
    recreate if > 2 tix
 
 allgemeine quantity format function: ticksize mintrade
+
+bevor neuealgologic: check if spred is too small
+
+remove syntax highlighting
