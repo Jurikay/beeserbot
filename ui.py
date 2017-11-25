@@ -161,7 +161,7 @@ class AlgoForm(npyscreen.FormBaseNew):
 
 
 
-        self.start_button = self.add(npyscreen.ButtonPress, name='Start', relx=4, rely=24, hidden=False)
+        self.start_button = self.add(npyscreen.ButtonPress, name='Start', relx=4, rely=25, hidden=False)
         self.start_button.whenPressed = self.start_button_pressed
 
 
@@ -182,7 +182,7 @@ class AlgoForm(npyscreen.FormBaseNew):
         self.status = self.add(npyscreen.FixedText, value="Ready and awaiting orders, Sir [$]◡[$]", relx=15, rely=-3, editable=False)
 
         self.test1 = self.add(npyscreen.FixedText, value="Open buy orders:", editable=False, relx=30, rely=17)
-        self.test2 = self.add(npyscreen.FixedText, value="Open sell orders:", editable=False, relx=55, rely=17)
+        self.test2 = self.add(npyscreen.FixedText, value="Open sell orders:", editable=False, relx=52, rely=17)
 
         ###########################
         # Orderbook / trade history
@@ -202,32 +202,32 @@ class AlgoForm(npyscreen.FormBaseNew):
 
         # Create asks template
         for i in range(self.obRange):
-            self.asksIndex[i] = self.add(npyscreen.FixedText, value=str(int(self.obRange)-i), editable=False, relx=self.obMargin, rely=i+3)
+            self.asksIndex[i] = self.add(npyscreen.FixedText, value=str(int(self.obRange)-i), editable=False, relx=self.obMargin, rely=i+2)
 
-            self.asks[i] = self.add(npyscreen.FixedText, value="0.00012345", editable=False, relx=self.obMargin+2, rely=i+3, color="DANGER")
+            self.asks[i] = self.add(npyscreen.FixedText, value="0.00012345", editable=False, relx=self.obMargin+2, rely=i+2, color="DANGER")
 
-            self.asksQuant[i] = self.add(npyscreen.FixedText, value="12.345", editable=False, relx=self.obMargin+13, rely=i+3)
+            self.asksQuant[i] = self.add(npyscreen.FixedText, value="12.345", editable=False, relx=self.obMargin+13, rely=i+2)
 
 
 
         # Add Spread between asks and bids
-        self.spread = self.add(npyscreen.FixedText, value="Spread", editable=False, relx=self.obMargin, rely=self.obRange+4)
+        self.spread = self.add(npyscreen.FixedText, value="Spread", editable=False, relx=self.obMargin, rely=self.obRange+3)
 
         for i in range(self.obRange):
-            self.bidsIndex[i] = self.add(npyscreen.FixedText, value=str(i+1), editable=False, relx=self.obMargin, rely=i+self.obRange+6)
+            self.bidsIndex[i] = self.add(npyscreen.FixedText, value=str(i+1), editable=False, relx=self.obMargin, rely=i+self.obRange+5)
 
-            self.bids[i] = self.add(npyscreen.FixedText, value="0.00012345", editable=False, relx=self.obMargin+2, rely=i+self.obRange+6, color="GOOD")
+            self.bids[i] = self.add(npyscreen.FixedText, value="0.00012345", editable=False, relx=self.obMargin+2, rely=i+self.obRange+5, color="GOOD")
 
-            self.bidsQuant[i] = self.add(npyscreen.FixedText, value="12.345", editable=False, relx=self.obMargin+13, rely=i+self.obRange+6)
+            self.bidsQuant[i] = self.add(npyscreen.FixedText, value="12.345", editable=False, relx=self.obMargin+13, rely=i+self.obRange+5)
 
 
 
 
         # Create order history template TODO: add quantity and timestamp
         for i in range(self.obRange*2+3):
-            self.oHistory[i] = self.add(npyscreen.FixedText, value="+*", editable=False, relx=self.obMargin+25, rely=i+3)
+            self.oHistory[i] = self.add(npyscreen.FixedText, value="+*", editable=False, relx=self.obMargin+22, rely=i+2)
 
-            self.oHistoryQuant[i] = self.add(npyscreen.FixedText, value="0.00", editable=False, relx=self.obMargin+36, rely=i+3)
+            self.oHistoryQuant[i] = self.add(npyscreen.FixedText, value="0.00", editable=False, relx=self.obMargin+33, rely=i+2)
 
             # self.oHistoryTime[i] = self.add(npyscreen.FixedText, value="13:37:00", editable=False, relx=self.obMargin+42, rely=i+3)
 
