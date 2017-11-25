@@ -32,7 +32,7 @@ class AlgoForm(npyscreen.FormBaseNew):
             # self.debug.value = str(val["coins"][symbol]["tickSize"])
             # self.status2.value = "rbp: " + str(val["realBuyPrice"]) + " rsp: " + str(val["realSellPrice"])
         except KeyError:
-            self.volume.value="kommt da was"
+            self.volume.value = "loading..."
             # self.volume.value = "{:.3f}".format(float(val["coins"][val["symbol"]]["volume"]) * float(val["coins"][val["symbol"]]["close"])) + " BTC"
 
 
@@ -66,102 +66,102 @@ class AlgoForm(npyscreen.FormBaseNew):
         self.symbol = self.add(npyscreen.FixedText, value=str(val["symbol"]), editable=False, color="WARNING", relx=2+len(self.symbolHead.value), rely=1)
 
         # TIME RUNNUNG
-        self.runningHead = self.add(npyscreen.FixedText, value="Runtime: ", editable=False, relx=2, rely=3, color="WARNING")
+        self.runningHead = self.add(npyscreen.FixedText, value="Runtime: ", editable=False, relx=2, rely=2, color="WARNING")
 
-        self.timeRunning = self.add(npyscreen.FixedText, value="0:00:00", editable=False,  relx=2+len(self.runningHead.value), rely=3)
+        self.timeRunning = self.add(npyscreen.FixedText, value="0:00:00", editable=False,  relx=2+len(self.runningHead.value), rely=2)
 
         # DISPLAY STRATEGY
-        self.stratHead = self.add(npyscreen.FixedText, value="Strategy: ", editable=False, relx=2, rely=4, color="WARNING")
+        self.stratHead = self.add(npyscreen.FixedText, value="Strategy: ", editable=False, relx=2, rely=3, color="WARNING")
 
-        self.strat = self.add(npyscreen.FixedText, value="Boilinger Bot", editable=False,  relx=2+len(self.stratHead.value), rely=4)
+        self.strat = self.add(npyscreen.FixedText, value="Boilinger Bot", editable=False,  relx=2+len(self.stratHead.value), rely=3)
 
         # DISPLAY TIME INTERVAL
-        self.intervalHead = self.add(npyscreen.FixedText, value="Time interval: ", editable=False, relx=2, rely=5, color="WARNING")
+        self.intervalHead = self.add(npyscreen.FixedText, value="Time interval: ", editable=False, relx=2, rely=4, color="WARNING")
 
-        self.interval = self.add(npyscreen.FixedText, value="1 Minute", editable=False,  relx=2+len(self.intervalHead.value), rely=5)
+        self.interval = self.add(npyscreen.FixedText, value="1 Minute", editable=False,  relx=2+len(self.intervalHead.value), rely=4)
 
 
         # BOLLINGER DISPLAY:
 
         # upper
-        self.upperBollHead = self.add(npyscreen.FixedText, value="Upper Band: ", editable=False, relx=2, rely=7, color="WARNING")
+        self.upperBollHead = self.add(npyscreen.FixedText, value="Upper Band: ", editable=False, relx=2, rely=6, color="WARNING")
 
-        self.upperBoll = self.add(npyscreen.FixedText, value='{:.8f}'.format(float(val["indicators"][str(self.timeFrame)]["upperBoll"]))[:len(str(val["coins"][symbol]["tickSize"]))], editable=False,  relx=2+len(self.upperBollHead.value), rely=7)
+        self.upperBoll = self.add(npyscreen.FixedText, value='{:.8f}'.format(float(val["indicators"][str(self.timeFrame)]["upperBoll"]))[:len(str(val["coins"][symbol]["tickSize"]))], editable=False,  relx=2+len(self.upperBollHead.value), rely=6)
 
         # middle
-        self.medBollHead = self.add(npyscreen.FixedText, value="Median Band: ", editable=False, relx=2, rely=8, color="WARNING")
+        self.medBollHead = self.add(npyscreen.FixedText, value="Median Band: ", editable=False, relx=2, rely=7, color="WARNING")
 
-        self.medBoll = self.add(npyscreen.FixedText, value='{:.8f}'.format(float(val["indicators"][str(self.timeFrame)]["medBoll"]))[:len(str(val["coins"][symbol]["tickSize"]))], editable=False, relx=1+len(self.medBollHead.value), rely=8)
+        self.medBoll = self.add(npyscreen.FixedText, value='{:.8f}'.format(float(val["indicators"][str(self.timeFrame)]["medBoll"]))[:len(str(val["coins"][symbol]["tickSize"]))], editable=False, relx=1+len(self.medBollHead.value), rely=7)
 
 
         # lower
-        self.lowerBollHead = self.add(npyscreen.FixedText, value="Lower Band: ", editable=False, relx=2, rely=9, color="WARNING")
+        self.lowerBollHead = self.add(npyscreen.FixedText, value="Lower Band: ", editable=False, relx=2, rely=8, color="WARNING")
 
-        self.lowerBoll = self.add(npyscreen.FixedText, value='{:.8f}'.format(float(val["indicators"][str(self.timeFrame)]["lowerBoll"]))[:len(str(val["coins"][symbol]["tickSize"]))], editable=False,  relx=2+len(self.lowerBollHead.value), rely=9)
+        self.lowerBoll = self.add(npyscreen.FixedText, value='{:.8f}'.format(float(val["indicators"][str(self.timeFrame)]["lowerBoll"]))[:len(str(val["coins"][symbol]["tickSize"]))], editable=False,  relx=2+len(self.lowerBollHead.value), rely=8)
 
 
         # Volume Delta
-        self.volumeHead = self.add(npyscreen.FixedText, value="Volume: ", editable=False, relx=2, rely=11, color="WARNING")
+        self.volumeHead = self.add(npyscreen.FixedText, value="Volume: ", editable=False, relx=2, rely=10, color="WARNING")
 
-        self.volume = self.add(npyscreen.FixedText, value="loading volume", editable=False,  relx=2+len(self.volumeHead.value), rely=11)
+        self.volume = self.add(npyscreen.FixedText, value="loading volume", editable=False,  relx=2+len(self.volumeHead.value), rely=10)
 
         # RSI
-        self.rsiHead = self.add(npyscreen.FixedText, value="RSI: ", editable=False, relx=2, rely=12, color="WARNING")
+        self.rsiHead = self.add(npyscreen.FixedText, value="RSI: ", editable=False, relx=2, rely=11, color="WARNING")
 
-        self.rsi = self.add(npyscreen.FixedText, value="loading rsi", editable=False,  relx=2+len(self.rsiHead.value), rely=12)
+        self.rsi = self.add(npyscreen.FixedText, value="loading rsi", editable=False,  relx=2+len(self.rsiHead.value), rely=11)
 
         # MACD
-        self.macdHead = self.add(npyscreen.FixedText, value="MACD: ", editable=False, relx=2, rely=13, color="WARNING")
+        self.macdHead = self.add(npyscreen.FixedText, value="MACD: ", editable=False, relx=2, rely=12, color="WARNING")
 
-        self.macd = self.add(npyscreen.FixedText, value="loading macd", editable=False,  relx=2+len(self.macdHead.value), rely=13)
+        self.macd = self.add(npyscreen.FixedText, value="loading macd", editable=False,  relx=2+len(self.macdHead.value), rely=12)
 
-        self.spreadsHead = self.add(npyscreen.FixedText, value="Current spread: ", editable=False, relx=2, rely=14, color="WARNING")
+        self.spreadsHead = self.add(npyscreen.FixedText, value="Current spread: ", editable=False, relx=2, rely=13, color="WARNING")
 
-        self.spreads = self.add(npyscreen.FixedText, value="loading spread", editable=False, relx=2+(len(self.spreadsHead.value)), rely=14)
+        self.spreads = self.add(npyscreen.FixedText, value="loading spread", editable=False, relx=2+(len(self.spreadsHead.value)), rely=13)
 
         # Time frame input
-        self.selectTfHead = self.add(npyscreen.FixedText, value="Time interval: ", editable=False, relx=2, rely=16, color="NO_EDIT")
+        self.selectTfHead = self.add(npyscreen.FixedText, value="Time interval: ", editable=False, relx=2, rely=15, color="NO_EDIT")
 
-        self.selectTf = self.add(timeFrameInput, value="1m", editable=True,  relx=2+len(self.selectTfHead.value), rely=16)
+        self.selectTf = self.add(timeFrameInput, value="1m", editable=True,  relx=2+len(self.selectTfHead.value), rely=15)
 
 
         # Sell condition
-        self.sellCondHead = self.add(npyscreen.FixedText, value="Sell if >", editable=False, relx=2, rely=18, color="DANGER")
+        self.sellCondHead = self.add(npyscreen.FixedText, value="Sell if >", editable=False, relx=2, rely=16, color="DANGER")
 
-        self.sellTargetDisplay = self.add(npyscreen.FixedText, value="0", editable=False, relx=len(self.sellCondHead.value)+3, rely=18)
+        self.sellTargetDisplay = self.add(npyscreen.FixedText, value="0", editable=False, relx=len(self.sellCondHead.value)+3, rely=16)
 
-        self.sellPercent = self.add(userInput, value="0.5", editable=True, relx=2, rely=19, width=4, name="sellPercent")
+        self.sellPercent = self.add(userInput, value="0.5", editable=True, relx=2, rely=17, width=4, name="sellPercent")
 
-        self.sellPercentHead = self.add(npyscreen.FixedText, value="%", editable=False, relx=6, rely=19)
+        self.sellPercentHead = self.add(npyscreen.FixedText, value="%", editable=False, relx=6, rely=17)
 
 
 
-        self.sellAboveBelow = self.add(userInput, value="above", relx=2, rely=20, name="sellAboveBelow")
+        self.sellAboveBelow = self.add(userInput, value="above", relx=2, rely=18, name="sellAboveBelow")
 
-        self.sellBand = self.add(userInput, value="upper", relx=2, rely=21, width=6, name="sellBand")
+        self.sellBand = self.add(userInput, value="upper", relx=2, rely=19, width=6, name="sellBand")
 
-        self.sellBandHead = self.add(npyscreen.FixedText, value="Band", relx=8, rely=21, editable=False)
+        self.sellBandHead = self.add(npyscreen.FixedText, value="Band", relx=8, rely=19, editable=False)
 
 
         # Buy condition
-        self.buyCondHead = self.add(npyscreen.FixedText, value="Buy if <", editable=False, relx=2, rely=23, color="GOOD")
+        self.buyCondHead = self.add(npyscreen.FixedText, value="Buy if <", editable=False, relx=2, rely=20, color="GOOD")
 
-        self.buyTargetDisplay = self.add(npyscreen.FixedText, value="0", editable=False, relx=len(self.buyCondHead.value)+3, rely=23)
-
-
-        self.buyPercent = self.add(buyInput, value="0.5", editable=True, relx=2, rely=24, max_width=4, name="buyPercent")
-
-        self.buyPercentHead = self.add(npyscreen.FixedText, value="%", editable=False, relx=6, rely=24)
-
-        self.buyAboveBelow = self.add(userInput, value="below", relx=2, rely=25, name="buyAboveBelow")
-
-        self.buyBand = self.add(userInput, value="lower", relx=2, rely=26, width=6, name="buyBand")
-
-        self.buyBandHead = self.add(npyscreen.FixedText, value="Band", relx=8, rely=26, editable=False)
+        self.buyTargetDisplay = self.add(npyscreen.FixedText, value="0", editable=False, relx=len(self.buyCondHead.value)+3, rely=20)
 
 
+        self.buyPercent = self.add(buyInput, value="0.5", editable=True, relx=2, rely=21, max_width=4, name="buyPercent")
 
-        self.start_button = self.add(npyscreen.ButtonPress, name='Start', relx=4, rely=28, hidden=False)
+        self.buyPercentHead = self.add(npyscreen.FixedText, value="%", editable=False, relx=6, rely=21)
+
+        self.buyAboveBelow = self.add(userInput, value="below", relx=2, rely=22, name="buyAboveBelow")
+
+        self.buyBand = self.add(userInput, value="lower", relx=2, rely=23, width=6, name="buyBand")
+
+        self.buyBandHead = self.add(npyscreen.FixedText, value="Band", relx=8, rely=23, editable=False)
+
+
+
+        self.start_button = self.add(npyscreen.ButtonPress, name='Start', relx=4, rely=24, hidden=False)
         self.start_button.whenPressed = self.start_button_pressed
 
 
