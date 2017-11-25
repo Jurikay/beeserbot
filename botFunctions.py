@@ -186,8 +186,6 @@ def restartSocket(symbol):
     """Check if websocket connections are open, closeses them and starts new ones based on the given symbol."""
     logging.debug("RESTART SOCKET")
 
-
-
     # bm = BinanceSocketManager(client)
     with lock:
         if val["socket1"] != 0:
@@ -195,12 +193,13 @@ def restartSocket(symbol):
             val["bm"].stop_socket(val["socket2"])
             val["bm"].stop_socket(val["socket3"])
             val["bm"].stop_socket(val["socket4"])
+            val["bm"].stop_socket(val["socket5"])
 
             logging.debug("SOCKETS CLOSED")
             # time.sleep(1)
 
         else:
-            logging.debug("KONNTE SOCKETS NICHT BEENDEN!!!")
+            logging.debug("COULD NOT CLOSE SOCKETS")
 
         # FIXME would be nice to remove
         time.sleep(0.1)
@@ -210,6 +209,7 @@ def restartSocket(symbol):
         val["socket2"] = val["bm"].start_trade_socket(symbol, trade_callback)
         val["socket3"] = val["bm"].start_ticker_socket(ticker_callback, update_time="0ms")
         val["socket4"] = val["bm"].start_user_socket(user_callback)
+        val["socket5"] = val["bm"].start_kline_socket(symbol, kline_callback, update_time="0ms")
         logging.debug("SOCKETS OPENED")
 
 
@@ -227,6 +227,8 @@ def depth_callback(msg):
     # botCalc()
 
     # MainForm.updateOrderbook()
+
+    # count number of order updates
     val["depthTracker"] += 1
 
 
@@ -270,8 +272,7 @@ def ticker_callback(msg):
 
         for key, value in msg[0].items():
             tickerMsg[key] = value
-        with open("tickerCallback.txt", "w") as f:
-            f.write(str(tickerMsg))
+
 
 
 def user_callback(msg):
@@ -312,9 +313,18 @@ def user_callback(msg):
         print("order created/filled/deleted")
 
 
+def kline_callback(msg):
+    for key, value in msg.items():
+        klineMsg[key] = value
+    with open("klineCallback.txt", "w") as f:
+        f.write(str(klineMsg))
+
+
 ###################################################
 # VALIDATION
 ##################################################
+
+
 def isfloat(value):
     """Check if a value is convertable to float. Be aware of 'NaN', '-inf', 'infinity', 'True' etc.
 
