@@ -202,7 +202,7 @@ def restartSocket(symbol):
             logging.debug("COULD NOT CLOSE SOCKETS")
 
         # FIXME would be nice to remove
-        time.sleep(0.1)
+        # time.sleep(0.1)
 
         # tradesMsg.clear()
         val["socket1"] = val["bm"].start_depth_socket(symbol, depth_callback, depth=20, update_time="0ms")
@@ -418,13 +418,13 @@ def calculateMaxOrderSize(symbol, priceList, btcBalance):
 # return true if two values are identical in satoshis/smallest unit
 def satCheckEqual(val1, val2, tickSize):
 
-    return (round(fabs(val1 - val2), 8) >= 0.0 and round(fabs(val1 - val2), 8) < float(tickSize))
+    return round(fabs(val1 - val2), 8) >= 0.0 and round(fabs(val1 - val2), 8) < float(tickSize)
 
 
 # returns True if difference between two values is exaclty one satoshi/smallest unit
 def satCheckOneDiff(val1, val2, tickSize):
 
-    return (round(fabs(val1 - val2), 8) > 0.0 and round(fabs(val1 - val2), 8) <= float(tickSize))
+    return round(fabs(val1 - val2), 8) > 0.0 and round(fabs(val1 - val2), 8) <= float(tickSize)
 
 
 # returns True if difference between two values is at least two satoshi/smallest unit
@@ -457,16 +457,6 @@ def findInOrdersN(price):
             return True
     return False
 
-# def findOrder():
-#     myOrders = copy.deepcopy(val["myOrders"])
-#     for order in myOrders.items():
-#         try:
-#             logging.debug(order[0])
-#             logging.debug(order[1])
-#             logging.debug(order[2])
-#         except:
-#             pass
-
 
 def cancelOrdersOfType(symbol, orderType):
     myOrders = copy.deepcopy(val["myOrders"])
@@ -491,7 +481,6 @@ def cancelAllOrders():
         except (TypeError, BinanceAPIException):
             pass
 
-
         try:
             client.cancel_order(symbol=symbol, orderId=orderID)
         except BinanceAPIException:
@@ -508,7 +497,6 @@ def cancelOrderById(orderId):
 
 def createOrder(coinPair, side, price, size):
     if side == "BUY":
-        logging.debug("SIDE: BUY")
         try:
             order = client.order_limit_buy(
                 symbol=coinPair,
@@ -520,7 +508,6 @@ def createOrder(coinPair, side, price, size):
         return order["orderId"]
 
     elif side == "SELL":
-        logging.debug("SIDE: SELL")
         try:
             order = client.order_limit_sell(
                 symbol=coinPair,
@@ -532,12 +519,6 @@ def createOrder(coinPair, side, price, size):
             return None
         return order["orderId"]
 
-
-# def createValidOrder():
-#     accHoldings["BTC"]["free"]
-#     minSize = calculateMinOrderSize(symbol, priceList)
-
-val["priceList"]
 
 
 def validateOrderSize(size, symbol, priceList, btcBalance):
@@ -562,11 +543,6 @@ def validateHoldings(side):
 
     minOrder = calculateMinOrderSize(val["symbol"], val["priceList"])
 
-
-    logging.debug("validate Holdings:")
-    logging.debug(str(coin))
-    logging.debug(str(val["symbol"][:-3]))
-
     if side == "BUY":
         if float(btc) >= 0.001:
             return True
@@ -577,7 +553,6 @@ def validateHoldings(side):
         elif float(coin) >= float(minOrder):
             val["sellSize"] = float(coin)
             return True
-
 
     return False
 
@@ -645,7 +620,7 @@ def neueAlgoLogic():
 
 def priceRefiner(buyTarget, sellTarget):
 
-    """Be greedy and calculate how much higher or lower one can get away with while staying within targeted price range."""
+    """Be greedy and calculate how much higher or lower one can get away with while staying within targeted price range. (Dependant on current orders)"""
 
     logging.debug("PRICE REFINER:")
     if isfloat(buyTarget) and isfloat(sellTarget):
@@ -677,7 +652,6 @@ def getRealBuyPrice(buyTarget):
 
 
 def getRealSellPrice(sellTarget):
-    logging.debug("find culprit here +++++++++++++++++++")
     ticksize = str(val["coins"][symbol]["tickSize"])
     for index, value in enumerate(depthMsg["asks"]):
         logging.debug("checke sell order: " + str(index) + " price: " + str(value[0]) + "soll > " + str(float(sellTarget)))
@@ -698,31 +672,7 @@ def getRealSellPrice(sellTarget):
     realSellPrice = "{:.8f}".format(float(sellTarget))
     return str(realSellPrice)
 
-        # else:
 
-
-        #     val["realBuyPrice"] = buyTarget
-        #     logging.debug("keine gefunden..")
-
-    # return val["realBuyPrice"]
-
-    # val["myOrders"][id]
-
-        # cancelAllOrders()
-        # time.sleep(0.1)
-        # createOrder(val["symbol"], "BUY", buyTarget, val["buySize"])
-        # logging.debug("ERSTELLE BUY ORDER!!!!")
-        # logging.debug(val["symbol"]+ str(buyTarget)+" "+str(val["buySize"]))
-        # createOrder("BNBBTC", "BUY", "0.000194", "6")
-
-# TODO elif aggrobuy
-    # logging.debug("current ask - selltarget:")
-    # logging.debug(str(currentAsk)+ "   "+ str(sellTarget))
-# if currentAsk < sellTarget:
-
-# else:
-#     logging.debug("DAS HIER")
-    # time.sleep(0.01)
 val["coins"] = dict()
 
 # tickerMsg = fetchAsap(val["symbol"])
