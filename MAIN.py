@@ -75,7 +75,8 @@ def mainLoop():
             # logging.debug("open orders: " + str(val["openOrders"]))
 
             # debug: cancel all orders every 10 seconds to prevent multiple buy or sell orders... (WORKAROUND)
-            cancelAllOrders()
+            if val["running"] is True:
+                cancelAllOrders()
 
             ui.app.getForm("MAIN").revalidate()
 
@@ -109,6 +110,17 @@ def mainLoop():
         #     except KeyError:
         #         pass
             val["initiateBuy"] = True
+
+        # Check if Websocket connection has to be restarted
+        if val["depthTracker"] == 0:
+            if val["restartTimer"] > 15:
+                ui.app.setStatus("RESTART")
+                val["restartTimer"] = 0
+                restartSocket(val["symbol"])
+            else:
+                val["restartTimer"] += 1
+                if val["restartTimer"] >= 6:
+                    ui.app.setStatus("Waiting for Websocket connection... Restarting in: " + str(16-val["restartTimer"]))
 
 
 def secondLoop():
@@ -191,8 +203,16 @@ if __name__ == '__main__':
 
 
     # (re)start webSocket connections
-    restartSocket(symbol)
+    # restartSocket(symbol)
     logging.debug("ONCE")
+
+    val["socket1"] = val["bm"].start_depth_socket(symbol, depth_callback, depth=20)
+    val["socket2"] = val["bm"].start_trade_socket(symbol, trade_callback)
+    val["socket3"] = val["bm"].start_ticker_socket(ticker_callback)
+    val["socket5"] = val["bm"].start_kline_socket(symbol, kline_callback)
+    logging.debug("SOCKETS OPENED")
+    val["socket4"] = val["bm"].start_user_socket(user_callback)
+
 
     # start the websocket manager
     val["bm"].start()
@@ -207,6 +227,7 @@ if __name__ == '__main__':
 
     # get TA indicators
     val["indicators"] = TA.getTA()
+
 
     try:
         # start npyscreen
