@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
-"""From https://github.com/sammchardy/python-binance.
 
-Manually added daemon state instead of issuing a pull request.
-"""
 import json
 import threading
 
@@ -11,6 +8,7 @@ from autobahn.twisted.websocket import WebSocketClientFactory, \
     WebSocketClientProtocol, \
     connectWS
 from twisted.internet import reactor, ssl
+from twisted.internet.protocol import ReconnectingClientFactory
 from twisted.internet.error import ReactorAlreadyRunning
 
 from binance.enums import KLINE_INTERVAL_1MINUTE, WEBSOCKET_UPDATE_1SECOND, WEBSOCKET_DEPTH_1
@@ -20,7 +18,9 @@ BINANCE_STREAM_URL = 'wss://stream.binance.com:9443/ws/'
 
 class BinanceClientProtocol(WebSocketClientProtocol):
 
-    """Binance Client Protocol."""
+    def onConnect(self, response):
+        # reset the delay after reconnecting
+        self.factory.resetDelay()
 
     def onMessage(self, payload, isBinary):
         if not isBinary:
@@ -28,17 +28,33 @@ class BinanceClientProtocol(WebSocketClientProtocol):
             self.factory.callback(payload_obj)
 
 
+class BinanceReconnectingClientFactory(ReconnectingClientFactory):
+
+    # set initial delay to a short time
+    initialDelay = 0.1
+
+    maxDelay = 10
+
+    maxRetries = 5
+
+
+class BinanceClientFactory(WebSocketClientFactory, BinanceReconnectingClientFactory):
+
+    protocol = BinanceClientProtocol
+
+    def clientConnectionFailed(self, connector, reason):
+        self.retry(connector)
+
+    def clientConnectionLost(self, connector, reason):
+        pass
+
+
 class BinanceSocketManager(threading.Thread):
 
-    """Binance Socket Manager.
-
-    Added self.daemon = True to to fix errors on exit
-    """
-
-    _user_timeout = 50 * 60  # 50 minutes
+    _user_timeout = 60  # 50 minutes
 
     def __init__(self, client):
-        """Initialise the BinanceSocketManager.
+        """Initialise the BinanceSocketManager
 
         :param client: Binance API client
         :type client: binance.Client
@@ -58,7 +74,7 @@ class BinanceSocketManager(threading.Thread):
         if path in self._conns:
             return False
 
-        factory = WebSocketClientFactory(BINANCE_STREAM_URL + path)
+        factory = BinanceClientFactory(BINANCE_STREAM_URL + path)
         factory.protocol = BinanceClientProtocol
         factory.callback = callback
         context_factory = ssl.ClientContextFactory()
@@ -67,7 +83,7 @@ class BinanceSocketManager(threading.Thread):
         return path
 
     def start_depth_socket(self, symbol, callback, depth=WEBSOCKET_DEPTH_1, update_time=WEBSOCKET_UPDATE_1SECOND):
-        """Start a websocket for symbol market depth.
+        """Start a websocket for symbol market depth
 
         https://www.binance.com/restapipub.html#depth-wss-endpoint
 
@@ -123,7 +139,7 @@ class BinanceSocketManager(threading.Thread):
         return self._start_socket(socket_name, callback, update_time=update_time)
 
     def start_kline_socket(self, symbol, callback, interval=KLINE_INTERVAL_1MINUTE, update_time=WEBSOCKET_UPDATE_1SECOND):
-        """Start a websocket for symbol kline data.
+        """Start a websocket for symbol kline data
 
         https://www.binance.com/restapipub.html#kline-wss-endpoint
 
@@ -171,7 +187,7 @@ class BinanceSocketManager(threading.Thread):
         return self._start_socket(socket_name, callback, update_time=update_time)
 
     def start_trade_socket(self, symbol, callback):
-        """Start a websocket for symbol trade data.
+        """Start a websocket for symbol trade data
 
         :param symbol: required
         :type symbol: str
@@ -202,7 +218,7 @@ class BinanceSocketManager(threading.Thread):
         return self._start_socket(symbol.lower() + '@trade', callback)
 
     def start_ticker_socket(self, callback, update_time=WEBSOCKET_UPDATE_1SECOND):
-        """Start a websocket for ticker data.
+        """Start a websocket for ticker data
 
         By default all markets are included in an array.
 
@@ -248,7 +264,7 @@ class BinanceSocketManager(threading.Thread):
         return self._start_socket('!ticker@arr', callback, update_time=update_time)
 
     def start_user_socket(self, callback, update_time=WEBSOCKET_UPDATE_1SECOND):
-        """Start a websocket for user data.
+        """Start a websocket for user data
 
         https://www.binance.com/restapipub.html#user-wss-endpoint
 
@@ -285,7 +301,7 @@ class BinanceSocketManager(threading.Thread):
         self._start_user_timer()
 
     def stop_socket(self, conn_key):
-        """Stop a websocket given the connection key.
+        """Stop a websocket given the connection key
 
         :param conn_key: Socket connection key
         :type conn_key: string
@@ -320,7 +336,9 @@ class BinanceSocketManager(threading.Thread):
             pass
 
     def close(self):
-        """Stop the websocket manager and close connections."""
+        """Stop the websocket manager and close connections
+
+        """
         reactor.stop()
 
         self._stop_user_socket()
