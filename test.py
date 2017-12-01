@@ -25,9 +25,24 @@ accHoldings = getHoldings()
 
 time.sleep(4)
 
+#
+# getTotalBtc()
+# for index in enumerate(val["coins"]):
+#     print(str(index[1]) + ": - " + str(calculateMinOrderSize(index[1], priceList)))
 
-getTotalBtc()
-
+val["avgBuyPrice"] = calculateAvgPrice("BUY", "100", "0.00011")
+print(str(val["avgBuyPrice"]))
+val["avgBuyPrice"] = calculateAvgPrice("BUY", "100", "0.00022")
+print(str(val["avgBuyPrice"]))
+val["avgBuyPrice"] = calculateAvgPrice("BUY", "150", "0.0003")
+print(str(val["avgBuyPrice"]))
+val["avgBuyPrice"] = calculateAvgPrice("BUY", "100", "0.000255")
+print(str("{:.8f}".format(float(val["avgBuyPrice"]))))
+val["avgBuyPrice"] = calculateAvgPrice("SELL", "300", "0.000255")
+print("sell")
+print(str("{:.8f}".format(float(val["avgBuyPrice"]))))
+val["avgBuyPrice"] = calculateAvgPrice("BUY", "100", "0.000255")
+print(str("{:.8f}".format(float(val["avgBuyPrice"]))))
 # print(str(depthMsg["bids"][5][0]))
 #
 # priceRefiner(str(depthMsg["bids"][5][0]), str(depthMsg["asks"][5][0]))
