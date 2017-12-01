@@ -85,7 +85,7 @@ def availablePairs():
     for i in range(len(products["data"])):
 
         # Check if pair contains BTC, does not contain USDT and if volume is >0
-        if "BTC" in products["data"][i]["symbol"] and "USDT" not in products["data"][i]["symbol"] and float(products["data"][i]["volume"]) > 0.0:
+        if "BTC" in products["data"][i]["symbol"] and not "USDT" in products["data"][i]["symbol"] and float(products["data"][i]["volume"]) > 0.0:
             # Create a temporary dictionary to store keys and values
             tempdict = dict()
 
@@ -174,10 +174,15 @@ def getTotalBtc():
         coinQuant = "{:.8f}".format(float(accHoldings[index[1]]["free"]) + float(accHoldings[index[1]]["locked"]))
 
         if float(coinQuant) > 0:
-            if index[1] != "BTC":
+            if index[1] != "BTC" and index[1] != "USDT":
                 btcValues.append(float(coinQuant) * float(val["coins"][index[1] + "BTC"]["close"]))
             elif index[1] == "BTC":
                 btcValues.append(float(coinQuant))
+            elif index[1] == "USDT":
+                btcValues.append(float(coinQuant) / float(val["coins"]["BTCUSDT"]["close"]))
+                logging.debug("ADDE USDT: ")
+                logging.debug(str(float(coinQuant)) + " and: " + str(float(val["coins"]["BTCUSDT"]["close"])))
+
     accValue = "{:.8f}".format(sum(btcValues))
     return accValue
 
@@ -187,30 +192,32 @@ def restartSocket(symbol):
     logging.debug("RESTART SOCKET")
 
     # bm = BinanceSocketManager(client)
-    with lock:
-        if val["socket1"] != 0:
-            val["bm"].stop_socket(val["socket1"])
-            val["bm"].stop_socket(val["socket2"])
-            val["bm"].stop_socket(val["socket3"])
-            val["bm"].stop_socket(val["socket4"])
-            val["bm"].stop_socket(val["socket5"])
+    # with lock:
+    #     try:
+    try:
+        val["bm"].stop_socket(val["socket1"])
+        val["bm"].stop_socket(val["socket2"])
+        val["bm"].stop_socket(val["socket3"])
+        val["bm"].stop_socket(val["socket5"])
+    except KeyError:
+        pass
+        # logging.debug("SOCKETS CLOSED")
+        # time.sleep(1)
 
-            logging.debug("SOCKETS CLOSED")
-            # time.sleep(1)
+    # except Exception as e:
+    #     logging.debug("COULD NOT CLOSE SOCKETS")
+    #     logging.debug(str(e))
+    #     logging.debug
 
-        else:
-            logging.debug("COULD NOT CLOSE SOCKETS")
+    # FIXME would be nice to remove
+    # time.sleep(0.1)
 
-        # FIXME would be nice to remove
-        # time.sleep(0.1)
-
-        # tradesMsg.clear()
-        val["socket1"] = val["bm"].start_depth_socket(symbol, depth_callback, depth=20, update_time="0ms")
-        val["socket2"] = val["bm"].start_trade_socket(symbol, trade_callback)
-        val["socket3"] = val["bm"].start_ticker_socket(ticker_callback, update_time="0ms")
-        val["socket4"] = val["bm"].start_user_socket(user_callback)
-        val["socket5"] = val["bm"].start_kline_socket(symbol, kline_callback, update_time="0ms")
-        logging.debug("SOCKETS OPENED")
+# tradesMsg.clear()
+    val["socket1"] = val["bm"].start_depth_socket(symbol, depth_callback, depth=20)
+    val["socket2"] = val["bm"].start_trade_socket(symbol, trade_callback)
+    val["socket3"] = val["bm"].start_ticker_socket(ticker_callback)
+    val["socket5"] = val["bm"].start_kline_socket(symbol, kline_callback)
+    logging.debug("SOCKETS OPENED")
 
 
 ######################################################
@@ -253,7 +260,7 @@ def trade_callback(msg):
 
     # if globalList has more than 15 elements, remove all above
     if len(globalList) >= 15:
-        logging.debug("REDUCE LIST!!")
+        # logging.debug("REDUCE LIST!!")
         del globalList[15:len(globalList)]
     # try:
     #     globalList = globalList[-5:]
@@ -307,6 +314,8 @@ def user_callback(msg):
             if val["angelBuyId"] == userMsg["i"]:
                 val["angelBuyId"] = None
 
+            # calculate weighted average buy price
+            val["avgBuyPrice"] = calculateAvgPrice(userMsg["S"], userMsg["q"], userMsg["p"])
 
 
     else:
@@ -373,7 +382,7 @@ def calculateMinOrderSize(symbol, priceList):
     # currentAsk = priceList[symbol]["askPrice"]
 
     minTrade = float(val["coins"][symbol]["minTrade"])
-    roundTo = len(str(minTrade))-2
+    roundTo = len(str(minTrade).rstrip("0"))-2
 
     ticksize = str(val["coins"][symbol]["tickSize"])
 
@@ -398,7 +407,7 @@ def calculateMaxOrderSize(symbol, priceList, btcBalance):
     maximum coin sell size = coin balance
     """
     minTrade = float(val["coins"][symbol]["minTrade"])
-    roundTo = len(str(minTrade))-2
+    roundTo = len(str(minTrade).rstrip("0"))-2
 
     currentBid = priceList[symbol]["bidPrice"]
     ticksize = str(val["coins"][symbol]["tickSize"])
@@ -474,7 +483,7 @@ def cancelAllOrders():
     myOrders = copy.deepcopy(val["myOrders"])
     for index, order in myOrders.items():
         orderID = str(order["id"])
-        logging.debug("CANCELE" + str(index))
+        logging.debug("CANCELE " + str(index))
         try:
             logging.debug(" ORDER ID: " + str(orderID))
             order = client.cancel_order(symbol=val["symbol"], orderId=orderID)
@@ -496,6 +505,8 @@ def cancelOrderById(orderId):
 
 
 def createOrder(coinPair, side, price, size):
+    logging.debug("###CREATING ORDER###")
+    logging.debug("SIDE: " + str(side) + " price: " + str(price) + " size: " + str(size))
     if side == "BUY":
         try:
             order = client.order_limit_buy(
@@ -504,6 +515,8 @@ def createOrder(coinPair, side, price, size):
                 price=price)
         except BinanceAPIException as apiError:
             logging.debug("create BUY order failed !!!" + str(apiError))
+            logging.debug(str(price))
+            logging.debug(str(size))
             return None
         return order["orderId"]
 
@@ -533,21 +546,74 @@ def validateOrderSize(size, symbol, priceList, btcBalance):
     return "BAD"
 
 
+def getRealOrderSize():
+
+    minSize = calculateMinOrderSize(val["symbol"], val["priceList"])
+    maxSize = calculateMaxOrderSize(val["symbol"], val["priceList"], accHoldings["BTC"]["free"])
+
+    totalAvailable = float(accHoldings[val["symbol"][:-3]]["free"]) + float(accHoldings[val["symbol"][:-3]]["locked"])
+
+    minTrade = float(val["coins"][symbol]["minTrade"])
+    roundTo = len(str(minTrade).rstrip("0"))-2
+
+    buySize = val["buySize"]
+    sellSize = val["sellSize"]
+
+
+    # if side = "SELL":
+    if float(buySize) > float(maxSize):
+        buySize = maxSize
+    elif float(buySize) < float(minSize):
+        buySize = minSize
+
+    if float(sellSize) > totalAvailable:
+        sellSize = totalAvailable
+    elif float(sellSize) < float(minSize):
+        sellSize = minSize
+
+
+    if minTrade == 1:
+        sellSizeRounded = int(sellSize)
+        buySizeRounded = int(buySize)
+
+    else:
+        sellSizeRounded = int(sellSize * 10**roundTo) / 10.0**roundTo
+        buySizeRounded = int(maxSize * 10**roundTo) / 10.0**roundTo
+
+    return (buySizeRounded, sellSizeRounded)
+
+
+    # return (val["buySize"], val["sellSize"])
+
+
+
+
+    # if isfloat(size):
+    #     if float(size) >= minSize and float(size) <= maxSize:
+    #         return "GOOD"
+    #     elif float(size) >= minSize:
+    #         return "OK"
+    #
+    # return "BAD"
+
+
 def validateHoldings(side):
 
-    val["buySize"] = buy_size
-    val["sellSize"] = sell_size
+    # val["buySize"] = buy_size
+    # val["sellSize"] = sell_size
 
-    btc = accHoldings["BTC"]["free"]
-    coin = accHoldings[val["symbol"][:-3]]["free"]
+    btc = float(accHoldings["BTC"]["free"]) + float(accHoldings["BTC"]["locked"])
+    coin = float(accHoldings[val["symbol"][:-3]]["free"]) + float(accHoldings[val["symbol"][:-3]]["locked"])
 
     minOrder = calculateMinOrderSize(val["symbol"], val["priceList"])
 
     if side == "BUY":
+        logging.debug("validateholdings buy: " + str(float(coin)) + " and: " + str(float(val["buySize"])))
         if float(btc) >= 0.001:
             return True
 
     elif side == "SELL":
+        logging.debug("validateholdings sell: " + str(float(coin)) + " and: " + str(float(val["sellSize"])))
         if float(coin) >= float(val["sellSize"]):
             return True
         elif float(coin) >= float(minOrder):
@@ -567,76 +633,89 @@ def recreateOrder(target, side):
         logging.debug("could not create order. " + str(e))
 
 
-def neueAlgoLogic():
+# def buyLogic():
 
+
+def neueAlgoLogic():
+    val["buySize"], val["sellSize"] = getRealOrderSize()
+    logging.debug("BUY SIZE: " + str(val["buySize"]))
     if val["realBuyPrice"] is None or val["realSellPrice"] is None:
         return
 
-    if val["angelBuyId"] in val["myOrders"]:
+    if float(val["buySize"]) > 0:
+        if val["angelBuyId"] in val["myOrders"]:
 
-        # wenn ich schon eine habe beim aktuellen Zielpreis ist alles gut need satcheck
+            # wenn ich schon eine habe beim aktuellen Zielpreis ist alles gut need satcheck
 
-        if float(val["myOrders"][val["angelBuyId"]]["price"]) == float(val["realBuyPrice"]):
-            logging.debug("trigger sat check")
+            if float(val["myOrders"][val["angelBuyId"]]["price"]) == float(val["realBuyPrice"]):
+                logging.debug("trigger sat check")
+            else:
+                # wenn nicht canceln und neu erstellen
+                cancelOrderById(val["angelBuyId"])
+
+                if validateHoldings("BUY"):
+                    val["angelBuyId"] = createOrder(val["symbol"], "BUY", val["realBuyPrice"], val["buySize"])
+                else:
+                    logging.debug("NICHT GENUG BTC ZUM SHOPPEN")
         else:
-            # wenn nicht canceln und neu erstellen
-            cancelOrderById(val["angelBuyId"])
+            # wenn ich noch keine offene order habe: neu erstellen
 
             if validateHoldings("BUY"):
                 val["angelBuyId"] = createOrder(val["symbol"], "BUY", val["realBuyPrice"], val["buySize"])
             else:
-                logging.debug("NICHT GENUG BTC ZUM SHOPPEN")
-    else:
-        # wenn ich noch keine offene order habe: neu erstellen
+                logging.debug("NICHT GENUG COINS ZUM SHOPPEN")
 
-        if validateHoldings("BUY"):
-            val["angelBuyId"] = createOrder(val["symbol"], "BUY", val["realBuyPrice"], val["buySize"])
+
+    if float(val["sellSize"]) > 0:
+
+        # habe ich eine offene buy order
+        if val["angelSellId"] in val["myOrders"]:
+
+            # wenn ich schon eine habe beim aktuellen Zielpreis ist alles gut
+            if float(val["myOrders"][val["angelSellId"]]["price"]) == float(val["realSellPrice"]):
+                logging.debug("found my order")
+            else:
+                logging.debug("vergleiche meine order:" + str(val["myOrders"][val["angelSellId"]]["price"]) + " und: " + str(val["realSellPrice"]))
+
+                # wenn nicht canceln und neu erstellen
+                cancelOrderById(val["angelSellId"])
+
+                if validateHoldings("SELL"):
+                    val["angelSellId"] = createOrder(val["symbol"], "SELL", val["realSellPrice"], val["sellSize"])
+                else:
+                    logging.debug("NICHT GENUG COINS ZUM SELLEN")
         else:
-            logging.debug("NICHT GENUG COINS ZUM SELLEN")
-    # time.sleep(0.1)
-
-    # habe ich eine offene buy order
-    if val["angelSellId"] in val["myOrders"]:
-
-        # wenn ich schon eine habe beim aktuellen Zielpreis ist alles gut
-        if val["myOrders"][val["angelSellId"]]["price"] == val["realSellPrice"]:
-            logging.debug("found my order")
-        else:
-            # wenn nicht canceln und neu erstellen
-            cancelOrderById(val["angelSellId"])
+            # wenn ich noch keine offene order habe: neu erstellen
 
             if validateHoldings("SELL"):
                 val["angelSellId"] = createOrder(val["symbol"], "SELL", val["realSellPrice"], val["sellSize"])
             else:
                 logging.debug("NICHT GENUG COINS ZUM SELLEN")
-    else:
-        # wenn ich noch keine offene order habe: neu erstellen
-
-        if validateHoldings("SELL"):
-            val["angelSellId"] = createOrder(val["symbol"], "SELL", val["realSellPrice"], val["sellSize"])
-        else:
-            logging.debug("NICHT GENUG COINS ZUM SELLEN")
 
 
 def priceRefiner(buyTarget, sellTarget):
 
     """Be greedy and calculate how much higher or lower one can get away with while staying within targeted price range. (Dependant on current orders)"""
 
-    logging.debug("PRICE REFINER:")
+    # logging.debug("PRICE REFINER:")
     if isfloat(buyTarget) and isfloat(sellTarget):
-        logging.debug("buy und sell targets sind float")
+        # logging.debug("buy und sell targets sind float")
         val["realBuyPrice"] = getRealBuyPrice(buyTarget)
 
         val["realSellPrice"] = getRealSellPrice(sellTarget)
-        logging.debug(str(val["realBuyPrice"]) + " and: " + str(val["realSellPrice"]))
+        # logging.debug(str(val["realBuyPrice"]) + " and: " + str(val["realSellPrice"]))
         return True
     logging.debug("price refiner hat gefailed")
     return False
 
 
 def getRealBuyPrice(buyTarget):
-    ticksize = str(val["coins"][symbol]["tickSize"])
-
+    ticksize = str(val["coins"][val["symbol"]]["tickSize"])
+    roundTo = len(str(ticksize).rstrip("0"))-2
+    # logging.debug("test: " + str(ticksize).rstrip("0"))
+    # roundTo = len(str(float(ticksize)))
+    # logging.debug("r" + str(float(ticksize)))
+    # logging.debug("roudnto: " + str(roundTo))
     for index, value in enumerate(depthMsg["bids"]):
         if float(value[0]) < float(buyTarget):
             logging.debug("FOUND CHEAPER BUY ORDER")
@@ -648,13 +727,15 @@ def getRealBuyPrice(buyTarget):
                 realBuyPrice = "{:.8f}".format(float(value[0]) + float(ticksize))
                 return str(realBuyPrice)
     realBuyPrice = "{:.8f}".format(float(buyTarget))
-    return str(realBuyPrice)
+    return str(round(float(realBuyPrice), roundTo))
 
 
 def getRealSellPrice(sellTarget):
     ticksize = str(val["coins"][symbol]["tickSize"])
+    roundTo = len(str(ticksize).rstrip("0"))-2
+
     for index, value in enumerate(depthMsg["asks"]):
-        logging.debug("checke sell order: " + str(index) + " price: " + str(value[0]) + "soll > " + str(float(sellTarget)))
+        # logging.debug("checke sell order: " + str(index) + " price: " + str(value[0]) + "soll > " + str(float(sellTarget)))
         if float(value[0]) > float(sellTarget):
             logging.debug("found more expansive oder: " + str(index) + "  price:" + str(float(value[0])))
 
@@ -670,7 +751,32 @@ def getRealSellPrice(sellTarget):
                 return str(realSellPrice)
 
     realSellPrice = "{:.8f}".format(float(sellTarget))
-    return str(realSellPrice)
+    return str(round(float(realSellPrice), roundTo))
+
+
+def calculateAvgPrice(side, amount, price):
+    if val["amountBought"] < 0:
+        val["amountBought"] = 0
+    if val["totalCost"] < 0:
+        val["totalCost"] = 0
+
+    ticksize = str(val["coins"][val["symbol"]]["tickSize"])
+    roundTo = len(str(ticksize).rstrip("0"))-2
+
+    average = val["avgBuyPrice"]
+
+    if side == "BUY":
+        val["amountBought"] += float(amount)
+        val["totalCost"] += float(amount) * float(price)
+        # print(str(val["totalCost"])+str(float(amount))+str(float(price)))
+    elif side == "SELL":
+        val["amountBought"] -= float(amount)
+        val["totalCost"] -= float(amount) * float(average)
+
+    if float(amount) > 0:
+        average = float(val["totalCost"]) / float(val["amountBought"])
+        averageRounded = int(average * 10**roundTo) / 10.0**roundTo
+    return float(averageRounded)
 
 
 val["coins"] = dict()
