@@ -8,6 +8,7 @@ coins.txt
 depthCallback.txt
 tickerCallback.txt
 tradeCallback.txt
+klineCallback.txt
 *.csv
 TA/
 tests/
