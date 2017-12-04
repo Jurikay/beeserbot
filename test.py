@@ -4,15 +4,102 @@
 # by Jurek Baumann
 
 """Used for testing only. Not part of the app."""
-
-
+import threading
+import time
+import pandas as pd
+import stockstats
 import logging
 logging.basicConfig(filename="test.log", level=logging.DEBUG, format='%(asctime)s %(message)s')
 from MAIN import *
 symbol = "QSPBTC"
 #
-for coin in val["coins"]:
-    print(coin + " " + val["coins"][coin]["minTrade"] + "ticksize: " + val["coins"][coin]["tickSize"])
+val["symbol"] = "BNBBTC"
+
+apiAnswer = client.get_klines(symbol="BNBBTC", interval="5m")
+with open("klineanser.txt", "w") as f:
+        f.write(str(apiAnswer))
+
+
+
+start = time.time()
+timeIntervals = ["1m", "5m", "15m", "30m", "1h"]
+timeFrames = []
+dataTable = []
+coinInfoList = []
+def getInfos(coin):
+    val["symbol"] = coin
+    klines = []
+    for index in enumerate(timeIntervals):
+        i = index[0]
+        klines.append([])
+        filename = str(timeIntervals[i])
+        klines[i] = client.get_klines(symbol=val["symbol"], interval=timeIntervals[i])
+
+        date, amount, closeP, high, low, openP, volume = ([] for i in range(7))
+
+        for index2 in enumerate(klines[i]):
+            j = index2[0]
+
+            date.append(int(klines[i][j][6]))
+            amount.append(float(klines[i][j][7]))
+            closeP.append(float(klines[i][j][4]))
+            high.append(float(klines[i][j][2]))
+            low.append(float(klines[i][j][3]))
+            openP.append(float(klines[i][j][1]))
+            volume.append(float(klines[i][j][5]))
+
+
+        dataTable = {'date': date, 'amount': amount, 'close': closeP, 'high': high, 'low': low, 'open': openP, 'volume': volume}
+
+        # Build a DataFrame 'coinDataFrame' from the dict dataTable
+        coinDataFrame = pd.DataFrame(dataTable, columns=['date', 'amount', 'close', 'high', 'low', 'open', 'volume'])
+
+        # debug
+        # coinDataFrame[j].to_csv("test_" + str(filename) + '.csv')
+        stock = stockstats.StockDataFrame.retype(coinDataFrame)
+        stock.to_csv("TEST" + str(coin) + "-" + str(timeIntervals[i]) + ".csv")
+
+    # for value in enumerate(timeIntervals):
+    #     k = value[0]
+    #     stock = stockstats.StockDataFrame.retype(coinDataFrame[k])
+    #     stock.to_csv("TEST" + str(val["symbol"]) + "-" + str(value[1] + ".csv"))
+
+
+
+def fetch_url(coin):
+    val["symbol"] = coin
+    for index in enumerate(timeIntervals):
+        timeFrames.append([])
+        i = index[0]
+        apiAnswer = client.get_klines(symbol=val["symbol"], interval=timeIntervals[i])
+        # print(str(apiAnswer))
+        date, amount, closeP, high, low, openP, volume = ([] for i in range(7))
+
+
+        # assign relevant data to lists
+        # date.append(int(timeFrames[j][6]))
+        amount.append(float(apiAnswer[i][7]))
+        closeP.append(float(apiAnswer[i][4]))
+        high.append(float(apiAnswer[i][2]))
+        low.append(float(apiAnswer[i][3]))
+        openP.append(float(apiAnswer[i][1]))
+        volume.append(float(apiAnswer[i][5]))
+
+        dataTable[i] = {'date': date, 'amount': amount, 'close': closeP, 'high': high, 'low': low, 'open': openP, 'volume': volume}
+        print(str(dataTable[i]))
+
+threads = [threading.Thread(target=getInfos, args=(coin,)) for coin in val["coins"]]
+for thread in threads:
+    thread.start()
+for thread in threads:
+    thread.join()
+
+# print "Elapsed Time: %s" % (time.time() - start)
+print(str(coinInfoList))
+infoFrame = pd.DataFrame(coinInfoList)
+infoFrame.to_csv('info.csv')
+# for coin in val["coins"]:
+#     print(coin + " " + val["coins"][coin]["minTrade"] + "ticksize: " + val["coins"][coin]["tickSize"])
 #
 print("####################")
 priceList = getCurrentPrices()
@@ -25,24 +112,34 @@ accHoldings = getHoldings()
 
 time.sleep(4)
 
+
+# coinInfoList = []
+# i = 0
+# for coin in val["coins"]:
+#     i += 1
+#     indicators = TA.getTA()
+#     coinInfoList.append(indicators)
+#
+# print(str(coinInfoList))
+
 #
 # getTotalBtc()
 # for index in enumerate(val["coins"]):
 #     print(str(index[1]) + ": - " + str(calculateMinOrderSize(index[1], priceList)))
 
-val["avgBuyPrice"] = calculateAvgPrice("BUY", "100", "0.00011")
-print(str(val["avgBuyPrice"]))
-val["avgBuyPrice"] = calculateAvgPrice("BUY", "100", "0.00022")
-print(str(val["avgBuyPrice"]))
-val["avgBuyPrice"] = calculateAvgPrice("BUY", "150", "0.0003")
-print(str(val["avgBuyPrice"]))
-val["avgBuyPrice"] = calculateAvgPrice("BUY", "100", "0.000255")
-print(str("{:.8f}".format(float(val["avgBuyPrice"]))))
-val["avgBuyPrice"] = calculateAvgPrice("SELL", "300", "0.000255")
-print("sell")
-print(str("{:.8f}".format(float(val["avgBuyPrice"]))))
-val["avgBuyPrice"] = calculateAvgPrice("BUY", "100", "0.000255")
-print(str("{:.8f}".format(float(val["avgBuyPrice"]))))
+# val["avgBuyPrice"] = calculateAvgPrice("BUY", "100", "0.00011")
+# print(str(val["avgBuyPrice"]))
+# val["avgBuyPrice"] = calculateAvgPrice("BUY", "100", "0.00022")
+# print(str(val["avgBuyPrice"]))
+# val["avgBuyPrice"] = calculateAvgPrice("BUY", "150", "0.0003")
+# print(str(val["avgBuyPrice"]))
+# val["avgBuyPrice"] = calculateAvgPrice("BUY", "100", "0.000255")
+# print(str("{:.8f}".format(float(val["avgBuyPrice"]))))
+# val["avgBuyPrice"] = calculateAvgPrice("SELL", "300", "0.000255")
+# print("sell")
+# print(str("{:.8f}".format(float(val["avgBuyPrice"]))))
+# val["avgBuyPrice"] = calculateAvgPrice("BUY", "100", "0.000255")
+# print(str("{:.8f}".format(float(val["avgBuyPrice"]))))
 # print(str(depthMsg["bids"][5][0]))
 #
 # priceRefiner(str(depthMsg["bids"][5][0]), str(depthMsg["asks"][5][0]))
