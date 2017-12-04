@@ -75,8 +75,9 @@ def mainLoop():
             # logging.debug("open orders: " + str(val["openOrders"]))
 
             # debug: cancel all orders every 10 seconds to prevent multiple buy or sell orders... (WORKAROUND)
-            if val["running"] is True:
-                cancelAllOrders()
+
+            # if val["running"] is True:
+            #     cancelAllOrders()
 
             ui.app.getForm("MAIN").revalidate()
 

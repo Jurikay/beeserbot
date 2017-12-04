@@ -15,6 +15,11 @@ from botLogic import *
 pd.options.mode.chained_assignment = None
 
 
+class MyStockDataFrame(stockstats.StockDataFrame):
+    # KDJ_PARAM = (3.0, 3.0)
+    pass
+
+
 # entrypoint
 def getTA():
     """Make a kline API call for every time interval.
@@ -45,6 +50,7 @@ def getTA():
 
         # store DataFrames returned from createFrame in allDataFrames
         allDataFrames[i] = createFrame(timeFrames[i], timeIntervals[i])
+
 
     # Once DataFrames for all time intervals are available, call interpreteData
     indicatorData = interpreteData(timeIntervals, allDataFrames)
@@ -83,6 +89,9 @@ def createFrame(klines, filename):
     # Build a DataFrame 'coinDataFrame' from the dict dataTable
     coinDataFrame = pd.DataFrame(dataTable, columns=['date', 'amount', 'close', 'high', 'low', 'open', 'volume'])
 
+    # debug
+    coinDataFrame.to_csv("pd_" + str(filename) + '.csv')
+
     # return the DataFrame
     return coinDataFrame
 
@@ -103,12 +112,12 @@ def interpreteData(intervals, dataFrames):
         i = value[0]
 
         # Create a StockDataFrame from the respective time interval data
-        stock = stockstats.StockDataFrame.retype(dataFrames[i])
+        stock = MyStockDataFrame.retype(dataFrames[i])
 
         # Calculate chosen indicatorData
         # RSI
         rsi6hData = stock['rsi_6']
-        rsi12hData = stock['rsi_12']
+        rsi12hData = stock['rsi_14']
 
         # MACD
         macdData = stock['macd']
@@ -117,6 +126,11 @@ def interpreteData(intervals, dataFrames):
         medBollData = stock['boll']
         upperBollData = stock['boll_ub']
         lowerBollData = stock['boll_lb']
+
+        # KDJ
+        kdjkData = stock['kdjk_9']
+        kdjdData = stock['kdjd_9']
+        kdjjData = stock['kdjj_9']
 
         # TODO ADD MORE RELEVANT
         volumeDeltaData = stock['volume_delta']
@@ -131,12 +145,15 @@ def interpreteData(intervals, dataFrames):
         upperBoll = round(upperBollData.iloc[-1], roundTo)
         lowerBoll = round(lowerBollData.iloc[-1], roundTo)
 
+        kdjk = round(kdjkData.iloc[-1], 2)
+        kdjd = round(kdjdData.iloc[-1], 2)
+        kdjj = round(kdjjData.iloc[-1], 2)
 
         volumeDelta = volumeDeltaData.iloc[-1]
 
         # For every time interval, add the last value of the
         # chosen indicator to a dictionary as a 'key': value pair
-        indicatorData[value[1]] = {"rsi6h": rsi6h, "rsi12h": rsi12h, "medBoll": medBoll, "upperBoll": upperBoll, "lowerBoll": lowerBoll, "volumeDelta": volumeDelta, "macd": macd}
+        indicatorData[value[1]] = {"rsi6h": rsi6h, "rsi12h": rsi12h, "medBoll": medBoll, "upperBoll": upperBoll, "lowerBoll": lowerBoll, "volumeDelta": volumeDelta, "macd": macd, "kdjk": kdjk, "kdjd": kdjd, "kdjj": kdjj}
 
     # return indicator data sorted by timeframe.
     return indicatorData

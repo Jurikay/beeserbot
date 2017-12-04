@@ -86,6 +86,8 @@ lock = threading.RLock()
 val["amountBought"] = 0.0
 val["totalCost"] = 0.0
 val["avgBuyPrice"] = 0.0
+val["currentGains"] = 0.0
+
 
 # debug
 val["buySize"] = buy_size

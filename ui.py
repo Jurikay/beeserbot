@@ -18,10 +18,14 @@ from botLogic import *
 # from colorSyntax import SyntaxObAsks, SyntaxObBids
 # from ui_static import *
 import TA
+
+
 class AlgoForm2(npyscreen.FormBaseNew):
     def create(self):
         self.symbolHead = self.add(npyscreen.FixedText, value="SECOND FORM LOL:", editable=True, color="NO_EDIT", width=15)
         self.debug = self.add(npyscreen.Textfield, value="SECOND FORM LOL:", editable=True, color="NO_EDIT", width=15)
+
+
 class AlgoForm(npyscreen.FormBaseNew):
 
     """Main algo bot form."""
@@ -30,7 +34,7 @@ class AlgoForm(npyscreen.FormBaseNew):
 
         # self.setIndicatorData()
         try:
-            self.debug.value = "weighted Avg: " + str(val["avgBuyPrice"])
+            self.debug.value = "weighted Avg: " + str(val["avgBuyPrice"]) + " gains: " + str(val["currentGains"])
 
             self.volume.value = "{:.3f}".format(float(tickerMsg["v"])*float(tickerMsg["w"])) + " BTC"
             # self.debug.value = str(val["buyTarget"])
@@ -102,17 +106,17 @@ class AlgoForm(npyscreen.FormBaseNew):
         self.nextrelx = 2
 
         # DISPLAY STRATEGY
-        self.stratHead = self.add(npyscreen.FixedText, value="Strategy: ", editable=False, color="WARNING")
+        self.stratHead = self.add(npyscreen.FixedText, value="Strategy: ", editable=False, color="WARNING", clear=True)
 
         self.nextrely -= 1
         self.nextrelx = len(self.stratHead.value)+2
 
-        self.strat = self.add(stratInput, value="Boilinger Bot", editable=True, width=14)
+        self.strat = self.add(stratInput, value="Boilinger Bot", editable=True, width=14, clear=True)
 
         self.nextrelx = 2
 
         # DISPLAY TIME INTERVAL
-        self.ordersWitnessedHead = self.add(npyscreen.FixedText, value="Orders witnessed: ", editable=False, color="WARNING")
+        self.ordersWitnessedHead = self.add(npyscreen.FixedText, value="Orders witnessed: ", editable=False, color="WARNING", clear=True)
 
         self.nextrelx = 2+len(self.ordersWitnessedHead.value)
         self.nextrely -= 1
@@ -185,6 +189,17 @@ class AlgoForm(npyscreen.FormBaseNew):
 
         self.nextrelx = 2
 
+        # KDJ
+        self.kdjHead = self.add(npyscreen.FixedText, value="KDJ: ", editable=False, clear=True)
+
+        self.nextrely -= 1
+        self.nextrelx = 2+len(self.kdjHead.value)
+
+        self.kdj = self.add(npyscreen.FixedText, value="loading macd", editable=False, clear=True)
+
+        self.nextrelx = 2
+
+        # Spread
         self.spreadsHead = self.add(npyscreen.FixedText, value="Current spread: ", editable=False, color="WARNING")
 
         self.nextrely -= 1
@@ -616,13 +631,13 @@ class AlgoForm(npyscreen.FormBaseNew):
 
         self.macd.value = val["indicators"][str(self.timeFrame)]["macd"]
 
-
+        self.kdj.value = str(val["indicators"][str(self.timeFrame)]["kdjk"]) + " " + str(val["indicators"][str(self.timeFrame)]["kdjd"]) + " " + str(val["indicators"][str(self.timeFrame)]["kdjj"])
 
         if self.start_button.name == "Stop":
             self.revalidate()
             # self.status.value = "SET BAND INFO"
 
-
+        self.status.value = " Buying " + str(val["buySize"]) + " below " + str(val["buyTarget"] + ". " + "Selling " + str(val["sellSize"]) + " above " + str(str(val["sellTarget"])))
 
         self.display()
 
