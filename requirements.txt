@@ -1,0 +1,4 @@
+npyscreen==4.10.5
+pandas==0.21.0
+python-binance==0.4.3
+stockstats==0.2.0
