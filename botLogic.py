@@ -16,12 +16,41 @@ from customSocketManager import BinanceSocketManager
 
 # from customSocketManager import BinanceSocketManager
 
+# import binance settings and throw an error if something is not specified
 try:
     from config import api_key, api_secret, symbol, buy_size, sell_size
 except ModuleNotFoundError:
     print("Paste Your API key and secret into config_sample.py and rename it to config.py!")
 
+# setup logging
 logging.basicConfig(filename="test.log", filemode='w', level=logging.DEBUG, format='%(asctime)s %(message)s')
+
+formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+
+def setup_logger(name, log_file, level=logging.DEBUG):
+    """Function setup as many loggers as you want"""
+
+    handler = logging.FileHandler(log_file, mode='w')
+    handler.setFormatter(formatter)
+
+    log = logging.getLogger(name)
+    log.setLevel(level)
+    log.addHandler(handler)
+
+    return log
+
+# first file logger
+log = setup_logger('first_logger', 'first_logfile.log')
+log.info('This is just info message')
+log.debug("lul")
+
+# second file logger
+errlog = setup_logger('second_logger', 'second_logfile.log')
+errlog.error('This is an error message')
+errlog.info("TEST")
+errlog.debug("test")
+
+
 
 
 # class MySocketManager(BinanceSocketManager):
