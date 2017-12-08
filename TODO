@@ -164,3 +164,15 @@ allgemeine quantity format function: ticksize mintrade
 bevor neuealgologic: check if spred is too small
 
 remove syntax highlighting
+
+set current order id every minute.
+compare saved and current order id every minute
+restart socket if no change
+
+Idee: Analysiere die letzten 24 Stunden:
+RSi/KDJ:
+wenn k > 90 sell
+wenn k x punkte unter d: buy
+
+anzahl buys sells, theoretische gains
+vergleiche zeit intervalle, finde größten profit
