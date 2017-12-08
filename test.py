@@ -20,12 +20,14 @@ with open("klineanser.txt", "w") as f:
         f.write(str(apiAnswer))
 
 
-
+debugCoins = ["BNBBTC", "ETHBTC", "NEOBTC"]
 start = time.time()
 timeIntervals = ["1m", "5m", "15m", "30m", "1h"]
 timeFrames = []
 dataTable = []
 coinInfoList = []
+
+
 def getInfos(coin):
     val["symbol"] = coin
     klines = []
@@ -57,38 +59,18 @@ def getInfos(coin):
         # debug
         # coinDataFrame[j].to_csv("test_" + str(filename) + '.csv')
         stock = stockstats.StockDataFrame.retype(coinDataFrame)
-        stock.to_csv("TEST" + str(coin) + "-" + str(timeIntervals[i]) + ".csv")
 
+        print(stock.iloc[0][0])
+
+        stock.to_csv("TEST" + str(coin) + "-" + str(timeIntervals[i]) + ".csv")
+        print("fetched " + str(coin) + " " + str(timeIntervals[i]) + " data.")
     # for value in enumerate(timeIntervals):
     #     k = value[0]
     #     stock = stockstats.StockDataFrame.retype(coinDataFrame[k])
     #     stock.to_csv("TEST" + str(val["symbol"]) + "-" + str(value[1] + ".csv"))
 
 
-
-def fetch_url(coin):
-    val["symbol"] = coin
-    for index in enumerate(timeIntervals):
-        timeFrames.append([])
-        i = index[0]
-        apiAnswer = client.get_klines(symbol=val["symbol"], interval=timeIntervals[i])
-        # print(str(apiAnswer))
-        date, amount, closeP, high, low, openP, volume = ([] for i in range(7))
-
-
-        # assign relevant data to lists
-        # date.append(int(timeFrames[j][6]))
-        amount.append(float(apiAnswer[i][7]))
-        closeP.append(float(apiAnswer[i][4]))
-        high.append(float(apiAnswer[i][2]))
-        low.append(float(apiAnswer[i][3]))
-        openP.append(float(apiAnswer[i][1]))
-        volume.append(float(apiAnswer[i][5]))
-
-        dataTable[i] = {'date': date, 'amount': amount, 'close': closeP, 'high': high, 'low': low, 'open': openP, 'volume': volume}
-        print(str(dataTable[i]))
-
-threads = [threading.Thread(target=getInfos, args=(coin,)) for coin in val["coins"]]
+threads = [threading.Thread(target=getInfos, args=(coin,)) for coin in debugCoins]
 for thread in threads:
     thread.start()
 for thread in threads:
