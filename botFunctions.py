@@ -137,7 +137,12 @@ def fetchAsap(symbol):
 def fetchDepth(symbol):
     """Make a seperate API call to instantly get new orderbook values after changing the coin."""
     logging.debug("FETCHE DEPTH!!")
-    depth = client.get_order_book(symbol=symbol)
+
+    try:
+        depth = client.get_order_book(symbol=symbol)
+    except JSONDecodeError:
+        pass
+
     for key, value in depth.items():
         depthMsg[key] = value
     depthMsg["lastUpdateId"] = "WAITING"
@@ -289,38 +294,36 @@ def user_callback(msg):
         userMsg[key] = value
 
     # if callback message contains account info:
-    if userMsg["e"] == "outboundAccountInfo":
-        for i in range(len(userMsg["B"])):
+    with lock:
+        if userMsg["e"] == "outboundAccountInfo":
+            for i in range(len(userMsg["B"])):
 
-            # put account info in accHoldings dictionary. Access free and locked holdings like so: accHoldings["BTC"]["free"]
-            accHoldings[userMsg["B"][i]["a"]] = {"free": userMsg["B"][i]["f"], "locked": userMsg["B"][i]["l"]}
+                # put account info in accHoldings dictionary. Access free and locked holdings like so: accHoldings["BTC"]["free"]
+                accHoldings[userMsg["B"][i]["a"]] = {"free": userMsg["B"][i]["f"], "locked": userMsg["B"][i]["l"]}
 
-    elif userMsg["e"] == "executionReport":
-        if userMsg["X"] == "NEW":
-            val["myOrders"][userMsg["i"]] = {"symbol": userMsg["s"], "price": userMsg["p"], "quantity": userMsg["q"], "side": userMsg["S"], "id": userMsg["i"]}
+        elif userMsg["e"] == "executionReport":
+            if userMsg["X"] == "NEW":
+                val["myOrders"][userMsg["i"]] = {"symbol": userMsg["s"], "price": userMsg["p"], "quantity": userMsg["q"], "side": userMsg["S"], "id": userMsg["i"]}
 
-        elif userMsg["X"] == "CANCELED":
-            val["myOrders"].pop(userMsg["i"], None)
-            if val["angelSellId"] == userMsg["i"]:
-                val["angelSellId"] = None
+            elif userMsg["X"] == "CANCELED":
+                val["myOrders"].pop(userMsg["i"], None)
+                if val["angelSellId"] == userMsg["i"]:
+                    val["angelSellId"] = None
 
-        elif userMsg["X"] == "FILLED":
-            val["myOrders"].pop(userMsg["i"], None)
-            val["newTrade"] = True
+            elif userMsg["X"] == "FILLED":
+                val["myOrders"].pop(userMsg["i"], None)
+                val["newTrade"] = True
 
-            # store filled trades
+                # store filled trades
 
-            filledTrades.append({"date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "symbol": userMsg["s"], "price": userMsg["p"], "quantity": userMsg["q"], "side": userMsg["S"], "id": userMsg["i"], "account value": str(getTotalBtc())})
+                filledTrades.append({"date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "symbol": userMsg["s"], "price": userMsg["p"], "quantity": userMsg["q"], "side": userMsg["S"], "id": userMsg["i"], "account value": str(getTotalBtc())})
 
-            if val["angelBuyId"] == userMsg["i"]:
-                val["angelBuyId"] = None
+                if val["angelBuyId"] == userMsg["i"]:
+                    val["angelBuyId"] = None
 
-            # calculate weighted average buy price
-            val["avgBuyPrice"] = calculateAvgPrice(userMsg["S"], userMsg["q"], userMsg["p"])
+                # calculate weighted average buy price
+                val["avgBuyPrice"] = calculateAvgPrice(userMsg["S"], userMsg["q"], userMsg["p"])
 
-
-    else:
-        print("order created/filled/deleted")
 
 
 def kline_callback(msg):
@@ -609,8 +612,6 @@ def getRealOrderSize():
 
 def validateHoldings(side):
 
-    # val["buySize"] = buy_size
-    # val["sellSize"] = sell_size
 
     btc = float(accHoldings["BTC"]["free"]) + float(accHoldings["BTC"]["locked"])
     coin = float(accHoldings[val["symbol"][:-3]]["free"]) + float(accHoldings[val["symbol"][:-3]]["locked"])
@@ -636,29 +637,47 @@ def validateHoldings(side):
 # def buyLogic():
 def besereLogicBuy():
     reduceGap = False
-    if float(val["buySize"]) > 0:
-        if val["angelBuyId"] in val["myOrders"]:
-            if float(val["myOrders"][val["angelBuyId"]]["price"]) == float(val["realBuyPrice"]):
-                logging.debug("trigger sat check")
+    # check if bot should buy at all
+    with lock:
+        debugMsg = "BUY ORDER: "
+        if float(val["buySize"]) > 0:
+            # check if a buy order is already open
+            if val["angelBuyId"] in val["myOrders"]:
+                # check if buy order has correct price
+                debugMsg += "order open "
+                if float(val["myOrders"][val["angelBuyId"]]["price"]) == float(val["realBuyPrice"]):
+                    logging.debug("trigger sat check")
+                    debugMsg += "sat check "
 
-                for index, value in enumerate(depthMsg["bids"]):
-                    logging.debug(str(value[0]) + " " + str(index))
+                    # check if difference to next order is not greater than 2 sat
+                    for index, value in enumerate(depthMsg["bids"]):
+                        logging.debug(str(value[0]) + " " + str(index))
+                        # found order
+                        if findInOrdersN(value[0]):
+                            # check difference
+                            if not satCheckTwoDiff(float(val["myOrders"][val["angelBuyId"]]["price"]), float(depthMsg["bids"][int(index)+1][0])):
+                                logging.debug("SAT CHECK FALSE")
+                                debugMsg += "sat check false "
 
-                    if findInOrdersN(value[0]):
+                                return
+                            debugMsg += "sat check true "
 
-                        if not satCheckTwoDiff(float(val["myOrders"][val["angelBuyId"]]["price"]), float(depthMsg["bids"][int(index)+1][0])):
-                            logging.debug("SAT CHECK FALSE")
-                            return
-                        logging.debug("SAT CHECK TRUE")
-                        reduceGap = True
-                if reduceGap is False:
-                    return
+                            logging.debug("SAT CHECK TRUE")
+                            reduceGap = True
+                    # if order is not found within the first 20 but is open, cancel
+                    if reduceGap is False:
+                        return
 
-                logging.debug("open order not within first 20 bids.")
+                    logging.debug("open order not within first 20 bids.")
+                    debugMsg += "not in first 20 "
 
+
+            # cancel buy order
             with lock:
                 cancelOrderById(val["angelBuyId"])
+                errlog.debug(str(debugMsg))
 
+        # create order if size is valid
         if validateHoldings("BUY"):
             with lock:
                 val["angelBuyId"] = createOrder(val["symbol"], "BUY", val["realBuyPrice"], val["buySize"])
