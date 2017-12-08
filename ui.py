@@ -36,6 +36,7 @@ class AlgoForm(npyscreen.FormBaseNew):
         try:
             self.debug.value = "weighted Avg: " + str(val["avgBuyPrice"]) + " gains: " + str(val["currentGains"])
 
+            self.debug2.value = str(val["myOrders"])
             self.volume.value = "{:.3f}".format(float(tickerMsg["v"])*float(tickerMsg["w"])) + " BTC"
             # self.debug.value = str(val["buyTarget"])
             # self.debug.value = str(val["coins"][symbol]["tickSize"])
@@ -331,6 +332,7 @@ class AlgoForm(npyscreen.FormBaseNew):
 
 
         self.debug = self.add(npyscreen.FixedText, value="debug", editable=False, relx=30)
+        self.debug2 = self.add(npyscreen.FixedText, value="debug2", editable=False, relx=30)
         ###########################
         # Orderbook / trade history
         ###########################
